@@ -9,10 +9,12 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
-<Tabs>
-  <TabItem value="Setting up Caddy" label="Setting up Caddy" default>
-
 ## Setting up Caddy
+
+<Tabs>
+  <TabItem value="Setting up Caddy" label="Basic Setup" default>
+
+**Caddy Setup:**
 
 **Caddyfile Download**
 
@@ -42,13 +44,13 @@ Do not Forget to **Accept both permissions if a windows Pops up** upon first run
   </TabItem>
   <TabItem value="Setting Up Cloudflare Tunnels" label="Setting Up Cloudflare Tunnels" default>
 
-### Setting Up Cloudflare Tunnels
+**Setting Up Cloudflare Tunnels:**
 
 **Downloads**
 
 [CloudFlare DDNS](https://github.com/wyattjoh/cloudflare-ddns/releases)
 
-#### Setting up A Name Record
+**Setting up A Name Record:**
 1. Download Cloudflare DDNS from github and extract it to a directory of your choice ie. `C:\Tools\CloudflareDDNS`
 
 2. Open https://dash.cloudflare.com/ and select your domain
@@ -67,7 +69,7 @@ Do not Forget to **Accept both permissions if a windows Pops up** upon first run
 
 6. Click Save
 
-#### Getting an API Key
+**Getting an API Key:**
 
 
 1. Go to Overview in the right Hand Menu
@@ -96,7 +98,7 @@ Do not Forget to **Accept both permissions if a windows Pops up** upon first run
 
 ![image](https://user-images.githubusercontent.com/35183970/215296333-b790ded6-84fd-46c6-93f0-b4911fb58284.png)
 
-#### Running Cloudflare DDNS
+**Running Cloudflare DDNS:**
 
 1. type in powershell 
 
@@ -120,7 +122,7 @@ time="2023-01-28T17:54:39-06:00" level=info msg="updated record" content=123.123
 PS C:\tools\cloudflareddns>
 ```
 
-#### Autostartup CloudflareDDNS
+**Autostartup CloudflareDDNS:**
 
 1. Search Run in Windows
 

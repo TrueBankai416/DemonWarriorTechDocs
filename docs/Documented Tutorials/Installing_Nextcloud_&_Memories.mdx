@@ -9,6 +9,8 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
+## Installing Nextcloud
+
 <Tabs>
   <TabItem value="Installing Nextcloud Video" label="Video" default>
 
@@ -16,9 +18,9 @@ import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
 </TabItem>
 
-  <TabItem value="Installing Nextcloud" label="Installing Nextcloud">
+  <TabItem value="Installing Nextcloud" label="Written Instructions">
 
-### Installing Nextcloud
+**Step-by-step Installation:**
 
 1. Make a directory inside C:\Tools called Nextcloud
 2. You need to make 3 files inside your Nextcloud Directory. You can get the code that needs to go in these files from here. [Nextcloud Building Files](/Examples/Docker_Examples#nextcloud)
@@ -45,7 +47,7 @@ it will look like this when done
 9. Once all the categories are filled out click install. **(NOTE): Installation may take upwards of 15-20 minutes.**
 10. Once installed we need to go to Apps and install Memories
 
-### Enabled Go-Vod
+**Enable Go-Vod:**
 
 1. Now that Memories is installed we need to activate the go-vod in the compose for our nvidia GPU
 2. It Should look like below once we uncomment the go-vod section
@@ -341,9 +343,9 @@ whereis ffprobe
 10. Copy the path into those empty ffmpeg paths box and ffprobe path box.
 11. Once you click out of the box it should update.
 
-### Installing Facial Recognition
+**Installing Facial Recognition:**
 
-1. Now we need 2 more apps from the app store. So we go to Adminstrative Panel --> Apps ---> Recognize
+1. Now we need 2 more apps from the app store. So we go to Administrative Panel --> Apps ---> Recognize
 Adminstrative Panel ---> Apps ---> Preview Generator
 2. Once this is done we need to enable recognize inside the Adminstrative Settings ---> Recognize and enable the slider
 
@@ -353,9 +355,9 @@ Adminstrative Panel ---> Apps ---> Preview Generator
 
   <TabItem value="Reverse Proxy Setup for Nextcloud" label="Reverse Proxy Setup for Nextcloud">
 
-### Reverse Proxy Setup for Nextcloud
+**Reverse Proxy Setup for Nextcloud:**
 
-  1. Open Your Nextcloud /var/html/www directory. For me thats in J:/Nextcloud. If you do not know where this is go to your Docker-Compose.yml and look for this line
+1. Open Your Nextcloud /var/html/www directory. For me thats in J:/Nextcloud. If you do not know where this is go to your Docker-Compose.yml and look for this line
 
  ![image](https://i.imgur.com/4Vxm8aJ.png)
 
