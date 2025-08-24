@@ -63,6 +63,8 @@ Release:        24.04
 Codename:       noble
 ```
 
+![image](https://i.imgur.com/dl4285m.png)
+
 #### Step 2: Download Custom Caddy Build
 
 :::info
@@ -116,6 +118,8 @@ Codename:       noble
 ```
 v2.7.6 h1:w0NymbG2m9PcvKWsrXO6EEkY9Ru4FJK8uQbYcev1p3A=
 ```
+
+![image](https://i.imgur.com/cQ1o0UQ.png)
 
 ## System Configuration
 
@@ -302,10 +306,14 @@ DuckDNS provides free dynamic DNS services, perfect for home servers with changi
    - Reddit Account
    - Twitter Account
 
+![image](https://i.imgur.com/aWXAoft.png)
+
 2. **Create a subdomain**:
    - Enter your desired subdomain (e.g., `myserver`)
    - Click "Add Domain"
    - Note your token for later use
+
+![image](https://i.imgur.com/GINDccu.png)
 
 #### Step 2: Install DuckDNS Client
 
@@ -327,6 +335,10 @@ sudo chmod +x duck.sh
 sudo ./duck.sh
 ```
 
+**DuckDNS Installation Page:**
+
+![image](https://i.imgur.com/f2fdIbx.png)
+
 #### Step 3: Setup Automatic Updates
 
 ```bash
@@ -336,6 +348,14 @@ sudo crontab -e
 # Add this line to update every 5 minutes
 */5 * * * * /opt/duckdns/duck.sh >/dev/null 2>&1
 ```
+
+**DuckDNS GUI Setup Process:**
+
+![image](https://www.duckdns.org/img/linux-gui-01.png)
+
+**DuckDNS GUI with Token Configuration:**
+
+![image](https://www.duckdns.org/img/linux-gui-02.png)
 
 ### Option B: Cloudflare DNS (Recommended for Production)
 
