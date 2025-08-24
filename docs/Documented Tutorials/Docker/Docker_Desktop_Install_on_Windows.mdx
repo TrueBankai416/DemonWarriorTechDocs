@@ -6,14 +6,9 @@ toc_min_heading_level: 2
 toc_max_heading_level: 6
 ---
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
 import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
-<Tabs>
-  <TabItem value="1. Enabled Windows Featured" label="1. Enabled Windows Featured" default>
-
-### Enabled Windows Featured
+## Step 1: Enable Windows Features
 
 :::caution
 **Requirements Below**
@@ -21,43 +16,37 @@ import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
 1. Check to See if Virtualization is enabled in your bios
 
-
-
-
-1. Open Task Manager and See if Virtualization is running
+2. Open Task Manager and See if Virtualization is running
 
 ![image](https://user-images.githubusercontent.com/35183970/214379760-2a63886b-2a0c-48d1-b343-c8a4af61e308.png)
 
-2. If it is on continue to step 3. If it is not you need to enable it in bios.
+3. If it is on continue to step 4. If it is not you need to enable it in bios.
 
-   2.1 Heres a good Tutorial for all Motherboard Manufacturers.  
+   3.1 Here's a good Tutorial for all Motherboard Manufacturers:  
 
 [BIOS Intel Tutorial](https://www.isumsoft.com/computer/enable-virtualization-technology-vt-x-in-bios-or-uefi.html)
 
 [BIOS AMD Tutorial](https://www.elevenforum.com/t/enable-or-disable-cpu-virtualization-in-uefi-bios-firmware-settings-on-windows-pc.4928/)
 
-3. Turn Windows Features On
+4. Turn Windows Features On
 
 ![image](https://user-images.githubusercontent.com/35183970/214376796-9c2d80ec-f0ab-45e0-ad78-7067a164aa66.png)
 
-4. Turn on 
+5. Turn on the following features:
 
-   4.1 Hyper-V
-   4.2 Virtual Machine Platform
-   4.3 Windows Hypervisor Platform
-   4.4 Windows Subsystem Linux
+   5.1 Hyper-V
+   5.2 Virtual Machine Platform
+   5.3 Windows Hypervisor Platform
+   5.4 Windows Subsystem Linux
 
 ![image](https://user-images.githubusercontent.com/35183970/214377364-7cde6b34-abb7-4fc1-b53d-c1011511c76c.png)
 
 ![image](https://user-images.githubusercontent.com/35183970/214377439-360d5e7c-e7af-4bac-93c7-da957390b4bc.png)
 
-5. Reboot Your PC
+6. Reboot Your PC
 
-  </TabItem>
-  <TabItem value="Setting Up WSL2" label="2. Setting Up WSL2" default>
+## Step 2: Setting Up WSL2
 
-
-### Setting Up WSL2
 1. Once Rebooted You can install your VM.
 2. Go to MS Store and Search Ubuntu and select an install you want **I WOULD RECOMMEND THE LATEST UBUNTU CURRENTLY ITS 22.04**
 
@@ -69,11 +58,9 @@ import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
 ![image](https://user-images.githubusercontent.com/35183970/214381679-2cb4ddcf-b264-4c33-98ca-10bf19a6767c.png)
 
-
 5. Set a Password
 
 ![image](https://user-images.githubusercontent.com/35183970/214381766-6a4b1c17-6c7e-4727-bebc-3734de0fcafc.png)
-
 
 6. Now Check What WSL Version in powershell your using
 
@@ -99,42 +86,39 @@ wsl --set-default-version 2
 wsl --update
 ```
 
-### TroubleShooting Installing WSL2
+### Troubleshooting Installing WSL2
+
 1. If your on Windows 10 and cannot enable or install WSL2 Use this installer
 
 [WSL2 Manual Install](https://www.catalog.update.microsoft.com/Search.aspx?q=KB4566116)
 
-2.  If running the 
+2. If running the 
 
 ```css
 wsl --set-default-version 2
 ```
 
- then try to apply it directly to your linux. So if my install running the 
+then try to apply it directly to your linux. So if my install running the 
  
- ```css
- wsl --list --verbose
- ```
+```css
+wsl --list --verbose
+```
  
-  it says the name add that in the code ie. Ubunut-22.04 
+it says the name add that in the code ie. Ubuntu-22.04 
 
 ```css
 wsl --set-version Ubuntu-22.04 2
 ```
 
-  </TabItem>
-  <TabItem value="Installing and Setting up Docker-Desktop" label="3. Installing and Setting up Docker-Desktop" default>
-
-### Installing and Setting up Docker-Desktop
+## Step 3: Installing and Setting up Docker-Desktop
 
 1. Download [Docker-Desktop](https://www.docker.com/products/docker-desktop/)
 2. Click through the Installer
-3. Once installed Run the Docker-Desktop **(NOT IT MAY TAKE SOME TIME TO FIRST START DEPENDING ON YOUR HARDWARE)** 
+3. Once installed Run the Docker-Desktop **(NOTE IT MAY TAKE SOME TIME TO FIRST START DEPENDING ON YOUR HARDWARE)** 
 
+### Extra Docker Setup Configs
 
-## Extra Docker Setups Configs
-
-### Limiting Dockers RAM Usage
+#### Limiting Docker's RAM Usage
 
 1. Navigate to `C:\Users\DESKTOP-USERNAME`
 2. Edit .wslconfig in any text editor
@@ -148,9 +132,6 @@ memory=4GB
 3. Restart Docker and it should update to the correct limit.
 
 ![image](https://user-images.githubusercontent.com/35183970/217377016-d8ecf6b4-5ddd-44c3-811b-64609d285ea6.png)
-
-  </TabItem>
-</Tabs>
 
 ## Docker-Desktop Troubleshooting
 
