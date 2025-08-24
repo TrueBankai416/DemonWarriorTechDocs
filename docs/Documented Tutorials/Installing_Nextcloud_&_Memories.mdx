@@ -435,6 +435,9 @@ docker-compose exec redis redis-cli -a RedisPassword123! ping
 
 1. **Open your web browser** and navigate to `http://localhost:9111`
 2. **Wait for initial setup** (may take 5-10 minutes on first launch)
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/96ad2a28-21f0-4bbe-8590-34dae68b1304)
+
 3. **Complete the setup wizard**:
    - **Admin Username**: Choose a secure admin username (avoid 'admin')
    - **Admin Password**: Use a strong password (minimum 12 characters)
@@ -444,6 +447,8 @@ docker-compose exec redis redis-cli -a RedisPassword123! ping
      - **Database Password**: `NextcloudPassword123!`
      - **Database Name**: `nextcloud`
      - **Database Host**: `db:3306`
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4477cd8b-0560-4d07-8086-eb547680955a)
 
 #### Verify Initial Installation
 
@@ -463,9 +468,20 @@ docker-compose exec app php occ maintenance:update:htaccess
 #### Install Memories from App Store
 
 1. **Navigate to Apps** in Nextcloud admin interface
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4712d296-85aa-4a2e-b91b-004e19b4cf4e)
+
 2. **Search for "Memories"** in the app store
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/48a74e59-a230-42ff-bd9d-cb7ce4845012)
+
 3. **Install the Memories app**
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4f4b8d9b-df40-456a-95cf-e0c4bf556aca)
+
 4. **Enable the app** after installation
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/e0957e44-90cf-4d90-8a75-07fb90c5fae8)
 
 #### Install Additional Required Apps
 
@@ -529,9 +545,14 @@ docker-compose logs go-vod
 #### Configure Memories for Hardware Acceleration
 
 1. **Navigate to Admin Settings** → **Memories**
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/fe8e1ca7-4026-467c-b1f9-7478e2bd352a)
+
 2. **Configure Go-VOD connection**:
    - **Bind Address**: `127.0.0.1:47788`
    - **Connection Address**: `go-vod:47788`
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/c65726de-201a-42ee-befc-b99d67e0997c)
 
 3. **Configure transcoding settings**:
    - **Enable hardware acceleration**: ✅
@@ -570,11 +591,23 @@ docker-compose up -d --force-recreate
 #### Configure Recognition Settings
 
 1. **Navigate to Admin Settings** → **Recognize**
+
+![image](https://i.imgur.com/4Vxm8aJ.png)
+
 2. **Enable facial recognition**: ✅
+
+![image](https://i.imgur.com/ISfyeXl.png)
+
 3. **Configure recognition settings**:
    - **Model**: Face recognition model
    - **Minimum confidence**: 0.7 (recommended)
    - **Maximum faces per image**: 10
+
+![image](https://i.imgur.com/uV6zZk8.png)
+
+**Final configuration overview:**
+
+![image](https://i.imgur.com/SgJCQ9i.png)
 
 #### Initialize Facial Recognition
 
