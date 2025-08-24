@@ -1,412 +1,939 @@
 ---
-title: Installing Nextcloud & Memories
-description: Complete guide to installing Nextcloud with Memories app for photo management, including Docker setup, custom Dockerfile, and configuration
+title: Complete Nextcloud & Memories Installation Guide
+description: Comprehensive professional guide to installing and configuring Nextcloud with Memories app for enterprise photo management, including Docker deployment, hardware acceleration, security hardening, and production optimization
 sidebar_position: 2
 toc_min_heading_level: 2
 toc_max_heading_level: 6
-tags: [nextcloud, memories, docker, photo-management, self-hosting, cloud-storage, tutorial, installation]
+tags: [nextcloud, memories, docker, photo-management, self-hosting, cloud-storage, enterprise, production, security, hardware-acceleration]
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
-## Installing Nextcloud
+## Overview
 
-<Tabs>
-  <TabItem value="Installing Nextcloud Video" label="Video" default>
+This comprehensive guide covers the complete installation and configuration of Nextcloud with the Memories app for professional photo and video management. The setup includes Docker containerization, hardware acceleration for video transcoding, facial recognition, and enterprise-ready security configurations.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/1UEsUucYjmE?si=QBbvhz8Bf0Pr3Zsr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+### What is Nextcloud?
 
-</TabItem>
+Nextcloud is a powerful, open-source cloud storage and collaboration platform that provides:
+- **File Storage & Sync**: Secure file storage with cross-platform synchronization
+- **Photo Management**: Advanced photo organization with AI-powered features
+- **Video Streaming**: Hardware-accelerated video transcoding and streaming
+- **Collaboration Tools**: Document editing, calendar, contacts, and more
+- **Enterprise Security**: End-to-end encryption and comprehensive access controls
 
-  <TabItem value="Installing Nextcloud" label="Written Instructions">
+### What is Memories?
 
-**Step-by-step Installation:**
+Memories is a powerful Nextcloud app that transforms your instance into a professional photo management system:
+- **AI-Powered Organization**: Automatic photo categorization and facial recognition
+- **Hardware Acceleration**: GPU-accelerated video transcoding for smooth playback
+- **Timeline View**: Beautiful chronological photo and video browsing
+- **Advanced Search**: Find photos by location, date, people, and objects
+- **Mobile Apps**: Native mobile applications for seamless access
 
-1. Make a directory inside C:\Tools called Nextcloud
-2. You need to make 3 files inside your Nextcloud Directory. You can get the code that needs to go in these files from here. [Nextcloud Building Files](/Examples/Docker_Examples#nextcloud-example)
+### Architecture Overview
 
-```css
-     - docker-compose.yml
-     - supervisord.conf
-     - nextcloud.ini
-     - Dockerfile
-     - cron.sh
-     - .collabora.env #Add if you want to use collabora and office on nextcloud
+```
+Internet → Reverse Proxy → Nextcloud (Port 9111) → MariaDB (Port 3306)
+                                    ↓
+                              Go-VOD (Hardware Acceleration)
+                                    ↓
+                              Redis (Caching)
+                                    ↓
+                              Collabora (Office Suite)
 ```
 
-it will look like this when done
+### Key Benefits
 
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/96ad2a28-21f0-4bbe-8590-34dae68b1304)
+- **Professional Photo Management**: Enterprise-grade photo organization and AI features
+- **Hardware Acceleration**: GPU-powered video transcoding for optimal performance
+- **Self-Hosted Privacy**: Complete control over your data and privacy
+- **Scalable Architecture**: Docker-based deployment for easy scaling
+- **Enterprise Security**: Advanced security features and access controls
+- **Collaboration Ready**: Built-in office suite and sharing capabilities
 
-3. We need to run our initial setup of nextcloud to do this we need to edit our docker-compose as seen in the video on youtube
-4. Once we have edited this we have to wait for initial configurations and once it says loaded we can connect to localhost:9111
-5. Set your Administrative Username for the Admin Account. Set your password for the admin account.
-6. set your data directory to wherever you want your images/videos to be placed.
-7. Set your mysql and database user and database password.
-8. Set your DB from localhost to db:3306
-9. Once all the categories are filled out click install. **(NOTE): Installation may take upwards of 15-20 minutes.**
-10. Once installed we need to go to Apps and install Memories
+## Prerequisites
 
-**Enable Go-Vod:**
+Before beginning the installation, ensure your system meets all requirements:
 
-1. Now that Memories is installed we need to activate the go-vod in the compose for our nvidia GPU
-2. It Should look like below once we uncomment the go-vod section
+### System Requirements
 
-```css
+#### Minimum Requirements
+- **Operating System**: Windows 10/11, Linux, or macOS with Docker support
+- **RAM**: 8GB system memory (16GB+ recommended)
+- **Storage**: 50GB available disk space (SSD recommended)
+- **Processor**: 64-bit multi-core processor (4+ cores recommended)
+- **GPU**: Optional but recommended for hardware acceleration
+
+#### Recommended Requirements
+- **Operating System**: Linux (Ubuntu 22.04 LTS) or Windows 11 Pro
+- **RAM**: 32GB+ system memory for large photo libraries
+- **Storage**: NVMe SSD with 500GB+ available space
+- **Processor**: Modern multi-core processor (8+ cores)
+- **GPU**: NVIDIA GTX 1060 or better for hardware acceleration
+- **Network**: Gigabit ethernet for optimal performance
+
+### Hardware Acceleration Support
+
+| GPU Type | Supported | Transcoding | Notes |
+|----------|-----------|-------------|-------|
+| **NVIDIA GTX 10xx+** | ✅ Yes | NVENC/NVDEC | Recommended |
+| **NVIDIA RTX Series** | ✅ Yes | NVENC/NVDEC | Best Performance |
+| **Intel Quick Sync** | ✅ Yes | VA-API | Good Performance |
+| **AMD GPU** | ⚠️ Limited | VA-API | Basic Support |
+| **CPU Only** | ✅ Yes | Software | Slower Performance |
+
+### Software Prerequisites
+
+- **Docker Desktop**: Latest version with Docker Compose
+- **Git**: For configuration file management
+- **Text Editor**: VS Code or similar for configuration editing
+- **Web Browser**: Modern browser for Nextcloud interface
+- **Domain Name**: For production deployment (optional for development)
+
+### Network Requirements
+
+- **Port 9111**: Nextcloud web interface
+- **Port 9980**: Collabora Office (optional)
+- **Port 3306**: MariaDB (internal only)
+- **Port 6379**: Redis (internal only)
+- **Port 47788**: Go-VOD transcoding service (internal only)
+
+## Installation Process
+
+### Step 1: Environment Preparation
+
+#### Create Project Directory
+
+```bash
+# Create Nextcloud project directory
+mkdir -p C:\Tools\Nextcloud
+cd C:\Tools\Nextcloud
+
+# Create required subdirectories
+mkdir -p db data config
+```
+
+#### Verify Docker Installation
+
+```bash
+# Verify Docker is running
+docker --version
+docker-compose --version
+
+# Test Docker functionality
+docker run hello-world
+
+# Check available resources
+docker system info
+```
+
+### Step 2: Configuration Files Setup
+
+#### Create Docker Compose Configuration
+
+Create `docker-compose.yml`:
+
+```yaml
 name: nextcloud
 
 services:
   db:
     image: mariadb:10.11
-    container_name: mariadb
+    container_name: nextcloud-mariadb
     restart: always
     command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
     volumes:
-      - C:\Tools\Nextcloud\db:/var/lib/mysql
+      - ./db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=SQLROOTPASSWORD
-      - MYSQL_PASSWORD=MYSQLPASSOWRD
+      - MYSQL_ROOT_PASSWORD=SecureRootPassword123!
+      - MYSQL_PASSWORD=NextcloudPassword123!
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
+    networks:
+      - nextcloud-network
+
+  redis:
+    container_name: nextcloud-redis
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning --requirepass RedisPassword123!
+    volumes:
+      - ./redis:/data
+    networks:
+      - nextcloud-network
+
   app:
-    image: bankaitech/nextcloud:latest
+    image: nextcloud:28-apache
+    container_name: nextcloud-app
     restart: always
     ports:
-      - 9111:80
-    links:
+      - "9111:80"
+    depends_on:
       - db
+      - redis
     volumes:
-      - J:/Nextcloud:/data
-      - J:/Nextcloud:/var/www/html
+      - ./data:/var/www/html
+      - ./config:/var/www/html/config
+      - /path/to/your/photos:/data/photos
     environment:
-      - MYSQL_DPASSWORD=MYSQLPASSWORD
+      - MYSQL_PASSWORD=NextcloudPassword123!
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
       - MYSQL_HOST=db
+      - REDIS_HOST=redis
+      - REDIS_HOST_PASSWORD=RedisPassword123!
+      - NEXTCLOUD_ADMIN_USER=admin
+      - NEXTCLOUD_ADMIN_PASSWORD=AdminPassword123!
+      - NEXTCLOUD_TRUSTED_DOMAINS=localhost yourdomain.com
+    networks:
+      - nextcloud-network
+
   cron:
-    image: bankaitech/nextcloud:latest
-    container_name: cron
+    image: nextcloud:28-apache
+    container_name: nextcloud-cron
     restart: always
     volumes:
-      -  J:/Nextcloud:/var/www/html:z
+      - ./data:/var/www/html
+      - ./config:/var/www/html/config
     depends_on:
       - db
       - redis
     entrypoint: /cron.sh
-  redis:
-    container_name: redis
-    image: redis:latest
-    expose:
-      - 6379
-    command: redis-server --save 60 1 --loglevel warning
-    restart: always
-  #ONLY REMOVE THE # FOR HWA IF YOU HAVE A GPU AND WANT TO USE MEMORIES APP INSIDE NEXTCLOUD
+    networks:
+      - nextcloud-network
+
+  # Hardware-accelerated video transcoding
   go-vod:
-    image: radialapps/go-vod
-    container_name: go_vod
+    image: radialapps/go-vod:latest
+    container_name: nextcloud-go-vod
     restart: always
     depends_on:
       - app
-#    devices:
-#      - /dev/dri:/dev/dri # VA-API (omit for NVENC)
     environment:
-      - NEXTCLOUD_HOST=https://NEXTCLOUD.DOMAIN.COM
-      - NEXTCLOUD_ALLOW_INSECURE=1 # (self-signed certs or no HTTPS)
+      - NEXTCLOUD_HOST=http://app
+      - NEXTCLOUD_ALLOW_INSECURE=1
     volumes:
-      #this is where you want your files stored on nextcloud
-      - J:/Nextcloud:/data
-      #this is where your configs and all nextcloud system files are stored
-      - J:/Nextcloud:/var/www/html      
-      #only enable if you have a nvidia 1xxx or later and want to use it to transcode
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - driver: nvidia
-            count: 1
-            capabilities: [gpu]
+      - ./data:/var/www/html
+      - /path/to/your/photos:/data/photos
+    # Uncomment for NVIDIA GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #       - driver: nvidia
+    #         count: 1
+    #         capabilities: [gpu]
+    # Uncomment for Intel/AMD GPU support
+    # devices:
+    #   - /dev/dri:/dev/dri
+    networks:
+      - nextcloud-network
+
+  # Optional: Collabora Office
   collabora:
-    container_name: collabora
-    hostname: collabora
-    privileged: true
-    tty: true
+    container_name: nextcloud-collabora
+    image: collabora/code:latest
+    restart: always
     ports:
-      - 9980:9980
+      - "9980:9980"
     cap_add:
       - MKNOD
-    image: collabora/code:latest
-    env_file:
-      - .collabora.env
-    restart: always
-```
+    environment:
+      - domain=yourdomain.com
+      - username=admin
+      - password=CollaboraPassword123!
+      - DONT_GEN_SSL_CERT=1
+    networks:
+      - nextcloud-network
 
-3. Now we can run 
+networks:
+  nextcloud-network:
+    driver: bridge
 
-```css
-docker compose up -d --force-recreate --remove-orphans
-```
-
- to recreate the container and remove old resources
-5. We need to go into Adminstrative Settings ---> Memories ---> Binary Path and add in the connection address this
-
-Bind Address
-
-```css
-127.0.0.1:47788
-```
-
-Connection Adress
-
-```css
-go-vod:47788
-``` 
-
-
-like so 
-
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4477cd8b-0560-4d07-8086-eb547680955a)
-
-4. Now we can see if the hwa is working. So we need to go to Admin Settings on nextcloud ---> memories -->  make the transcoding section look like below
-
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4712d296-85aa-4a2e-b91b-004e19b4cf4e)
-
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/48a74e59-a230-42ff-bd9d-cb7ce4845012)
-
-5. Now that thats done. We need to test so input a video inside nextcloud photos or any directory and try to play it.
-You should see two options when you select the gear icon
-
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4f4b8d9b-df40-456a-95cf-e0c4bf556aca)
-if you see this it is working correctly. Congrats!
-
-You can also check docker desktop go-vod container and see if the logs say something alike to this
-
-
-```
-2023-12-19 00:12:38 2023/12/19 06:12:38 33w0pebs2le0-480p: /usr/local/bin/ffmpeg -loglevel warning -hwaccel cuda -i /var/www/html/data/__groupfolders/2/20231216_160438.mp4 -copyts -fflags +genpts -vf "format=nv12|cuda,hwupload,scale_cuda=force_original_aspect_ratio=decrease:passthrough=0:w=854:h=854" -map "0:v:0" "-c:v" h264_nvenc -preset p6 -tune ll -rc vbr -rc-lookahead 30 -cq 42 -temporal-aq 1 -map "0:a:0?" "-c:a" aac -ac 1 -start_number 0 -avoid_negative_ts disabled -f hls -hls_flags split_by_time -hls_time 3 -hls_segment_type mpegts -hls_segment_filename /tmp/go-vod/33w0pebs2le0-1296945068/480p-%06d.ts -force_key_frames "expr:gte(t,n_forced*3)" -
-2023-12-19 00:12:40 2023/12/19 06:12:40 33w0pebs2le0-480p: recv 480p-000000.ts
-2023-12-19 00:12:41 2023/12/19 06:12:41 33w0pebs2le0-480p: recv 480p-000001.ts
-2023-12-19 00:12:42 2023/12/19 06:12:42 33w0pebs2le0-480p: recv 480p-000002.ts
-2023-12-19 00:12:43 2023/12/19 06:12:43 ffmpeg-error: More than 1000 frames duplicated
-2023-12-19 00:12:44 2023/12/19 06:12:44 33w0pebs2le0-480p: recv 480p-000003.ts
-2023-12-19 00:12:45 2023/12/19 06:12:45 33w0pebs2le0-480p: recv 480p-000004.ts
-2023-12-19 00:12:45 2023/12/19 06:12:45 33w0pebs2le0-480p: goal satisfied: 4
-2023-12-19 00:12:46 2023/12/19 06:12:46 33w0pebs2le0-480p: resuming transcoding
-2023-12-19 00:12:48 2023/12/19 06:12:48 33w0pebs2le0-480p: recv 480p-000005.ts
-2023-12-19 00:12:49 2023/12/19 06:12:49 33w0pebs2le0-480p: recv 480p-000006.ts
-2023-12-19 00:12:50 2023/12/19 06:12:50 33w0pebs2le0-480p: recv 480p-000007.ts
-2023-12-19 00:12:51 2023/12/19 06:12:51 33w0pebs2le0-480p: recv 480p-000008.ts
-2023-12-19 00:12:51 2023/12/19 06:12:51 33w0pebs2le0-480p: goal satisfied: 8
-```
-
-  </TabItem>
-
-  <TabItem value="Building the Custom Dockerfile" label="Building the Custom Dockerfile" default>
-
-**We will now build our custom repo for with ffmpeg previews and facial recognition**
-1. Open Terminal/Powershell and run inside C:\Tools\Nextcloud
-
-```css
-docker build . -t nextcloud-apache-ffmpeg
-```
-
-2. It should start building the custom repo
-3. Once done we need to edit our docker-compose.yml to use that repo so edit it like so.
-
-
-```
-name: nextcloud
-
-services:
+volumes:
   db:
-    image: mariadb:10.11
-    container_name: mariadb
-    restart: always
-    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
-    volumes:
-      - C:\Tools\Nextcloud\db:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=SQLROOTPASSWORD
-      - MYSQL_PASSWORD=MYSQLPASSOWRD
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-  app:
-    image: nextcloud-apache-ffmpeg
-    image: bankaitech/nextcloud:latest
-    container_name: nextcloud
-    restart: always
-    ports:
-      - 9111:80
-    links:
-      - db
-    volumes:
-      - J:/Nextcloud:/data
-      - J:/Nextcloud:/var/www/html
-    environment:
-      - MYSQL_DPASSWORD=MYSQLPASSWORD
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-      - MYSQL_HOST=db
-  cron:
-    image: bankaitech/nextcloud:latest
-    container_name: cron
-    restart: always
-    volumes:
-      -  J:/Nextcloud:/var/www/html:z
-    depends_on:
-      - db
-      - redis
-    entrypoint: /cron.sh
   redis:
-    container_name: redis
-    image: redis:latest
-    expose:
-      - 6379
-    command: redis-server --save 60 1 --loglevel warning
-    restart: always
-  #ONLY REMOVE THE # FOR HWA IF YOU HAVE A GPU AND WANT TO USE MEMORIES APP INSIDE NEXTCLOUD
-  go-vod:
-    image: radialapps/go-vod
-    restart: always
-    depends_on:
-      - app
-#    devices:
-#      - /dev/dri:/dev/dri # VA-API (omit for NVENC)
-    environment:
-      - NEXTCLOUD_HOST=https://NEXTCLOUD.DOMAIN.COM
-      - NEXTCLOUD_ALLOW_INSECURE=1 # (self-signed certs or no HTTPS)
-    volumes:
-      #this is where you want your files stored on nextcloud
-      - J:/Nextcloud:/data
-      #this is where your configs and all nextcloud system files are stored
-      - J:/Nextcloud:/var/www/html      
-      #only enable if you have a nvidia 1xxx or later and want to use it to transcode
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - driver: nvidia
-            count: 1
-            capabilities: [gpu]
-  collabora:
-    container_name: collabora
-    hostname: collabora
-    privileged: true
-    tty: true
-    ports:
-      - 9980:9980
-    cap_add:
-      - MKNOD
-    image: collabora/code:latest
-    env_file:
-      - .collabora.env
-    restart: always
+  data:
+  config:
 ```
 
-We are only changing this line for others who changed mysql password and other things
-From
+#### Create Custom Dockerfile (Optional)
 
-```css
-  app:
-    image: nextcloud:production
+For advanced features like facial recognition, create `Dockerfile`:
+
+```dockerfile
+FROM nextcloud:28-apache
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libmagickwand-dev \
+    libgmp3-dev \
+    libbz2-dev \
+    python3 \
+    python3-pip \
+    python3-setuptools \
+    python3-dev \
+    dlib-data \
+    libdlib-dev \
+    libblas-dev \
+    liblapack-dev \
+    libatlas-base-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions for enhanced functionality
+RUN docker-php-ext-install \
+    gmp \
+    bz2
+
+# Install ImageMagick PHP extension
+RUN pecl install imagick && docker-php-ext-enable imagick
+
+# Install Python dependencies for facial recognition
+RUN pip3 install \
+    numpy \
+    dlib \
+    face_recognition \
+    pillow
+
+# Copy custom configuration files
+COPY nextcloud.ini /usr/local/etc/php/conf.d/nextcloud.ini
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY cron.sh /cron.sh
+
+# Set proper permissions
+RUN chmod +x /cron.sh
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost/status.php || exit 1
 ```
 
-to 
+#### Create PHP Configuration
 
-```css
-  app:
-    image: nextcloud-apache-ffmpeg
+Create `nextcloud.ini`:
+
+```ini
+; Nextcloud PHP Configuration
+memory_limit = 2G
+upload_max_filesize = 10G
+post_max_size = 10G
+max_input_time = 3600
+max_execution_time = 3600
+max_file_uploads = 100
+
+; OPcache settings
+opcache.enable = 1
+opcache.enable_cli = 1
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files = 10000
+opcache.memory_consumption = 256
+opcache.save_comments = 1
+opcache.revalidate_freq = 2
+
+; Redis session handling
+session.save_handler = redis
+session.save_path = "tcp://redis:6379?auth=RedisPassword123!"
+
+; Security settings
+expose_php = Off
+display_errors = Off
+log_errors = On
+error_log = /var/log/php_errors.log
 ```
 
-5. Once this is done we can rebuild and docker-compose again by typing `docker compose up -d --force-recreate --remove-orphans`
-6. This time we should now have ffmpeg and facial recognition now ready.
-7. So go into the Admin Settings and go to Memories then this
+#### Create Supervisor Configuration
 
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/e0957e44-90cf-4d90-8a75-07fb90c5fae8)
+Create `supervisord.conf`:
 
-8. to find ffmpeg location go to docker find your nextcloud app and click on the 3 dots next to our app and select terminal like so
+```ini
+[supervisord]
+nodaemon=true
+user=root
+logfile=/var/log/supervisor/supervisord.log
+pidfile=/var/run/supervisord.pid
 
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/fe8e1ca7-4026-467c-b1f9-7478e2bd352a)
+[program:apache2]
+command=/usr/sbin/apache2ctl -D FOREGROUND
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=false
+startretries=0
 
-9. type 2 commands to give us our ffmpeg and ffprobe binary's
-
-```css
-whereis ffmpeg
+[program:cron]
+command=/usr/sbin/cron -f
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=true
 ```
 
+#### Create Cron Script
 
-```css
-whereis ffprobe
+Create `cron.sh`:
+
+```bash
+#!/bin/bash
+set -eu
+
+exec busybox crond -f -l 0 -L /dev/stdout
 ```
 
-10. Copy the path into those empty ffmpeg paths box and ffprobe path box.
-11. Once you click out of the box it should update.
+### Step 3: Initial Deployment
 
-**Installing Facial Recognition:**
+#### Build Custom Image (if using Dockerfile)
 
-1. Now we need 2 more apps from the app store. So we go to Administrative Panel --> Apps ---> Recognize
-Adminstrative Panel ---> Apps ---> Preview Generator
-2. Once this is done we need to enable recognize inside the Adminstrative Settings ---> Recognize and enable the slider
+```bash
+# Build custom Nextcloud image
+docker build -t nextcloud-enhanced:latest .
 
-![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/c65726de-201a-42ee-befc-b99d67e0997c)
-
-</TabItem>
-
-  <TabItem value="Reverse Proxy Setup for Nextcloud" label="Reverse Proxy Setup for Nextcloud">
-
-**Reverse Proxy Setup for Nextcloud:**
-
-1. Open Your Nextcloud /var/html/www directory. For me thats in J:/Nextcloud. If you do not know where this is go to your Docker-Compose.yml and look for this line
-
- ![image](https://i.imgur.com/4Vxm8aJ.png)
-
-The Folder Should Look Like this!
-
-![image](https://i.imgur.com/ISfyeXl.png)
-
-  2. Go into Config Folder and Open Config.php
-
-![image](https://i.imgur.com/uV6zZk8.png)
-
-  3. Add these lines below
-
-  ```css
-  'trusted_domains' => 
-  array (
-    0 => 'NEXTCLOUD.DOMAIN.COM',
-#    1 => 'OFFICE.DOMAIN.COM', #UCOMMENT THIS IF YOU HAVE ADDED collabora TO YOUR INSTALL
-  ),
-  'trusted_proxies' => 
-  array (
-    0 => '127.0.0.1', #adding localhost for local use
-    1 => '192.168.x.xxx', #add your ip for your local machine here
-    2 => '172.19.0.1', #This is our docker internal ip
-  ),
-  'forwarded_for_headers' => 
-  array (
-    0 => 'HTTP_X_FORWARDED_FOR',
-  ),
-  ```
-
-it should look like this
-
-![image](https://i.imgur.com/SgJCQ9i.png)
-
-  4. Now SAVE and run the commands below in Powershell
-
-```css
-docker compose down
+# Update docker-compose.yml to use custom image
+# Change: image: nextcloud:28-apache
+# To: image: nextcloud-enhanced:latest
 ```
 
-```css
-docker compose up -d
+#### Deploy Nextcloud Stack
+
+```bash
+# Start the Nextcloud stack
+docker-compose up -d
+
+# Monitor deployment progress
+docker-compose logs -f
+
+# Verify all containers are running
+docker-compose ps
 ```
 
+#### Initial Setup Verification
 
+```bash
+# Check container health
+docker-compose exec app php occ status
 
-</TabItem>
+# Verify database connection
+docker-compose exec db mysql -u nextcloud -p nextcloud -e "SHOW TABLES;"
 
-</Tabs>
+# Test Redis connection
+docker-compose exec redis redis-cli -a RedisPassword123! ping
+```
+
+## Nextcloud Configuration
+
+### Step 4: Initial Nextcloud Setup
+
+#### Access Nextcloud Web Interface
+
+1. **Open your web browser** and navigate to `http://localhost:9111`
+2. **Wait for initial setup** (may take 5-10 minutes on first launch)
+3. **Complete the setup wizard**:
+   - **Admin Username**: Choose a secure admin username (avoid 'admin')
+   - **Admin Password**: Use a strong password (minimum 12 characters)
+   - **Data Directory**: `/var/www/html/data` (default)
+   - **Database**: Configure MariaDB connection
+     - **Database User**: `nextcloud`
+     - **Database Password**: `NextcloudPassword123!`
+     - **Database Name**: `nextcloud`
+     - **Database Host**: `db:3306`
+
+#### Verify Initial Installation
+
+```bash
+# Check Nextcloud status
+docker-compose exec app php occ status
+
+# Verify database tables
+docker-compose exec app php occ db:convert-filecache-bigint
+
+# Run initial maintenance
+docker-compose exec app php occ maintenance:update:htaccess
+```
+
+### Step 5: Install and Configure Memories App
+
+#### Install Memories from App Store
+
+1. **Navigate to Apps** in Nextcloud admin interface
+2. **Search for "Memories"** in the app store
+3. **Install the Memories app**
+4. **Enable the app** after installation
+
+#### Install Additional Required Apps
+
+```bash
+# Install apps via command line (alternative method)
+docker-compose exec app php occ app:install memories
+docker-compose exec app php occ app:install recognize
+docker-compose exec app php occ app:install preview_generator
+
+# Enable the apps
+docker-compose exec app php occ app:enable memories
+docker-compose exec app php occ app:enable recognize
+docker-compose exec app php occ app:enable preview_generator
+```
+
+### Step 6: Configure Hardware Acceleration
+
+#### Enable Go-VOD for Video Transcoding
+
+1. **Update docker-compose.yml** to enable Go-VOD service:
+
+```yaml
+# Uncomment the go-vod service in your docker-compose.yml
+go-vod:
+  image: radialapps/go-vod:latest
+  container_name: nextcloud-go-vod
+  restart: always
+  depends_on:
+    - app
+  environment:
+    - NEXTCLOUD_HOST=http://app
+    - NEXTCLOUD_ALLOW_INSECURE=1
+  volumes:
+    - ./data:/var/www/html
+    - /path/to/your/photos:/data/photos
+  # For NVIDIA GPU support
+  deploy:
+    resources:
+      reservations:
+        devices:
+        - driver: nvidia
+          count: 1
+          capabilities: [gpu]
+  # For Intel/AMD GPU support (alternative)
+  # devices:
+  #   - /dev/dri:/dev/dri
+  networks:
+    - nextcloud-network
+```
+
+2. **Restart the stack** with hardware acceleration:
+
+```bash
+# Recreate containers with new configuration
+docker-compose up -d --force-recreate --remove-orphans
+
+# Verify Go-VOD is running
+docker-compose logs go-vod
+```
+
+#### Configure Memories for Hardware Acceleration
+
+1. **Navigate to Admin Settings** → **Memories**
+2. **Configure Go-VOD connection**:
+   - **Bind Address**: `127.0.0.1:47788`
+   - **Connection Address**: `go-vod:47788`
+
+3. **Configure transcoding settings**:
+   - **Enable hardware acceleration**: ✅
+   - **Video codec**: H.264 (NVENC for NVIDIA, VA-API for Intel/AMD)
+   - **Quality preset**: Balanced
+   - **Resolution**: 1080p, 720p, 480p
+
+#### Verify Hardware Acceleration
+
+```bash
+# Check Go-VOD logs for GPU usage
+docker-compose logs go-vod | grep -i "cuda\|nvenc\|vaapi"
+
+# Test video transcoding
+# Upload a video file and check transcoding in Memories app
+```
+
+### Step 7: Configure Facial Recognition
+
+#### Install Recognition Dependencies
+
+If using custom Dockerfile with facial recognition:
+
+```bash
+# Build custom image with facial recognition
+docker build -t nextcloud-enhanced:latest .
+
+# Update docker-compose.yml to use custom image
+# Change: image: nextcloud:28-apache
+# To: image: nextcloud-enhanced:latest
+
+# Recreate with custom image
+docker-compose up -d --force-recreate
+```
+
+#### Configure Recognition Settings
+
+1. **Navigate to Admin Settings** → **Recognize**
+2. **Enable facial recognition**: ✅
+3. **Configure recognition settings**:
+   - **Model**: Face recognition model
+   - **Minimum confidence**: 0.7 (recommended)
+   - **Maximum faces per image**: 10
+
+#### Initialize Facial Recognition
+
+```bash
+# Run initial face recognition scan
+docker-compose exec app php occ recognize:classify
+
+# Monitor recognition progress
+docker-compose exec app php occ recognize:status
+```
+
+### Step 8: Performance Optimization
+
+#### Configure Preview Generation
+
+```bash
+# Configure preview generation for better performance
+docker-compose exec app php occ config:app:set preview max_x --value 2048
+docker-compose exec app php occ config:app:set preview max_y --value 2048
+docker-compose exec app php occ config:app:set preview jpeg_quality --value 60
+
+# Generate previews for existing files
+docker-compose exec app php occ preview:generate-all
+```
+
+#### Optimize Database
+
+```bash
+# Add database indices for better performance
+docker-compose exec app php occ db:add-missing-indices
+
+# Convert to big int for large installations
+docker-compose exec app php occ db:convert-filecache-bigint
+```
+
+#### Configure Caching
+
+```bash
+# Configure Redis caching
+docker-compose exec app php occ config:system:set redis host --value="redis"
+docker-compose exec app php occ config:system:set redis port --value=6379 --type=integer
+docker-compose exec app php occ config:system:set redis password --value="RedisPassword123!"
+docker-compose exec app php occ config:system:set memcache.local --value="\\OC\\Memcache\\APCu"
+docker-compose exec app php occ config:system:set memcache.distributed --value="\\OC\\Memcache\\Redis"
+docker-compose exec app php occ config:system:set memcache.locking --value="\\OC\\Memcache\\Redis"
+```
+
+## Security Configuration
+
+### Step 9: Security Hardening
+
+#### Configure Trusted Domains
+
+```bash
+# Add trusted domains for external access
+docker-compose exec app php occ config:system:set trusted_domains 0 --value="localhost"
+docker-compose exec app php occ config:system:set trusted_domains 1 --value="yourdomain.com"
+docker-compose exec app php occ config:system:set trusted_domains 2 --value="www.yourdomain.com"
+```
+
+#### Configure Reverse Proxy Support
+
+```bash
+# Configure trusted proxies
+docker-compose exec app php occ config:system:set trusted_proxies 0 --value="127.0.0.1"
+docker-compose exec app php occ config:system:set trusted_proxies 1 --value="172.18.0.0/16"
+
+# Configure forwarded headers
+docker-compose exec app php occ config:system:set forwarded_for_headers 0 --value="HTTP_X_FORWARDED_FOR"
+docker-compose exec app php occ config:system:set forwarded_for_headers 1 --value="HTTP_X_FORWARDED_HOST"
+```
+
+#### Enable Security Features
+
+```bash
+# Force HTTPS (for production)
+docker-compose exec app php occ config:system:set overwriteprotocol --value="https"
+
+# Enable two-factor authentication
+docker-compose exec app php occ app:install twofactor_totp
+docker-compose exec app php occ app:enable twofactor_totp
+
+# Configure security headers
+docker-compose exec app php occ config:system:set overwrite.cli.url --value="https://yourdomain.com"
+```
+
+### Step 10: Backup Configuration
+
+#### Configure Automated Backups
+
+Create backup script `backup-nextcloud.sh`:
+
+```bash
+#!/bin/bash
+set -e
+
+# Configuration
+BACKUP_DIR="/backups/nextcloud"
+DATE=$(date +%Y%m%d_%H%M%S)
+BACKUP_NAME="nextcloud_backup_$DATE"
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
+
+# Stop Nextcloud (optional, for consistency)
+docker-compose exec app php occ maintenance:mode --on
+
+# Backup database
+docker-compose exec db mysqldump -u nextcloud -pNextcloudPassword123! nextcloud > "$BACKUP_DIR/${BACKUP_NAME}_database.sql"
+
+# Backup Nextcloud data
+tar -czf "$BACKUP_DIR/${BACKUP_NAME}_data.tar.gz" -C ./data .
+
+# Backup configuration
+tar -czf "$BACKUP_DIR/${BACKUP_NAME}_config.tar.gz" -C ./config .
+
+# Resume Nextcloud
+docker-compose exec app php occ maintenance:mode --off
+
+# Cleanup old backups (keep last 7 days)
+find "$BACKUP_DIR" -name "nextcloud_backup_*" -mtime +7 -delete
+
+echo "Backup completed: $BACKUP_NAME"
+```
+
+#### Schedule Automated Backups
+
+```bash
+# Make backup script executable
+chmod +x backup-nextcloud.sh
+
+# Add to crontab for daily backups at 2 AM
+crontab -e
+# Add: 0 2 * * * /path/to/backup-nextcloud.sh
+```
+
+## Monitoring and Maintenance
+
+### Step 11: Monitoring Setup
+
+#### Health Monitoring
+
+```bash
+# Create health check script
+cat > health-check.sh << 'EOF'
+#!/bin/bash
+
+# Check container health
+docker-compose ps
+
+# Check Nextcloud status
+docker-compose exec app php occ status
+
+# Check disk usage
+df -h
+
+# Check memory usage
+free -h
+
+# Check Go-VOD transcoding
+docker-compose logs --tail=10 go-vod
+EOF
+
+chmod +x health-check.sh
+```
+
+#### Log Monitoring
+
+```bash
+# Monitor Nextcloud logs
+docker-compose logs -f app
+
+# Monitor database logs
+docker-compose logs -f db
+
+# Monitor Go-VOD transcoding logs
+docker-compose logs -f go-vod
+
+# Check system logs
+docker-compose exec app tail -f /var/www/html/data/nextcloud.log
+```
+
+### Step 12: Maintenance Tasks
+
+#### Regular Maintenance Commands
+
+```bash
+# Update file cache
+docker-compose exec app php occ files:scan --all
+
+# Clean up old versions and trash
+docker-compose exec app php occ versions:cleanup
+docker-compose exec app php occ trashbin:cleanup --all-users
+
+# Update preview cache
+docker-compose exec app php occ preview:pre-generate
+
+# Optimize database
+docker-compose exec app php occ db:add-missing-indices
+```
+
+#### Update Procedures
+
+```bash
+# Update Nextcloud (backup first!)
+docker-compose pull
+docker-compose up -d
+
+# Run upgrade process
+docker-compose exec app php occ upgrade
+
+# Update apps
+docker-compose exec app php occ app:update --all
+```
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Issue 1: Go-VOD Not Working
+
+**Symptoms:**
+- Video transcoding fails
+- No hardware acceleration
+- Go-VOD container not starting
+
+**Solutions:**
+
+```bash
+# Check GPU availability
+nvidia-smi  # For NVIDIA GPUs
+lspci | grep VGA  # For all GPUs
+
+# Verify Docker GPU support
+docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+
+# Check Go-VOD logs
+docker-compose logs go-vod
+
+# Restart Go-VOD service
+docker-compose restart go-vod
+```
+
+#### Issue 2: Facial Recognition Not Working
+
+**Symptoms:**
+- No faces detected
+- Recognition app errors
+- Missing dependencies
+
+**Solutions:**
+
+```bash
+# Check recognition status
+docker-compose exec app php occ recognize:status
+
+# Reinstall recognition models
+docker-compose exec app php occ recognize:download-models
+
+# Run manual classification
+docker-compose exec app php occ recognize:classify --force
+```
+
+#### Issue 3: Performance Issues
+
+**Diagnostic Steps:**
+
+```bash
+# Check resource usage
+docker stats
+
+# Monitor database performance
+docker-compose exec db mysql -u nextcloud -p -e "SHOW PROCESSLIST;"
+
+# Check Redis performance
+docker-compose exec redis redis-cli info stats
+
+# Analyze slow queries
+docker-compose exec app php occ log:file --lines=100 | grep -i slow
+```
+
+**Optimization Solutions:**
+
+```bash
+# Increase PHP memory limit
+docker-compose exec app php -d memory_limit=4G occ files:scan --all
+
+# Optimize database
+docker-compose exec app php occ db:add-missing-primary-keys
+docker-compose exec app php occ db:convert-filecache-bigint
+
+# Clear caches
+docker-compose exec app php occ maintenance:repair --include-expensive
+```
+
+## Production Deployment
+
+### Step 13: Production Considerations
+
+#### Domain and SSL Configuration
+
+1. **Configure domain in docker-compose.yml**:
+   ```yaml
+   environment:
+     - NEXTCLOUD_TRUSTED_DOMAINS=yourdomain.com,www.yourdomain.com
+   ```
+
+2. **Set up reverse proxy** (Nginx/Caddy):
+   ```nginx
+   server {
+       listen 443 ssl http2;
+       server_name yourdomain.com;
+       
+       location / {
+           proxy_pass http://localhost:9111;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+   }
+   ```
+
+#### Performance Scaling
+
+```bash
+# Scale for production
+docker-compose up -d --scale app=2
+
+# Configure load balancing
+# Use external load balancer (Nginx, HAProxy, etc.)
+```
+
+#### Security Checklist
+
+- ✅ **Strong passwords** for all accounts
+- ✅ **Two-factor authentication** enabled
+- ✅ **HTTPS only** in production
+- ✅ **Regular security updates**
+- ✅ **Firewall configuration**
+- ✅ **Regular backups** tested and verified
+- ✅ **Log monitoring** and alerting
+- ✅ **Access controls** properly configured
+
+---
+
+## Summary
+
+You have successfully installed and configured a complete Nextcloud & Memories system with:
+
+✅ **Professional Nextcloud installation** with Docker containerization  
+✅ **Memories app** with AI-powered photo management and timeline view  
+✅ **Hardware acceleration** with GPU-powered video transcoding  
+✅ **Facial recognition** with automated photo categorization  
+✅ **Enterprise security** with proper authentication and access controls  
+✅ **Performance optimization** with Redis caching and preview generation  
+✅ **Monitoring and maintenance** procedures for production reliability  
+✅ **Backup strategies** with automated data protection  
+
+Your Nextcloud & Memories installation is now ready for professional photo and video management with enterprise-level features and performance.
 
 <BuyMeACoffeeButton />
