@@ -7,7 +7,7 @@ interface BuyMeACoffeeButtonProps {
 const BuyMeACoffeeButton: React.FC<BuyMeACoffeeButtonProps> = ({ className }) => {
   return (
     <a href="https://buymeacoffee.com/demonwarriortech" className={className}>
-      <img src="/img/buymeacoffee-button.svg" alt="Buy me a beer" />
+      <img src="/img/buymeacoffee-button.svg" alt="Buy me pc parts" />
     </a>
   );
 };
