@@ -104,16 +104,16 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Documented-Tutorial',
-                to: '/category/Documented-Tutorials-',
+                label: 'Documented Tutorials',
+                to: '/category/documented-tutorials',
               },
               {
                 label: 'Examples',
-                to: '/category/Examples',
+                to: '/category/examples',
               },
               {
                 label: 'Jellyfin Extras',
-                to: '/category/Jellyfin-Extras',
+                to: '/category/jellyfin-extras',
               },
               {
                 label: 'Arr Self-Hosting',
