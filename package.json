@@ -21,7 +21,6 @@
     "@docusaurus/theme-search-algolia": "^3.8.1",
     "@docusaurus/tsconfig": "^3.8.1",
     "@mdx-js/react": "^3.1.0",
-    "@orama/plugin-docusaurus-v3": "^2.0.17",
     "clsx": "^2.1.1",
     "docusaurus-lunr-search": "^3.3.2",
     "prism-react-renderer": "^2.4.1",
