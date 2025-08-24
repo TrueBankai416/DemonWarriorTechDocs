@@ -264,6 +264,8 @@ docker run --network=host <image_name>
 
 #### Windows Firewall Configuration
 
+##### PowerShell Method (Advanced)
+
 ```powershell
 # Check if ports are blocked by Windows Firewall
 Test-NetConnection -ComputerName localhost -Port 80
@@ -280,6 +282,53 @@ Get-NetFirewallRule | Where-Object {$_.DisplayName -like "*Docker*"}
 # Disable Windows Firewall temporarily for testing (not recommended for production)
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 ```
+
+##### GUI Method (Step-by-Step)
+
+**If your Docker containers are not loading, follow these steps to allow apps through Windows Firewall:**
+
+1. **Go to Control Panel**
+2. **Search Firewall and Select Windows Defender Firewall**
+
+![image](https://user-images.githubusercontent.com/35183970/213559749-38c2c954-b6dc-410f-9a49-37e053009b5a.png)
+
+3. **Select Advanced Settings**
+
+![image](https://user-images.githubusercontent.com/35183970/213559824-42e45c0b-6fbf-40d9-a48b-ef207d2bb2ce.png)
+
+4. **Click Inbound Rules**
+
+![image](https://user-images.githubusercontent.com/35183970/213559889-d4b5babc-fd5f-4281-91e9-a1a3e76cc615.png)
+
+5. **Click New Rule**
+
+![image](https://user-images.githubusercontent.com/35183970/213559970-66286a1b-96bc-4f70-8723-fc38c68c3446.png)
+
+6. **Check Port**
+
+![image](https://user-images.githubusercontent.com/35183970/213560049-55e11cc7-2bfc-4e19-b9b0-d6a42fa47bc1.png)
+
+7. **Add TCP Ports 9000** **(If you haven't added Caddy ports yet, do so as well for 443, 80, 2019)**
+
+![image](https://user-images.githubusercontent.com/35183970/213560266-e7541f33-ccac-481d-b23a-4488f92d7373.png)
+
+8. **Leave Default Click Next**
+
+![image](https://user-images.githubusercontent.com/35183970/213560324-1f5967a7-99ea-4865-a6b3-dbfb13244b14.png)
+
+9. **Leave Default Click Next**
+
+![image](https://user-images.githubusercontent.com/35183970/213560399-7dde8eb0-20dd-4026-b4e5-040b0c981b31.png)
+
+10. **Name the rule whatever you want**
+
+![image](https://user-images.githubusercontent.com/35183970/213560483-4553e086-acef-46ae-8241-deb9c1a1f315.png)
+
+##### Port Checking
+
+**Checking Your Ports:**
+1. Go to https://portchecker.co/ and see if your port 443 and 80 are open.
+2. If they are not, you need to make sure your router connected to your modem has those ports port-forwarded for your computer hosting the services.
 
 #### Linux Firewall Configuration
 
