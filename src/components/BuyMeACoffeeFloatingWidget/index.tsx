@@ -29,11 +29,11 @@ const BuyMeACoffeeFloatingWidget: React.FC = () => {
         border: 'none',
         textDecoration: 'none',
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={e => {
         e.currentTarget.style.transform = 'scale(1.05)';
         e.currentTarget.style.backgroundColor = '#4F6FEF';
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={e => {
         e.currentTarget.style.transform = 'scale(1)';
         e.currentTarget.style.backgroundColor = '#5F7FFF';
       }}

@@ -1,8 +1,8 @@
-  {
-    "label": "Jellyfin Extras",
-    "position": 3,
-    "link": {
-      "type": "generated-index",
-      "description": "This will have my personal suite of self-hosted apps and recommendations"
-    }
+{
+  "label": "Jellyfin Extras",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "This will have my personal suite of self-hosted apps and recommendations"
   }
+}

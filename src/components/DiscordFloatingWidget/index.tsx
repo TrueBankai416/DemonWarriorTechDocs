@@ -29,11 +29,11 @@ const DiscordFloatingWidget: React.FC = () => {
         border: 'none',
         textDecoration: 'none',
       }}
-      onMouseEnter={(e) => {
+      onMouseEnter={e => {
         e.currentTarget.style.transform = 'scale(1.05)';
         e.currentTarget.style.backgroundColor = '#677bc4';
       }}
-      onMouseLeave={(e) => {
+      onMouseLeave={e => {
         e.currentTarget.style.transform = 'scale(1)';
         e.currentTarget.style.backgroundColor = '#7289da';
       }}

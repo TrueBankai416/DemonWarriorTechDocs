@@ -1,13 +1,13 @@
-import React from 'react'
-import Footer from '@theme-original/Footer'
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import BuyMeACoffeeFloatingWidget from '@site/src/components/BuyMeACoffeeFloatingWidget'
-import DiscordFloatingWidget from '@site/src/components/DiscordFloatingWidget'
+import React from 'react';
+import Footer from '@theme-original/Footer';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import BuyMeACoffeeFloatingWidget from '@site/src/components/BuyMeACoffeeFloatingWidget';
+import DiscordFloatingWidget from '@site/src/components/DiscordFloatingWidget';
 
 export default function FooterWrapper(props) {
   const {
     siteConfig: { customFields },
-  } = useDocusaurusContext()
+  } = useDocusaurusContext();
 
   return (
     <>
@@ -15,5 +15,5 @@ export default function FooterWrapper(props) {
       <BuyMeACoffeeFloatingWidget />
       <Footer {...props} />
     </>
-  )
+  );
 }

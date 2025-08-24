@@ -1,8 +1,8 @@
 {
-    "label": "Docker",
-    "position": 3,
-    "link": {
-      "type": "generated-index",
-      "description": "Documentation and tutorials for Docker Desktop setup and troubleshooting"
-    }
+  "label": "Docker",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "Documentation and tutorials for Docker Desktop setup and troubleshooting"
   }
+}

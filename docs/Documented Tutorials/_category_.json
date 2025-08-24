@@ -1,8 +1,8 @@
 {
-    "label": "Documented Tutorials",
-    "position": 1,
-    "link": {
-      "type": "generated-index",
-      "description": "This will have written documentation on for tutorials"
-    }
+  "label": "Documented Tutorials",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "This will have written documentation on for tutorials"
   }
+}
