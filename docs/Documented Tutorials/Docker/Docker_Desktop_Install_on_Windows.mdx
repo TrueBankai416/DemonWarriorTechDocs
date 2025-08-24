@@ -1,171 +1,1146 @@
 ---
-slug: /
-title: Docker Desktop Install on Windows
+title: Complete Docker Desktop Installation Guide for Windows
+description: Comprehensive professional guide to installing and configuring Docker Desktop on Windows with WSL2, performance optimization, security best practices, and enterprise deployment
 sidebar_position: 2
 toc_min_heading_level: 2
 toc_max_heading_level: 6
-tags: [docker, windows, installation, tutorial, containers, wsl2]
+tags: [docker, windows, installation, tutorial, containers, wsl2, virtualization, enterprise, development]
 ---
 
 import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
-## Step 1: Enable Windows Features
+## Overview
 
-:::caution
-**Requirements Below**
-:::
+Docker Desktop is a comprehensive development platform that enables you to build, share, and run containerized applications on Windows. This guide provides complete instructions for installing Docker Desktop with WSL2 backend, including system preparation, optimization, security configuration, and troubleshooting.
 
-1. Check to See if Virtualization is enabled in your bios
+### What is Docker Desktop?
 
-2. Open Task Manager and See if Virtualization is running
+Docker Desktop is an integrated development environment that includes:
+- **Docker Engine**: Core containerization runtime
+- **Docker CLI**: Command-line interface for container management
+- **Docker Compose**: Multi-container application orchestration
+- **Kubernetes**: Container orchestration platform (optional)
+- **Docker Hub Integration**: Access to container registry
+- **Visual Management**: GUI for container and image management
 
-![image](https://user-images.githubusercontent.com/35183970/214379760-2a63886b-2a0c-48d1-b343-c8a4af61e308.png)
+### Key Benefits
 
-3. If it is on continue to step 4. If it is not you need to enable it in bios.
+- **Consistent Development Environment**: Same environment across development, testing, and production
+- **Resource Efficiency**: Lightweight compared to traditional virtual machines
+- **Rapid Deployment**: Fast application startup and scaling
+- **Microservices Architecture**: Ideal for modern application development
+- **DevOps Integration**: Seamless CI/CD pipeline integration
 
-   3.1 Here's a good Tutorial for all Motherboard Manufacturers:  
+## Prerequisites
 
-[BIOS Intel Tutorial](https://www.isumsoft.com/computer/enable-virtualization-technology-vt-x-in-bios-or-uefi.html)
+Before beginning the installation, ensure your system meets all requirements:
 
-[BIOS AMD Tutorial](https://www.elevenforum.com/t/enable-or-disable-cpu-virtualization-in-uefi-bios-firmware-settings-on-windows-pc.4928/)
+### System Requirements
 
-4. Turn Windows Features On
+#### Minimum Requirements
+- **Operating System**: Windows 10 64-bit (version 2004, build 19041) or Windows 11
+- **RAM**: 4GB system memory (8GB+ recommended)
+- **Storage**: 4GB available disk space
+- **Processor**: 64-bit processor with Second Level Address Translation (SLAT)
 
-![image](https://user-images.githubusercontent.com/35183970/214376796-9c2d80ec-f0ab-45e0-ad78-7067a164aa66.png)
+#### Recommended Requirements
+- **Operating System**: Windows 11 or Windows 10 Pro/Enterprise (latest version)
+- **RAM**: 16GB+ system memory
+- **Storage**: SSD with 20GB+ available space
+- **Processor**: Multi-core 64-bit processor
+- **Network**: Stable internet connection for image downloads
 
-5. Turn on the following features:
+### Hardware Requirements
 
-   5.1 Hyper-V
-   5.2 Virtual Machine Platform
-   5.3 Windows Hypervisor Platform
-   5.4 Windows Subsystem Linux
+#### Virtualization Support
+- **Intel**: VT-x (Intel Virtualization Technology)
+- **AMD**: AMD-V (AMD Virtualization)
+- **Nested Virtualization**: Required if running in a VM
 
-![image](https://user-images.githubusercontent.com/35183970/214377364-7cde6b34-abb7-4fc1-b53d-c1011511c76c.png)
+#### BIOS/UEFI Settings
+- **Virtualization**: Must be enabled in BIOS/UEFI
+- **Hyper-V**: Compatible hardware required
+- **Secure Boot**: May need configuration for some setups
 
-![image](https://user-images.githubusercontent.com/35183970/214377439-360d5e7c-e7af-4bac-93c7-da957390b4bc.png)
+### Windows Edition Requirements
 
-6. Reboot Your PC
+| Windows Edition | Docker Desktop Support | WSL2 Support | Hyper-V Support |
+|----------------|------------------------|--------------|-----------------|
+| Windows 11 Home | ✅ Yes | ✅ Yes | ❌ No |
+| Windows 11 Pro | ✅ Yes | ✅ Yes | ✅ Yes |
+| Windows 10 Home | ✅ Yes | ✅ Yes | ❌ No |
+| Windows 10 Pro | ✅ Yes | ✅ Yes | ✅ Yes |
+| Windows 10 Enterprise | ✅ Yes | ✅ Yes | ✅ Yes |
 
-## Step 2: Setting Up WSL2
+## Pre-Installation System Preparation
 
-1. Once Rebooted You can install your VM.
-2. Go to MS Store and Search Ubuntu and select an install you want **I WOULD RECOMMEND THE LATEST UBUNTU CURRENTLY ITS 22.04**
+### Step 1: Verify System Compatibility
 
-![image](https://user-images.githubusercontent.com/35183970/214380880-a74efe95-22b9-4303-b6e9-2ad205eb9310.png)
+#### Check Windows Version
+```powershell
+# Check Windows version and build
+winver
 
-3. Once installed open the Ubuntu 22.04 from the MS Store
+# Get detailed system information
+systeminfo | findstr /B /C:"OS Name" /C:"OS Version" /C:"System Type"
 
-4. Setting it up make a name (IT HAS TO BE ALL LOWER CASE)
-
-![image](https://user-images.githubusercontent.com/35183970/214381679-2cb4ddcf-b264-4c33-98ca-10bf19a6767c.png)
-
-5. Set a Password
-
-![image](https://user-images.githubusercontent.com/35183970/214381766-6a4b1c17-6c7e-4727-bebc-3734de0fcafc.png)
-
-6. Now Check What WSL Version in powershell your using
-
-```css
-wsl --list --verbose
+# Check Windows build number
+Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, WindowsBuildLabEx
 ```
 
-**YOU NEED TO BE WSL2**
+#### Verify Hardware Virtualization
 
-7. Install WSL2 Update by running the Installer
+1. **Check Task Manager**:
+   - Press `Ctrl + Shift + Esc` to open Task Manager
+   - Go to **Performance** tab → **CPU**
+   - Look for **Virtualization: Enabled**
 
-[WSL2 Update Kernel](https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi)
+2. **Command Line Verification**:
+   ```powershell
+   # Check virtualization support
+   systeminfo | findstr /C:"Hyper-V"
+   
+   # Alternative method
+   Get-ComputerInfo | Select-Object HyperV*
+   ```
 
-8. Now Set the Default Kernel to WSL2 in powershell
+3. **PowerShell Advanced Check**:
+   ```powershell
+   # Comprehensive virtualization check
+   $cpu = Get-WmiObject -Class Win32_Processor
+   Write-Host "Virtualization Firmware Enabled: $($cpu.VirtualizationFirmwareEnabled)"
+   Write-Host "VM Monitor Mode Extensions: $($cpu.VMMonitorModeExtensions)"
+   Write-Host "Virtualization Technology: $($cpu.SecondLevelAddressTranslationExtensions)"
+   ```
 
-```css
+### Step 2: Enable Hardware Virtualization (If Disabled)
+
+If virtualization is disabled, you'll need to enable it in BIOS/UEFI:
+
+#### Intel Systems
+1. **Restart computer** and enter BIOS/UEFI (usually F2, F12, or Delete during boot)
+2. **Navigate to**: Advanced → CPU Configuration
+3. **Enable**: Intel Virtualization Technology (VT-x)
+4. **Enable**: Intel VT-d (if available)
+5. **Save and Exit**
+
+#### AMD Systems
+1. **Restart computer** and enter BIOS/UEFI
+2. **Navigate to**: Advanced → CPU Configuration
+3. **Enable**: AMD Virtualization (AMD-V)
+4. **Enable**: IOMMU (if available)
+5. **Save and Exit**
+
+#### Common BIOS/UEFI Access Keys
+| Manufacturer | Key(s) |
+|-------------|--------|
+| ASUS | F2, Delete |
+| MSI | F2, Delete |
+| Gigabyte | F2, Delete |
+| ASRock | F2, Delete |
+| Dell | F2, F12 |
+| HP | F10, F2 |
+| Lenovo | F1, F2, Enter |
+
+### Step 3: Enable Required Windows Features
+
+#### Method 1: Using Windows Features Dialog (GUI)
+
+1. **Open Windows Features**:
+   - Press `Win + R`, type `optionalfeatures`, press Enter
+   - Or: Control Panel → Programs → Turn Windows features on or off
+
+2. **Enable the following features**:
+   - ✅ **Hyper-V** (Windows Pro/Enterprise only)
+   - ✅ **Virtual Machine Platform**
+   - ✅ **Windows Hypervisor Platform**
+   - ✅ **Windows Subsystem for Linux**
+
+3. **Click OK** and restart when prompted
+
+#### Method 2: Using PowerShell (Recommended)
+
+Run PowerShell as Administrator and execute:
+
+```powershell
+# Enable required Windows features
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All
+Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All -All
+Enable-WindowsOptionalFeature -Online -FeatureName HypervisorPlatform -All
+
+# Verify features are enabled
+Get-WindowsOptionalFeature -Online | Where-Object {$_.FeatureName -like "*Hyper*" -or $_.FeatureName -like "*Virtual*" -or $_.FeatureName -like "*Linux*"} | Select-Object FeatureName, State
+```
+
+#### Method 3: Using DISM (Command Line)
+
+```cmd
+# Run Command Prompt as Administrator
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+dism.exe /online /enable-feature /featurename:Microsoft-Hyper-V-All /all /norestart
+dism.exe /online /enable-feature /featurename:HypervisorPlatform /all /norestart
+
+# Restart computer
+shutdown /r /t 0
+```
+
+### Step 4: System Restart
+
+After enabling Windows features, **restart your computer** to apply changes:
+
+```powershell
+# Restart immediately
+Restart-Computer -Force
+
+# Schedule restart in 1 minute
+shutdown /r /t 60
+```
+
+## WSL2 Installation and Configuration
+
+WSL2 (Windows Subsystem for Linux 2) provides the Linux kernel required for Docker Desktop's optimal performance on Windows.
+
+### Step 1: Install WSL2 Kernel Update
+
+#### Download and Install WSL2 Kernel
+
+1. **Download the WSL2 Linux kernel update**:
+   - [WSL2 Kernel Update (x64)](https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi)
+   - [WSL2 Kernel Update (ARM64)](https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_arm64.msi)
+
+2. **Run the installer** with administrator privileges:
+   ```powershell
+   # Download and install via PowerShell
+   $url = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+   $output = "$env:TEMP\wsl_update_x64.msi"
+   Invoke-WebRequest -Uri $url -OutFile $output
+   Start-Process msiexec.exe -Wait -ArgumentList "/i $output /quiet"
+   ```
+
+3. **Verify installation**:
+   ```powershell
+   wsl --version
+   ```
+
+### Step 2: Configure WSL2 as Default
+
+#### Set WSL2 as Default Version
+
+```powershell
+# Set WSL2 as the default version for new distributions
 wsl --set-default-version 2
-```
 
-9. Once that is done if it still has not updated to 2 run this command
-
-```css
+# Update WSL to the latest version
 wsl --update
+
+# Check WSL status
+wsl --status
 ```
 
-### Troubleshooting Installing WSL2
+### Step 3: Install Linux Distribution
 
-1. If your on Windows 10 and cannot enable or install WSL2 Use this installer
+#### Recommended Distributions
 
-[WSL2 Manual Install](https://www.catalog.update.microsoft.com/Search.aspx?q=KB4566116)
+| Distribution | Best For | Size | Performance |
+|-------------|----------|------|-------------|
+| **Ubuntu 22.04 LTS** | General development | ~450MB | Excellent |
+| **Ubuntu 20.04 LTS** | Legacy compatibility | ~400MB | Excellent |
+| **Debian** | Minimal footprint | ~300MB | Excellent |
+| **Alpine Linux** | Containers/minimal | ~100MB | Good |
 
-2. If running the 
+#### Installation Methods
 
-```css
-wsl --set-default-version 2
+**Method 1: Microsoft Store (Recommended)**
+
+1. **Open Microsoft Store**
+2. **Search for "Ubuntu"** or your preferred distribution
+3. **Install Ubuntu 22.04 LTS** (recommended)
+4. **Launch** the distribution after installation
+
+**Method 2: Command Line Installation**
+
+```powershell
+# List available distributions
+wsl --list --online
+
+# Install Ubuntu 22.04
+wsl --install -d Ubuntu-22.04
+
+# Alternative: Install default Ubuntu
+wsl --install -d Ubuntu
 ```
 
-then try to apply it directly to your linux. So if my install running the 
- 
-```css
+**Method 3: Manual Download**
+
+```powershell
+# Download Ubuntu 22.04 manually
+$url = "https://aka.ms/wslubuntu2204"
+$output = "$env:TEMP\Ubuntu2204.appx"
+Invoke-WebRequest -Uri $url -OutFile $output
+Add-AppxPackage $output
+```
+
+### Step 4: Initial Linux Setup
+
+#### First-Time Configuration
+
+1. **Launch your Linux distribution** from Start Menu or Microsoft Store
+
+2. **Create user account**:
+   ```bash
+   # Username requirements:
+   # - Must be lowercase
+   # - No spaces or special characters
+   # - 3-32 characters long
+   
+   # Example: john, developer, admin
+   ```
+
+3. **Set password**:
+   ```bash
+   # Password requirements:
+   # - Minimum 8 characters recommended
+   # - Mix of letters, numbers, symbols
+   # - Will be used for sudo operations
+   ```
+
+4. **Update system packages**:
+   ```bash
+   # Update package lists
+   sudo apt update
+   
+   # Upgrade installed packages
+   sudo apt upgrade -y
+   
+   # Install essential tools
+   sudo apt install -y curl wget git vim nano htop
+   ```
+
+### Step 5: Verify WSL2 Configuration
+
+#### Check WSL Version and Status
+
+```powershell
+# List all installed distributions with versions
+wsl --list --verbose
+
+# Expected output:
+# NAME            STATE           VERSION
+# Ubuntu-22.04    Running         2
+```
+
+#### Verify WSL2 is Running
+
+```powershell
+# Check WSL status
+wsl --status
+
+# Get detailed information
+Get-ComputerInfo | Select-Object *WSL*
+```
+
+#### Test Linux Environment
+
+```bash
+# Check Linux kernel version
+uname -a
+
+# Check system resources
+free -h
+df -h
+
+# Test network connectivity
+ping -c 4 google.com
+```
+
+### Step 6: WSL2 Optimization
+
+#### Configure WSL2 Resource Limits
+
+Create or edit `.wslconfig` file in your user directory:
+
+```powershell
+# Navigate to user directory
+cd $env:USERPROFILE
+
+# Create .wslconfig file
+@"
+[wsl2]
+# Limit memory usage (adjust based on your system)
+memory=8GB
+
+# Limit CPU usage (number of cores)
+processors=4
+
+# Limit swap usage
+swap=2GB
+
+# Disable page reporting (can improve performance)
+pageReporting=false
+
+# Set custom kernel parameters
+kernelCommandLine=cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1
+
+# Enable nested virtualization (if needed)
+nestedVirtualization=true
+
+# Set network mode
+networkingMode=mirrored
+"@ | Out-File -FilePath .wslconfig -Encoding UTF8
+```
+
+#### Apply Configuration Changes
+
+```powershell
+# Shutdown all WSL instances
+wsl --shutdown
+
+# Wait a few seconds, then restart
+Start-Sleep -Seconds 5
+wsl
+
+# Verify new settings
 wsl --list --verbose
 ```
- 
-it says the name add that in the code ie. Ubuntu-22.04 
 
-```css
+### WSL2 Troubleshooting
+
+#### Common Issues and Solutions
+
+**Issue 1: WSL2 Installation Fails**
+
+```powershell
+# Check Windows version compatibility
+winver
+
+# Ensure virtualization is enabled
+systeminfo | findstr /C:"Hyper-V"
+
+# Try manual kernel update
+$url = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+Start-Process $url
+```
+
+**Issue 2: Distribution Won't Start**
+
+```powershell
+# Reset the distribution
+wsl --unregister Ubuntu-22.04
+wsl --install -d Ubuntu-22.04
+
+# Or repair the installation
 wsl --set-version Ubuntu-22.04 2
 ```
 
-## Step 3: Installing and Setting up Docker-Desktop
+**Issue 3: Performance Issues**
 
-1. Download [Docker-Desktop](https://www.docker.com/products/docker-desktop/)
-2. Click through the Installer
-3. Once installed Run the Docker-Desktop **(NOTE IT MAY TAKE SOME TIME TO FIRST START DEPENDING ON YOUR HARDWARE)** 
+```bash
+# Check resource usage in Linux
+htop
+free -h
+df -h
 
-### Extra Docker Setup Configs
-
-#### Limiting Docker's RAM Usage
-
-1. Navigate to `C:\Users\DESKTOP-USERNAME`
-2. Edit .wslconfig in any text editor
-
-add these line to it. This will limit it to 4GB you can set any number from 2GB-64GB
-
+# Optimize WSL2 settings
+echo 'vm.max_map_count=262144' | sudo tee -a /etc/sysctl.conf
 ```
+
+**Issue 4: Network Connectivity Problems**
+
+```powershell
+# Reset WSL network
+wsl --shutdown
+Restart-Service LxssManager
+
+# Check Windows firewall
+Get-NetFirewallRule -DisplayName "*WSL*"
+```
+
+#### Advanced WSL2 Configuration
+
+**Custom Kernel Configuration**
+
+```bash
+# Install build tools
+sudo apt install -y build-essential flex bison libssl-dev libelf-dev
+
+# Download WSL2 kernel source
+git clone https://github.com/microsoft/WSL2-Linux-Kernel.git
+cd WSL2-Linux-Kernel
+
+# Configure and build (advanced users only)
+make KCONFIG_CONFIG=Microsoft/config-wsl menuconfig
+make -j$(nproc)
+```
+
+**Integration with Windows**
+
+```bash
+# Access Windows files from WSL2
+ls /mnt/c/Users/$USER/
+
+# Run Windows commands from WSL2
+cmd.exe /c dir
+powershell.exe Get-Process
+
+# Set up SSH key for development
+ssh-keygen -t ed25519 -C "your-email@example.com"
+```
+
+## Docker Desktop Installation
+
+### Step 1: Download Docker Desktop
+
+#### Official Download
+
+1. **Visit the official Docker website**: [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
+
+2. **Download the installer**:
+   ```powershell
+   # Download via PowerShell (optional)
+   $url = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
+   $output = "$env:TEMP\DockerDesktopInstaller.exe"
+   Invoke-WebRequest -Uri $url -OutFile $output
+   ```
+
+3. **Verify download integrity** (recommended):
+   ```powershell
+   # Check file hash (optional security step)
+   Get-FileHash "$env:TEMP\DockerDesktopInstaller.exe" -Algorithm SHA256
+   ```
+
+#### System Architecture Selection
+
+| Architecture | Download Link | Notes |
+|-------------|---------------|-------|
+| **x64 (Intel/AMD)** | Standard download | Most common |
+| **ARM64** | ARM64 version | For ARM-based Windows devices |
+
+### Step 2: Install Docker Desktop
+
+#### Installation Process
+
+1. **Run the installer as Administrator**:
+   ```powershell
+   # Run installer with elevated privileges
+   Start-Process -FilePath "$env:TEMP\DockerDesktopInstaller.exe" -Verb RunAs
+   ```
+
+2. **Installation Configuration**:
+   - ✅ **Use WSL 2 instead of Hyper-V** (recommended)
+   - ✅ **Add shortcut to desktop** (optional)
+   - ✅ **Use Docker Compose V2** (recommended)
+
+3. **Complete installation** and restart when prompted
+
+#### Silent Installation (Enterprise)
+
+For automated deployments:
+
+```powershell
+# Silent installation with WSL2 backend
+Start-Process -FilePath "DockerDesktopInstaller.exe" -ArgumentList "install --quiet --accept-license --backend=wsl-2" -Wait
+```
+
+### Step 3: Initial Docker Desktop Setup
+
+#### First Launch
+
+1. **Launch Docker Desktop** from Start Menu or Desktop shortcut
+
+2. **Accept License Agreement** (if prompted)
+
+3. **Choose Configuration**:
+   - **Backend**: WSL2 (recommended)
+   - **File Sharing**: Enable for development directories
+   - **Resources**: Configure CPU, memory, and disk limits
+
+4. **Sign in to Docker Hub** (optional but recommended):
+   - Create account at [hub.docker.com](https://hub.docker.com)
+   - Provides access to public repositories
+   - Enables image pushing/pulling
+
+#### Initial Configuration Verification
+
+```powershell
+# Verify Docker installation
+docker --version
+docker-compose --version
+
+# Test Docker functionality
+docker run hello-world
+
+# Check Docker system information
+docker system info
+```
+
+### Step 4: Docker Desktop Configuration
+
+#### Resource Configuration
+
+**Memory and CPU Settings**:
+
+1. **Open Docker Desktop Settings**:
+   - Right-click Docker Desktop system tray icon
+   - Select "Settings" or "Preferences"
+
+2. **Navigate to Resources**:
+   - **Memory**: Allocate based on system capacity
+     - 4GB minimum for basic development
+     - 8GB+ recommended for complex applications
+     - Leave 25% of system RAM for Windows
+   
+   - **CPUs**: Allocate processor cores
+     - 2 cores minimum
+     - Leave at least 1 core for Windows
+   
+   - **Disk Image Size**: Set maximum disk usage
+     - 64GB default (usually sufficient)
+     - Increase for large projects or many images
+
+3. **Apply and Restart** Docker Desktop
+
+#### Advanced WSL2 Configuration
+
+Create or modify `.wslconfig` in your user directory:
+
+```powershell
+# Navigate to user profile
+cd $env:USERPROFILE
+
+# Create comprehensive .wslconfig
+@"
 [wsl2]
-memory=4GB
+# Memory allocation (adjust based on your system)
+memory=8GB
+
+# CPU cores (leave some for Windows)
+processors=4
+
+# Swap file size
+swap=2GB
+
+# Swap file location
+swapfile=C:\temp\wsl-swap.vhdx
+
+# Disable page reporting for better performance
+pageReporting=false
+
+# Kernel command line parameters
+kernelCommandLine=cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1
+
+# Enable nested virtualization (if needed)
+nestedVirtualization=true
+
+# Network configuration
+networkingMode=mirrored
+dnsTunneling=true
+firewall=true
+autoProxy=true
+
+# GUI applications support
+guiApplications=true
+
+# Debug console
+debugConsole=true
+"@ | Out-File -FilePath .wslconfig -Encoding UTF8
+
+# Restart WSL to apply changes
+wsl --shutdown
+Start-Sleep -Seconds 5
 ```
-3. Restart Docker and it should update to the correct limit.
 
-![image](https://user-images.githubusercontent.com/35183970/217377016-d8ecf6b4-5ddd-44c3-811b-64609d285ea6.png)
+#### File Sharing Configuration
 
-## Docker-Desktop Troubleshooting
+**Configure Shared Drives**:
 
-### Docker-Desktop Not Starting 
+1. **Docker Desktop Settings** → **Resources** → **File Sharing**
 
-If Docker Desktop doesn't start after 10 minutes (showing the green background with the whale), follow these steps to fix it:
+2. **Add development directories**:
+   ```
+   C:\Users\YourUsername\Documents\Projects
+   C:\Development
+   C:\Source
+   ```
 
-![image](https://user-images.githubusercontent.com/35183970/214384179-41aa86e1-07cb-4a0e-b94b-eb7122806105.png)
+3. **Performance Considerations**:
+   - Share only necessary directories
+   - Use WSL2 file system for better performance
+   - Avoid sharing entire C: drive
 
-:::caution Important Steps
+### Step 5: Verification and Testing
 
-Follow these steps in order to properly resolve the issue:
+#### Basic Functionality Tests
 
-:::
+```powershell
+# Test Docker installation
+docker --version
+docker-compose --version
 
-1. **Fully remove Docker Desktop** from your system
-   - Uninstall Docker Desktop through Windows Settings or Control Panel
-   - Remove any remaining Docker files and folders
+# Verify Docker daemon is running
+docker system info
 
-2. **Restart your computer** 
-   - This is crucial for clearing any remaining Docker processes
+# Test container functionality
+docker run --rm hello-world
 
-3. **Re-install Docker Desktop**
-   - Download the latest version from the official Docker website
-   - Run the installer with administrator privileges
+# Test image pulling
+docker pull nginx:alpine
 
-### Docker-Desktop Not Saving Containers
+# Test container with port mapping
+docker run -d -p 8080:80 --name test-nginx nginx:alpine
 
-If you are having issues with when you reboot and it not saving your containers or completely corrupting them, all you need to do is:
+# Test container access
+curl http://localhost:8080
 
-1. **Fully remove Docker Desktop** and **restart your computer**
-2. **Re-install Docker Desktop**
+# Clean up test container
+docker stop test-nginx
+docker rm test-nginx
+docker rmi nginx:alpine
+```
 
-This should fix the issue.
+#### Performance Benchmarking
+
+```powershell
+# Test Docker performance
+docker run --rm -it alpine:latest /bin/sh -c "
+  echo 'Testing container performance...'
+  time dd if=/dev/zero of=/tmp/test bs=1M count=100
+  echo 'Container performance test complete'
+"
+
+# Test build performance
+mkdir docker-test
+cd docker-test
+
+# Create test Dockerfile
+@"
+FROM alpine:latest
+RUN apk add --no-cache curl
+COPY . /app
+WORKDIR /app
+CMD ["echo", "Build test complete"]
+"@ | Out-File -FilePath Dockerfile -Encoding UTF8
+
+# Test build speed
+Measure-Command { docker build -t test-build . }
+
+# Cleanup
+cd ..
+Remove-Item -Recurse -Force docker-test
+docker rmi test-build
+```
+
+## Performance Optimization
+
+### Resource Optimization
+
+#### Memory Management
+
+```powershell
+# Monitor Docker memory usage
+docker system df
+
+# Clean up unused resources
+docker system prune -a
+
+# Remove unused volumes
+docker volume prune
+
+# Remove unused networks
+docker network prune
+```
+
+#### Storage Optimization
+
+```powershell
+# Check Docker disk usage
+docker system df -v
+
+# Configure Docker data location (if needed)
+# Stop Docker Desktop first, then:
+# Move Docker data to different drive with more space
+```
+
+### Development Workflow Optimization
+
+#### Docker Compose Configuration
+
+Create `docker-compose.yml` for development:
+
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+```
+
+#### Development Best Practices
+
+```dockerfile
+# Multi-stage Dockerfile example
+FROM node:16-alpine AS development
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=development
+COPY . .
+CMD ["npm", "run", "dev"]
+
+FROM node:16-alpine AS production
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+## Security Configuration
+
+### Docker Desktop Security
+
+#### Enable Security Features
+
+1. **Docker Desktop Settings** → **General**:
+   - ✅ **Use Docker Compose V2**
+   - ✅ **Send usage statistics** (optional)
+   - ✅ **Show CLI hints**
+
+2. **Docker Desktop Settings** → **Docker Engine**:
+   ```json
+   {
+     "builder": {
+       "gc": {
+         "defaultKeepStorage": "20GB",
+         "enabled": true
+       }
+     },
+     "experimental": false,
+     "features": {
+       "buildkit": true
+     },
+     "insecure-registries": [],
+     "registry-mirrors": []
+   }
+   ```
+
+#### Container Security Best Practices
+
+```dockerfile
+# Security-focused Dockerfile
+FROM node:16-alpine
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
+COPY --chown=nextjs:nodejs . .
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Start application
+CMD ["npm", "start"]
+```
+
+### Network Security
+
+```powershell
+# Create custom Docker network
+docker network create --driver bridge secure-network
+
+# Run containers with custom network
+docker run -d --network secure-network --name app1 nginx:alpine
+docker run -d --network secure-network --name app2 nginx:alpine
+
+# Verify network isolation
+docker network inspect secure-network
+```
+
+## Troubleshooting
+
+### Common Installation Issues
+
+#### Issue 1: Docker Desktop Won't Start
+
+**Symptoms:**
+- Docker Desktop shows loading screen indefinitely
+- "Docker Desktop starting..." message persists
+- System tray icon shows error state
+
+**Solutions:**
+
+1. **Check WSL2 Status**:
+   ```powershell
+   wsl --list --verbose
+   wsl --status
+   ```
+
+2. **Restart Docker Service**:
+   ```powershell
+   # Stop Docker Desktop
+   Stop-Process -Name "Docker Desktop" -Force -ErrorAction SilentlyContinue
+   
+   # Restart Docker service
+   Restart-Service -Name com.docker.service -Force
+   
+   # Start Docker Desktop
+   Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+   ```
+
+3. **Reset Docker Desktop**:
+   ```powershell
+   # Complete reset (will lose all containers and images)
+   & "C:\Program Files\Docker\Docker\Docker Desktop.exe" --reset-to-factory
+   ```
+
+#### Issue 2: WSL2 Integration Problems
+
+**Diagnostic Commands:**
+```powershell
+# Check WSL2 integration
+wsl --list --verbose
+docker context ls
+
+# Verify Docker in WSL2
+wsl -d Ubuntu-22.04 docker --version
+```
+
+**Solutions:**
+```powershell
+# Reset WSL2 integration
+wsl --shutdown
+wsl --unregister docker-desktop
+wsl --unregister docker-desktop-data
+
+# Restart Docker Desktop
+```
+
+#### Issue 3: Performance Issues
+
+**Diagnostic Steps:**
+```powershell
+# Check resource usage
+Get-Process -Name "*docker*" | Select-Object Name, CPU, WorkingSet
+Get-Process -Name "vmmem" | Select-Object Name, CPU, WorkingSet
+
+# Check Docker system resources
+docker system df
+docker system events
+```
+
+**Optimization Solutions:**
+```powershell
+# Optimize .wslconfig
+# Reduce memory allocation
+# Enable performance features
+# Clean up unused resources
+docker system prune -a --volumes
+```
+
+#### Issue 4: Container Persistence Problems
+
+**Symptoms:**
+- Containers disappear after restart
+- Data loss in containers
+- Volume mounting issues
+
+**Solutions:**
+
+1. **Use Named Volumes**:
+   ```powershell
+   # Create persistent volume
+   docker volume create myapp-data
+   
+   # Use volume in container
+   docker run -d -v myapp-data:/data nginx:alpine
+   ```
+
+2. **Check Docker Data Location**:
+   ```powershell
+   # Verify Docker data directory
+   docker system info | findstr "Docker Root Dir"
+   ```
+
+3. **Backup and Restore**:
+   ```powershell
+   # Backup volumes
+   docker run --rm -v myapp-data:/data -v ${PWD}:/backup alpine tar czf /backup/backup.tar.gz -C /data .
+   
+   # Restore volumes
+   docker run --rm -v myapp-data:/data -v ${PWD}:/backup alpine tar xzf /backup/backup.tar.gz -C /data
+   ```
+
+### Advanced Troubleshooting
+
+#### Docker Daemon Issues
+
+```powershell
+# Check Docker daemon logs
+Get-EventLog -LogName Application -Source Docker
+
+# Restart Docker daemon
+Restart-Service docker
+
+# Check Docker daemon configuration
+docker system info
+```
+
+#### Network Connectivity Issues
+
+```powershell
+# Test Docker network connectivity
+docker run --rm alpine ping -c 4 google.com
+
+# Check Docker networks
+docker network ls
+docker network inspect bridge
+
+# Reset Docker networks
+docker network prune
+```
+
+#### Registry Authentication Issues
+
+```powershell
+# Login to Docker Hub
+docker login
+
+# Configure registry mirrors
+# Edit Docker Desktop settings or daemon.json
+```
+
+## Post-Installation Setup
+
+### Development Environment Integration
+
+#### IDE Integration
+
+**Visual Studio Code**:
+1. Install Docker extension
+2. Configure remote development
+3. Set up debugging
+
+**Visual Studio**:
+1. Enable Docker support in projects
+2. Configure container debugging
+3. Set up Docker Compose integration
+
+#### Command Line Tools
+
+```powershell
+# Install Docker Compose (if not included)
+pip install docker-compose
+
+# Install additional tools
+choco install docker-cli
+choco install docker-compose
+choco install lazydocker
+```
+
+### Monitoring and Maintenance
+
+#### Regular Maintenance Tasks
+
+```powershell
+# Weekly cleanup script
+docker system prune -a
+docker volume prune
+docker network prune
+
+# Update Docker Desktop
+# Check for updates in Docker Desktop settings
+
+# Monitor resource usage
+docker system df
+docker system events --since 1h
+```
+
+#### Backup Strategy
+
+```powershell
+# Backup Docker volumes
+$volumes = docker volume ls -q
+foreach ($volume in $volumes) {
+    docker run --rm -v "${volume}:/data" -v "${PWD}/backups:/backup" alpine tar czf "/backup/${volume}.tar.gz" -C /data .
+}
+
+# Backup Docker images
+docker save $(docker images -q) | gzip > docker-images-backup.tar.gz
+```
+
+## Next Steps
+
+### Learning Resources
+
+- **Official Documentation**: [docs.docker.com](https://docs.docker.com)
+- **Docker Hub**: [hub.docker.com](https://hub.docker.com)
+- **Docker Compose**: [docs.docker.com/compose](https://docs.docker.com/compose)
+- **Best Practices**: [docs.docker.com/develop/best-practices](https://docs.docker.com/develop/best-practices)
+
+### Advanced Topics
+
+1. **Container Orchestration**: Kubernetes integration
+2. **CI/CD Integration**: GitHub Actions, Azure DevOps
+3. **Multi-stage Builds**: Optimizing Docker images
+4. **Security Scanning**: Vulnerability assessment
+5. **Production Deployment**: Docker Swarm, cloud platforms
+
+---
+
+## Summary
+
+You have successfully installed and configured Docker Desktop on Windows with:
+
+✅ **Complete system preparation** with virtualization and WSL2  
+✅ **Professional Docker Desktop installation** with optimal configuration  
+✅ **Performance optimization** with resource management and tuning  
+✅ **Security hardening** with best practices and container security  
+✅ **Comprehensive troubleshooting** knowledge for common issues  
+✅ **Development workflow integration** with tools and best practices  
+✅ **Monitoring and maintenance** procedures for long-term success  
+
+Your Docker Desktop environment is now ready for professional development and production workloads.
 
 <BuyMeACoffeeButton />
