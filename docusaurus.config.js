@@ -99,7 +99,6 @@ const config = {
             sidebarId: 'tutorialSidebar',
             position: 'left',
             label: 'Tutorial',
-            to: '/',
           },
           {
             to: 'https://docs.demonwarriortech.com/Video%20Tutorials/Videos',
