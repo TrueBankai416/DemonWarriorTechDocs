@@ -1,0 +1,8 @@
+{
+    "label": "VPN",
+    "position": 4,
+    "link": {
+      "type": "generated-index",
+      "description": "Documentation and tutorials for VPN setup and configuration"
+    }
+  }
