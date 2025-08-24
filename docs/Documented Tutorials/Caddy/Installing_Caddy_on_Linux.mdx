@@ -34,47 +34,9 @@ Before beginning the installation, ensure your system meets the following requir
 - **Domain name** pointing to your server's public IP (for HTTPS)
 - **Router/firewall** configured to forward traffic
 
-## Installation Methods
+## Installation
 
-### Method 1: Official Package Repository (Recommended)
-
-This is the recommended method as it provides automatic updates and proper system integration.
-
-#### Step 1: Add Caddy Repository
-
-```bash
-# Install required packages
-sudo apt update
-sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
-
-# Add Caddy's official GPG key
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-
-# Add Caddy repository
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
-```
-
-#### Step 2: Install Caddy
-
-```bash
-# Update package list
-sudo apt update
-
-# Install Caddy
-sudo apt install caddy
-```
-
-#### Step 3: Verify Installation
-
-```bash
-# Check Caddy version
-caddy version
-
-# Verify service status
-sudo systemctl status caddy
-```
-
-### Method 2: Custom Build with Plugins
+### Custom Build with Plugins
 
 If you need specific plugins (like Cloudflare DNS or DuckDNS), use this method.
 
@@ -278,6 +240,7 @@ Create a systemd service file for proper service management and automatic startu
 :::tip
 **Configuration Examples**: For more advanced configurations, visit our [Caddy Examples](https://docs.demonwarriortech.com/Examples/Caddy_Examples) page.
 :::
+
 
 ## Network Configuration
 
