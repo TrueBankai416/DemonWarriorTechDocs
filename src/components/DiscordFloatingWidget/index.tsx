@@ -2,7 +2,7 @@ import React from 'react';
 
 const DiscordFloatingWidget: React.FC = () => {
   const handleClick = () => {
-    window.open('https://discord.gg/6THYdvayjg', '_blank');
+    window.open('https://discord.gg/P49AxjpHez', '_blank');
   };
 
   return (
