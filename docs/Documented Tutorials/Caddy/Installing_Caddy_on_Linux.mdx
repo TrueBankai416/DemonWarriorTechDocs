@@ -13,7 +13,7 @@ import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
 1. Check our system OS type in terminal
 
-```
+```bash
 lsb_release -a
 ```
 
@@ -32,43 +32,43 @@ ie. im on Ubuntu 24.04
 
 2. Once Downloaded lets go to the directory we downloaded it to 
 
-```
+```bash
 cd ~/Downloads
 ```
 
 3. You need to rename caddy from the downloaded name to caddy
 
-```
+```bash
 sudo mv caddy_linux_amd64_custom ./caddy
 ```
 
 and check to make sure its correct now 
 
-```
+```bash
 ls
 ```
 
 4. You have to give caddy read, write and execute permissions by running
 
-```
+```bash
 sudo chmod +x caddy
 ```
 
 5. Check to make sure the permissions are now correct for caddy by running 
 
-```
+```bash
 ls -la
 ```
 
 6. Copy the Caddy binary the execution folder where we can run it in the OS.
 
-```
+```bash
 sudo cp caddy /usr/bin/
 ```
 
 7. Check to make sure its able to be run and executed 
 
-```
+```bash
 caddy version
 ```
 
@@ -78,13 +78,13 @@ caddy version
 
 9. Now you need to create a group named caddy
 
-```
+```bash
 sudo groupadd --system caddy
 ```
 
 10. Also create a user named caddy with writeable home directory
 
-```
+```bash
 sudo useradd --system \
     --gid caddy \
     --create-home \
@@ -96,20 +96,20 @@ sudo useradd --system \
 
 11. You have to go into the systemd directory to make the file
 
-```
+```bash
 cd /etc/systemd/system
 ```
 
 12. Create our caddy.service file
 
-```
+```bash
 sudo nano caddy.service
 ```
 
 
 13. Paste below in our caddy.service so it starts on boot
 
-```
+```bash
 # caddy.service
 #
 # For using Caddy with a config file.
@@ -157,22 +157,22 @@ WantedBy=multi-user.target
 
 16. We need to make the caddyfile directory where it will be run
 
-```
+```bash
 cd /etc
 ```
 
-```
+```bash
 sudo mkdir caddy
 ```
 
-```
+```bash
 cd /etc/caddy
 ```
 
 
 17. You need to make the Caddyfile
 
-```
+```bash
 sudo nano Caddyfile
 ```
 
@@ -182,13 +182,13 @@ sudo nano Caddyfile
 
 19. To find our Local ip were going to install net tool to use ifconfig to figure out our internal ip of the system
 
-```
+```bash
 sudo apt install net-tools
 ```
 
 type your passwsord
 
-```
+```bash
 ifconfig
 ```
 
@@ -216,7 +216,7 @@ Select your domain from the dropdown
 
 4. Download the cron so it autoruns on boot
 
-```
+```bash
 sudo apt-get install zenity cron curl
 ```
 
@@ -228,19 +228,19 @@ Save it Downloads
 
 6. Go to downloads
 
-```
+```bash
 cd ~/Downloads
 ```
 
 7. Make it executable
 
-```
+```bash
 chmod +x duck-setup-gui.sh
 ```
 
 8. You need to run it
 
-```
+```bash
 ./duck-setup-gui.sh
 ```
 
@@ -258,7 +258,7 @@ then input your token like below
 
 10. Once thats done it should show success. Now run the cronjob to auto run on boot and refresh every 5 minutes
 
-```
+```bash
 crontab -l
 ```
 
@@ -274,13 +274,13 @@ You can check here to see if there Open
 
 1. Reload system services so it reads the new service file
 
-```
+```bash
 sudo systemctl daemon-reload
 ```
 
 2. Enable the Caddy Service
 
-```
+```bash
 sudo systemctl enable --now caddy
 ```
 
@@ -288,38 +288,39 @@ sudo systemctl enable --now caddy
  
 Check to make sure its running 
 
-```
+```bash
 sudo systemctl status caddy
 ```
 
 Restart Caddy service
 
-```
+```bash
 sudo systemctl restart caddy
 ```
 
 Stop Caddy
 
-```
+```bash
 sudo systemctl stop caddy
 ```
 
 start Caddy
 
-```
+```bash
 sudo systemctl start Caddy
 ```
 
 Once you edit the config file to reload it 
 
-```
+```bash
 sudo systemctl reload caddy
 ```
 
 If you want to view logs run this
 
-```
+```bash
 journalctl -u caddy --no-pager | less +G
 ```
+
 
 <BuyMeACoffeeButton />
