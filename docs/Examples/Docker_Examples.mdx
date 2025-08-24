@@ -9,10 +9,12 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
+## Docker Examples
+
 <Tabs>
   <TabItem value="Nextcloud Example" label="Nextcloud Example" default>
 
-### Nextcloud
+**Nextcloud:**
 
 ```
 name: nextcloud
@@ -103,7 +105,7 @@ services:
     restart: always
 ```
 
-### Dockerfile
+**Dockerfile:**
 
 ```
 # Use the Nextcloud production image as the base
@@ -241,7 +243,7 @@ HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=3 \
 
 ```
 
-### cron.sh
+**cron.sh:**
 
 ```
 #!/bin/sh
@@ -250,7 +252,7 @@ set -eu
 exec busybox crond -f -L /dev/stdout
 ```
 
-### nextcloud.ini
+**nextcloud.ini:**
 
 ```
 memory_limit = 10G
@@ -260,7 +262,7 @@ max_execution_time = 3600
 max_input_time = 3600
 ```
   
-### .collabora.env
+**.collabora.env:**
 
 ```css
 username=admin #Change to Any Username You Choose
@@ -268,7 +270,7 @@ password=PASSWORD #Change to Any Password you Choose
 domain=nextcloud\\.domain\\.com #Change this to your subdomain.\\domain\\.com example memories\\.demonwarriortech\\.com
 ```
 
-### supervisord.conf
+**supervisord.conf:**
 
 ```
 [supervisord]
@@ -300,9 +302,9 @@ command=/cron.sh
 
   <TabItem value="Jellyfin Example" label="Jellyfin Example" default>
 
-### Jellyfin
+**Jellyfin:**
 
-#### docker-compose.yml
+**docker-compose.yml:**
 
   ```
 services:
@@ -358,7 +360,7 @@ services:
   </TabItem>
 <TabItem value="Jellyseerr Example" label="Jellyseerr Example">
 
-### Jellyseerr
+**Jellyseerr:**
 
 ```
 services:
@@ -378,7 +380,7 @@ services:
 
 <TabItem value="Jellystat Example" label="Jellystat Example">
 
-### Jellystat
+**Jellystat:**
 
 ```
 services:
