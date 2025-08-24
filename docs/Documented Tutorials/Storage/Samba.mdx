@@ -1,17 +1,1041 @@
 ---
-title: Setting Up Samba Shares
-description: Complete guide to setting up SMB/Samba file shares on Windows and integrating with Nextcloud for network storage access
+title: Complete Samba/SMB File Sharing Guide
+description: Comprehensive professional guide to installing and configuring Samba/SMB file shares across Windows and Linux, including security hardening, performance optimization, and enterprise integration
 sidebar_position: 2
 toc_min_heading_level: 2
 toc_max_heading_level: 6
-tags: [samba, smb, file-sharing, windows, nextcloud, network-storage, tutorial, storage]
+tags: [samba, smb, file-sharing, windows, linux, nextcloud, network-storage, enterprise, security, performance]
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
-## Samba Setup
+## Overview
+
+This comprehensive guide covers the complete installation and configuration of Samba/SMB file sharing for professional network storage solutions. Samba provides cross-platform file and print services, enabling seamless integration between Windows, Linux, and other operating systems in enterprise environments.
+
+### What is Samba/SMB?
+
+Samba is an open-source implementation of the Server Message Block (SMB) protocol that enables:
+- **Cross-Platform File Sharing**: Share files between Windows, Linux, macOS, and mobile devices
+- **Network Storage**: Centralized storage accessible from multiple devices
+- **Print Services**: Network printer sharing and management
+- **Active Directory Integration**: Domain authentication and user management
+- **Enterprise Features**: Access controls, quotas, and audit logging
+
+### Key Features
+
+- **SMB Protocol Support**: SMB1, SMB2, and SMB3 with encryption
+- **Multi-Platform Compatibility**: Windows, Linux, macOS, iOS, Android
+- **Active Directory Integration**: Domain controller and member server capabilities
+- **Advanced Security**: Kerberos authentication, ACLs, and encryption
+- **Performance Optimization**: Multi-threading and caching mechanisms
+- **Enterprise Management**: Centralized configuration and monitoring
+
+### Architecture Overview
+
+```
+Client Devices (Windows/Linux/macOS/Mobile)
+                    ↓
+            SMB/CIFS Protocol
+                    ↓
+        Samba Server (File Shares)
+                    ↓
+    Local Storage (Disks/RAID/NAS)
+                    ↓
+        Optional: Active Directory
+```
+
+### Use Cases
+
+- **Home Network Storage**: Centralized media and document storage
+- **Small Business**: Shared drives and collaborative workspaces
+- **Enterprise**: Department shares with access controls
+- **Development**: Source code repositories and build artifacts
+- **Media Streaming**: Integration with Plex, Jellyfin, and other media servers
+- **Backup Solutions**: Network backup targets and archival storage
+
+## Prerequisites
+
+Before beginning the installation, ensure your system meets all requirements:
+
+### System Requirements
+
+#### Minimum Requirements
+- **Operating System**: Windows 10/11, Linux (Ubuntu 20.04+, CentOS 8+)
+- **RAM**: 2GB system memory (4GB+ recommended)
+- **Storage**: 10GB available disk space for system, additional for shares
+- **Network**: Gigabit Ethernet recommended for performance
+- **CPU**: 64-bit processor (2+ cores recommended)
+
+#### Recommended Requirements
+- **Operating System**: Windows Server 2019/2022, Ubuntu 22.04 LTS, CentOS Stream 9
+- **RAM**: 8GB+ system memory for high-performance scenarios
+- **Storage**: SSD for system, dedicated storage array for shares
+- **Network**: 10GbE for high-throughput environments
+- **CPU**: Multi-core processor (4+ cores) for concurrent connections
+
+### Network Requirements
+
+#### Port Configuration
+- **Port 445**: SMB over TCP (primary)
+- **Port 139**: NetBIOS Session Service (legacy)
+- **Port 137**: NetBIOS Name Service (UDP)
+- **Port 138**: NetBIOS Datagram Service (UDP)
+
+#### Network Topology
+- **Same Subnet**: Optimal performance with broadcast discovery
+- **Cross-Subnet**: Requires WINS server or DNS configuration
+- **Firewall**: Proper SMB port configuration required
+- **VPN**: Compatible with most VPN solutions
+
+### Security Considerations
+
+- **User Authentication**: Local users or Active Directory integration
+- **Network Security**: SMB encryption and signing
+- **Access Controls**: Share-level and file-level permissions
+- **Audit Logging**: Connection and access logging
+- **Firewall**: Restrict SMB access to trusted networks
+
+## Installation Process
+
+### Step 1: Linux Samba Server Installation
+
+#### Ubuntu/Debian Installation
+
+```bash
+# Update package repositories
+sudo apt update
+
+# Install Samba server and client tools
+sudo apt install samba samba-common-bin smbclient cifs-utils
+
+# Install additional utilities
+sudo apt install samba-vfs-modules winbind
+
+# Verify installation
+samba --version
+smbd --version
+```
+
+#### CentOS/RHEL/Fedora Installation
+
+```bash
+# Install Samba packages
+sudo dnf install samba samba-common samba-client cifs-utils
+
+# Install additional tools
+sudo dnf install samba-winbind samba-vfs-glusterfs
+
+# Enable and start services
+sudo systemctl enable smb nmb winbind
+sudo systemctl start smb nmb winbind
+
+# Verify installation
+samba --version
+```
+
+#### Configure Firewall
+
+```bash
+# Ubuntu/Debian - UFW
+sudo ufw allow samba
+sudo ufw allow 445/tcp
+sudo ufw allow 139/tcp
+sudo ufw allow 137:138/udp
+
+# CentOS/RHEL - firewalld
+sudo firewall-cmd --permanent --add-service=samba
+sudo firewall-cmd --permanent --add-port=445/tcp
+sudo firewall-cmd --permanent --add-port=139/tcp
+sudo firewall-cmd --permanent --add-port=137-138/udp
+sudo firewall-cmd --reload
+```
+
+### Step 2: Windows SMB Share Configuration
+
+#### Enable SMB Features
+
+```powershell
+# Enable SMB features (Windows 10/11)
+Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol-Client -All
+Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol-Server -All
+
+# For Windows Server
+Install-WindowsFeature -Name FS-SMB1 -IncludeManagementTools
+Install-WindowsFeature -Name FS-FileServer -IncludeManagementTools
+
+# Verify SMB configuration
+Get-SmbServerConfiguration
+Get-SmbClientConfiguration
+```
+
+#### Configure SMB Security
+
+```powershell
+# Enable SMB encryption
+Set-SmbServerConfiguration -EncryptData $true -Force
+
+# Enable SMB signing
+Set-SmbServerConfiguration -RequireSecuritySignature $true -Force
+
+# Disable SMB1 for security (recommended)
+Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+
+# Configure authentication
+Set-SmbServerConfiguration -EnableAuthenticateUserSharing $true -Force
+```
+
+## Basic Configuration
+
+### Step 3: Linux Samba Configuration
+
+#### Create Samba Configuration
+
+```bash
+# Backup original configuration
+sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.backup
+
+# Create new configuration
+sudo tee /etc/samba/smb.conf > /dev/null << 'EOF'
+[global]
+    # Server identification
+    workgroup = WORKGROUP
+    server string = Samba Server %v
+    netbios name = FILESERVER
+    
+    # Protocol settings
+    server role = standalone server
+    security = user
+    map to guest = bad user
+    
+    # Performance optimization
+    socket options = TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=131072 SO_SNDBUF=131072
+    read raw = yes
+    write raw = yes
+    max xmit = 65535
+    dead time = 15
+    getwd cache = yes
+    
+    # Security settings
+    server signing = mandatory
+    smb encrypt = desired
+    client signing = mandatory
+    
+    # Logging
+    log file = /var/log/samba/log.%m
+    max log size = 1000
+    log level = 1
+    
+    # Character encoding
+    unix charset = UTF-8
+    dos charset = CP850
+    
+    # Name resolution
+    name resolve order = lmhosts wins bcast host
+    dns proxy = no
+    
+    # Printing (disable if not needed)
+    load printers = no
+    printing = bsd
+    printcap name = /dev/null
+    disable spoolss = yes
+
+# Public share example
+[public]
+    comment = Public Files
+    path = /srv/samba/public
+    browseable = yes
+    writable = yes
+    guest ok = yes
+    read only = no
+    create mask = 0664
+    directory mask = 0775
+    force user = nobody
+    force group = nogroup
+
+# Private share example
+[private]
+    comment = Private Files
+    path = /srv/samba/private
+    browseable = yes
+    writable = yes
+    guest ok = no
+    valid users = @sambausers
+    read only = no
+    create mask = 0660
+    directory mask = 0770
+    force group = sambausers
+
+# Home directories
+[homes]
+    comment = Home Directories
+    browseable = no
+    writable = yes
+    valid users = %S
+    create mask = 0600
+    directory mask = 0700
+EOF
+```
+
+#### Create Share Directories
+
+```bash
+# Create share directories
+sudo mkdir -p /srv/samba/public
+sudo mkdir -p /srv/samba/private
+
+# Set permissions
+sudo chmod 775 /srv/samba/public
+sudo chmod 770 /srv/samba/private
+
+# Set ownership
+sudo chown nobody:nogroup /srv/samba/public
+sudo chown root:sambausers /srv/samba/private
+
+# Create sambausers group
+sudo groupadd sambausers
+```
+
+#### Create Samba Users
+
+```bash
+# Create system user
+sudo useradd -M -s /sbin/nologin sambauser
+sudo usermod -aG sambausers sambauser
+
+# Set Samba password
+sudo smbpasswd -a sambauser
+sudo smbpasswd -e sambauser
+
+# List Samba users
+sudo pdbedit -L -v
+```
+
+### Step 4: Windows Share Configuration
+
+#### Create Network Share
+
+```powershell
+# Create share directory
+$SharePath = "C:\Shares\CompanyData"
+New-Item -ItemType Directory -Path $SharePath -Force
+
+# Create SMB share
+New-SmbShare -Name "CompanyData" -Path $SharePath -Description "Company Data Share"
+
+# Configure share permissions
+Grant-SmbShareAccess -Name "CompanyData" -AccountName "Everyone" -AccessRight Read -Force
+Grant-SmbShareAccess -Name "CompanyData" -AccountName "Domain Users" -AccessRight Change -Force
+Grant-SmbShareAccess -Name "CompanyData" -AccountName "Administrators" -AccessRight Full -Force
+
+# Set NTFS permissions
+$Acl = Get-Acl $SharePath
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Domain Users","Modify","ContainerInherit,ObjectInherit","None","Allow")
+$Acl.SetAccessRule($AccessRule)
+Set-Acl -Path $SharePath -AclObject $Acl
+```
+
+#### Configure Advanced Share Settings
+
+```powershell
+# Enable access-based enumeration
+Set-SmbShare -Name "CompanyData" -FolderEnumerationMode AccessBased
+
+# Configure caching
+Set-SmbShare -Name "CompanyData" -CachingMode Manual
+
+# Enable encryption for sensitive shares
+Set-SmbShare -Name "CompanyData" -EncryptData $true
+
+# Configure concurrent user limits
+Set-SmbShare -Name "CompanyData" -ConcurrentUserLimit 50
+```
+
+## Advanced Configuration
+
+### Step 5: Active Directory Integration
+
+#### Join Linux Server to Domain
+
+```bash
+# Install required packages
+sudo apt install realmd sssd sssd-tools libnss-sss libpam-sss adcli samba-common-bin
+
+# Discover domain
+sudo realm discover DOMAIN.COM
+
+# Join domain
+sudo realm join --user=administrator DOMAIN.COM
+
+# Configure Samba for AD
+sudo tee -a /etc/samba/smb.conf > /dev/null << 'EOF'
+
+[global]
+    # Active Directory settings
+    security = ads
+    realm = DOMAIN.COM
+    workgroup = DOMAIN
+    
+    # ID mapping
+    idmap config * : backend = tdb
+    idmap config * : range = 3000-7999
+    idmap config DOMAIN : backend = rid
+    idmap config DOMAIN : range = 10000-999999
+    
+    # Winbind settings
+    winbind use default domain = yes
+    winbind offline logon = false
+    winbind nss info = rfc2307
+    winbind enum users = yes
+    winbind enum groups = yes
+EOF
+
+# Restart services
+sudo systemctl restart smbd nmbd winbind
+```
+
+#### Configure Domain Authentication
+
+```bash
+# Test domain authentication
+wbinfo -t
+wbinfo -u
+wbinfo -g
+
+# Configure NSS
+sudo sed -i 's/passwd:.*compat/passwd: compat winbind/' /etc/nsswitch.conf
+sudo sed -i 's/group:.*compat/group: compat winbind/' /etc/nsswitch.conf
+
+# Test user resolution
+getent passwd DOMAIN\\username
+```
+
+### Step 6: Performance Optimization
+
+#### Linux Performance Tuning
+
+```bash
+# Create performance tuning script
+sudo tee /etc/samba/performance-tuning.conf > /dev/null << 'EOF'
+[global]
+    # Network optimization
+    socket options = TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=262144 SO_SNDBUF=262144
+    use sendfile = yes
+    aio read size = 16384
+    aio write size = 16384
+    
+    # Memory optimization
+    max smbd processes = 1000
+    max connections = 0
+    deadtime = 15
+    keepalive = 30
+    
+    # Disk I/O optimization
+    strict allocate = yes
+    allocation roundup size = 1048576
+    read raw = yes
+    write raw = yes
+    
+    # Caching
+    getwd cache = yes
+    stat cache = yes
+    
+    # Multi-threading
+    max mux = 50
+    large readwrite = yes
+EOF
+
+# Apply performance settings
+sudo systemctl restart smbd
+```
+
+#### Windows Performance Optimization
+
+```powershell
+# Optimize SMB server settings
+Set-SmbServerConfiguration -MaxChannelPerSession 32 -Force
+Set-SmbServerConfiguration -MaxSessionPerConnection 16 -Force
+Set-SmbServerConfiguration -MaxWorkItems 8192 -Force
+
+# Enable SMB Direct (RDMA) if supported
+Set-SmbServerConfiguration -EnableSMBQUIC $true -Force
+
+# Optimize network adapter settings
+Get-NetAdapter | Set-NetAdapterAdvancedProperty -DisplayName "Receive Buffers" -DisplayValue 2048
+Get-NetAdapter | Set-NetAdapterAdvancedProperty -DisplayName "Transmit Buffers" -DisplayValue 2048
+```
+
+### Step 7: Security Hardening
+
+#### Linux Security Configuration
+
+```bash
+# Configure SELinux for Samba (if enabled)
+sudo setsebool -P samba_enable_home_dirs on
+sudo setsebool -P samba_export_all_rw on
+
+# Create security-hardened configuration
+sudo tee -a /etc/samba/smb.conf > /dev/null << 'EOF'
+
+[global]
+    # Security hardening
+    server signing = mandatory
+    client signing = mandatory
+    smb encrypt = required
+    
+    # Disable legacy protocols
+    server min protocol = SMB2_10
+    client min protocol = SMB2_10
+    
+    # Authentication
+    ntlm auth = no
+    lanman auth = no
+    client lanman auth = no
+    client plaintext auth = no
+    
+    # Access controls
+    restrict anonymous = 2
+    null passwords = no
+    obey pam restrictions = yes
+    
+    # Logging and auditing
+    log level = 2 auth:5 winbind:5
+    max log size = 10000
+    
+    # VFS modules for auditing
+    vfs objects = full_audit
+    full_audit:prefix = %u|%I|%S
+    full_audit:success = open opendir write unlink rename mkdir rmdir
+    full_audit:failure = all
+    full_audit:facility = local5
+    full_audit:priority = notice
+EOF
+```
+
+#### Windows Security Hardening
+
+```powershell
+# Disable SMB1 protocol
+Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+
+# Enable SMB encryption
+Set-SmbServerConfiguration -EncryptData $true -Force
+
+# Configure SMB signing
+Set-SmbServerConfiguration -RequireSecuritySignature $true -Force
+
+# Disable anonymous access
+Set-SmbServerConfiguration -RestrictNamedpipeAccessViaQuic $true -Force
+
+# Configure audit policies
+auditpol /set /subcategory:"File Share" /success:enable /failure:enable
+auditpol /set /subcategory:"Other Object Access Events" /success:enable /failure:enable
+```
+
+## Integration and Applications
+
+### Step 8: Nextcloud SMB Integration
+
+#### Install SMB Support in Nextcloud
+
+```bash
+# For Docker-based Nextcloud
+docker exec -it nextcloud-app bash
+
+# Install SMB client tools
+apt update
+apt install smbclient libsmbclient-dev
+
+# Install PHP SMB extension
+pecl install smbclient
+echo "extension=smbclient.so" > /usr/local/etc/php/conf.d/smbclient.ini
+
+# Restart container
+exit
+docker restart nextcloud-app
+```
+
+#### Configure External Storage
+
+1. **Enable External Storage App**:
+   - Navigate to Apps → External storage support
+   - Enable the application
+
+2. **Configure SMB Share**:
+   - Go to Settings → Administration → External storage
+   - Add new storage with SMB/CIFS backend
+   - Configure connection details:
+     - **Host**: SMB server IP or hostname
+     - **Share**: Share name
+     - **Domain**: Windows domain (if applicable)
+     - **Username**: SMB username
+     - **Password**: SMB password
+
+3. **Test Connection**:
+   - Use the SMB connection test feature
+   - Verify green checkmark appears
+
+#### Advanced Nextcloud SMB Configuration
+
+```php
+// config/config.php additions for SMB optimization
+'memcache.local' => '\OC\Memcache\APCu',
+'memcache.distributed' => '\OC\Memcache\Redis',
+'redis' => [
+    'host' => 'localhost',
+    'port' => 6379,
+],
+
+// SMB-specific settings
+'filesystem_check_changes' => 1,
+'files_external_allow_create_new_local' => true,
+```
+
+### Step 9: Media Server Integration
+
+#### Jellyfin SMB Configuration
+
+```bash
+# Configure Jellyfin to access SMB shares
+# Add to docker-compose.yml or mount points
+
+# For Docker Compose
+services:
+  jellyfin:
+    volumes:
+      - //server-ip/media-share:/media:ro
+      - //server-ip/config-share:/config
+    environment:
+      - JELLYFIN_PublishedServerUrl=http://localhost:8096
+```
+
+#### Plex SMB Integration
+
+```bash
+# Mount SMB shares for Plex access
+sudo mkdir -p /mnt/plex-media
+sudo mount -t cifs //server-ip/media-share /mnt/plex-media -o username=plexuser,password=password,uid=plex,gid=plex
+
+# Add to /etc/fstab for persistent mounting
+echo "//server-ip/media-share /mnt/plex-media cifs username=plexuser,password=password,uid=plex,gid=plex,iocharset=utf8 0 0" | sudo tee -a /etc/fstab
+```
+
+## Monitoring and Maintenance
+
+### Step 10: Monitoring Setup
+
+#### Linux Monitoring
+
+```bash
+# Create monitoring script
+sudo tee /usr/local/bin/samba-monitor.sh > /dev/null << 'EOF'
+#!/bin/bash
+
+# Check Samba services
+echo "=== Samba Service Status ==="
+systemctl status smbd --no-pager -l
+systemctl status nmbd --no-pager -l
+
+# Check active connections
+echo -e "\n=== Active SMB Connections ==="
+smbstatus -S
+
+# Check locked files
+echo -e "\n=== Locked Files ==="
+smbstatus -L
+
+# Check share usage
+echo -e "\n=== Share Usage ==="
+df -h /srv/samba/*
+
+# Check log for errors
+echo -e "\n=== Recent Errors ==="
+tail -20 /var/log/samba/log.smbd | grep -i error
+EOF
+
+chmod +x /usr/local/bin/samba-monitor.sh
+```
+
+#### Windows Monitoring
+
+```powershell
+# Create SMB monitoring script
+$MonitorScript = @'
+# Check SMB server status
+Write-Host "=== SMB Server Status ==="
+Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol, EnableSMB2Protocol, EncryptData
+
+# Check active sessions
+Write-Host "`n=== Active SMB Sessions ==="
+Get-SmbSession | Select-Object ClientComputerName, ClientUserName, NumOpens
+
+# Check open files
+Write-Host "`n=== Open Files ==="
+Get-SmbOpenFile | Select-Object ClientComputerName, ClientUserName, Path
+
+# Check share statistics
+Write-Host "`n=== Share Statistics ==="
+Get-SmbShare | Get-SmbShareAccess | Group-Object Name | Select-Object Name, Count
+
+# Check event logs for errors
+Write-Host "`n=== Recent SMB Errors ==="
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-SMBServer/Operational'; Level=2,3} -MaxEvents 10 | Select-Object TimeCreated, Id, LevelDisplayName, Message
+'@
+
+$MonitorScript | Out-File -FilePath "C:\Scripts\SMB-Monitor.ps1" -Encoding UTF8
+```
+
+### Step 11: Performance Monitoring
+
+#### Network Performance
+
+```bash
+# Monitor SMB network traffic
+sudo iftop -i eth0 -P -p -B
+
+# Monitor SMB connections
+watch -n 5 'smbstatus -S'
+
+# Check SMB protocol usage
+sudo tcpdump -i eth0 port 445 -c 100
+
+# Performance statistics
+smbstatus -p | head -20
+```
+
+#### Storage Performance
+
+```bash
+# Monitor disk I/O for share directories
+sudo iotop -a -o -d 5
+
+# Check filesystem performance
+sudo iostat -x 5 3
+
+# Monitor share directory usage
+du -sh /srv/samba/* | sort -hr
+```
+
+### Step 12: Backup and Maintenance
+
+#### Configuration Backup
+
+```bash
+# Create backup script
+sudo tee /usr/local/bin/samba-backup.sh > /dev/null << 'EOF'
+#!/bin/bash
+
+BACKUP_DIR="/backup/samba"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
+
+# Backup Samba configuration
+cp /etc/samba/smb.conf "$BACKUP_DIR/smb.conf.$DATE"
+
+# Backup user database
+tdbbackup -s .bak /var/lib/samba/private/passdb.tdb
+cp /var/lib/samba/private/passdb.tdb.bak "$BACKUP_DIR/passdb.tdb.$DATE"
+
+# Backup share permissions
+getfacl -R /srv/samba > "$BACKUP_DIR/share-permissions.$DATE"
+
+# Cleanup old backups (keep 30 days)
+find "$BACKUP_DIR" -name "*.conf.*" -mtime +30 -delete
+find "$BACKUP_DIR" -name "*.tdb.*" -mtime +30 -delete
+find "$BACKUP_DIR" -name "share-permissions.*" -mtime +30 -delete
+
+echo "Samba backup completed: $DATE"
+EOF
+
+chmod +x /usr/local/bin/samba-backup.sh
+
+# Schedule daily backups
+echo "0 2 * * * /usr/local/bin/samba-backup.sh" | sudo crontab -
+```
+
+#### Regular Maintenance
+
+```bash
+# Create maintenance script
+sudo tee /usr/local/bin/samba-maintenance.sh > /dev/null << 'EOF'
+#!/bin/bash
+
+# Rotate logs
+logrotate -f /etc/logrotate.d/samba
+
+# Clean temporary files
+find /tmp -name ".smb*" -mtime +7 -delete
+
+# Optimize TDB databases
+tdbbackup -s .bak /var/lib/samba/private/passdb.tdb
+mv /var/lib/samba/private/passdb.tdb.bak /var/lib/samba/private/passdb.tdb
+
+# Check configuration syntax
+testparm -s > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo "Samba configuration is valid"
+else
+    echo "ERROR: Samba configuration has errors"
+    testparm
+fi
+
+# Restart services if needed
+systemctl reload smbd
+systemctl reload nmbd
+EOF
+
+chmod +x /usr/local/bin/samba-maintenance.sh
+```
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Issue 1: Cannot Access Shares
+
+**Symptoms:**
+- "Network path not found" errors
+- Authentication failures
+- Shares not visible in network browser
+
+**Diagnostic Steps:**
+
+```bash
+# Test SMB connectivity
+smbclient -L //server-ip -U username
+
+# Check service status
+sudo systemctl status smbd nmbd
+
+# Verify configuration
+sudo testparm
+
+# Check firewall
+sudo ufw status
+sudo iptables -L | grep -i smb
+```
+
+**Solutions:**
+
+```bash
+# Restart Samba services
+sudo systemctl restart smbd nmbd
+
+# Fix permissions
+sudo chmod 755 /srv/samba/sharename
+sudo chown username:group /srv/samba/sharename
+
+# Reset Samba password
+sudo smbpasswd -a username
+
+# Check network connectivity
+ping server-ip
+telnet server-ip 445
+```
+
+#### Issue 2: Performance Issues
+
+**Symptoms:**
+- Slow file transfers
+- High CPU usage
+- Connection timeouts
+
+**Diagnostic Steps:**
+
+```bash
+# Monitor performance
+top -p $(pgrep smbd)
+iotop -a -o
+
+# Check network utilization
+iftop -i eth0
+
+# Analyze Samba logs
+tail -f /var/log/samba/log.smbd
+```
+
+**Solutions:**
+
+```bash
+# Optimize Samba configuration
+sudo tee -a /etc/samba/smb.conf > /dev/null << 'EOF'
+[global]
+    socket options = TCP_NODELAY IPTOS_LOWDELAY SO_RCVBUF=131072 SO_SNDBUF=131072
+    use sendfile = yes
+    aio read size = 16384
+    aio write size = 16384
+EOF
+
+# Restart services
+sudo systemctl restart smbd
+
+# Optimize network settings
+echo 'net.core.rmem_max = 134217728' | sudo tee -a /etc/sysctl.conf
+echo 'net.core.wmem_max = 134217728' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+#### Issue 3: Authentication Problems
+
+**Symptoms:**
+- "Access denied" errors
+- Password prompts not working
+- Domain authentication failures
+
+**Diagnostic Steps:**
+
+```bash
+# Test authentication
+smbclient //server/share -U username
+
+# Check user database
+sudo pdbedit -L
+
+# Verify domain membership (if applicable)
+wbinfo -t
+wbinfo -u
+```
+
+**Solutions:**
+
+```bash
+# Reset user password
+sudo smbpasswd -a username
+sudo smbpasswd -e username
+
+# Fix domain trust (if applicable)
+sudo net ads testjoin
+sudo net ads join -U administrator
+
+# Restart authentication services
+sudo systemctl restart winbind
+```
+
+## Production Deployment
+
+### Step 13: Enterprise Deployment
+
+#### High Availability Configuration
+
+```bash
+# Configure CTDB for clustering
+sudo apt install ctdb
+
+# Create CTDB configuration
+sudo tee /etc/ctdb/nodes > /dev/null << 'EOF'
+192.168.1.10
+192.168.1.11
+192.168.1.12
+EOF
+
+# Configure public addresses
+sudo tee /etc/ctdb/public_addresses > /dev/null << 'EOF'
+192.168.1.100/24 eth0
+192.168.1.101/24 eth0
+192.168.1.102/24 eth0
+EOF
+
+# Enable CTDB
+sudo systemctl enable ctdb
+sudo systemctl start ctdb
+```
+
+#### Load Balancing
+
+```bash
+# Configure DNS round-robin
+# Add multiple A records for the same hostname
+# fileserver.domain.com -> 192.168.1.10
+# fileserver.domain.com -> 192.168.1.11
+# fileserver.domain.com -> 192.168.1.12
+
+# Or use a load balancer like HAProxy
+sudo apt install haproxy
+
+sudo tee -a /etc/haproxy/haproxy.cfg > /dev/null << 'EOF'
+frontend smb_frontend
+    bind *:445
+    mode tcp
+    default_backend smb_servers
+
+backend smb_servers
+    mode tcp
+    balance roundrobin
+    server smb1 192.168.1.10:445 check
+    server smb2 192.168.1.11:445 check
+    server smb3 192.168.1.12:445 check
+EOF
+```
+
+### Step 14: Security Compliance
+
+#### Compliance Checklist
+
+- ✅ **Strong Authentication**: Complex passwords and MFA where possible
+- ✅ **Encryption**: SMB3 encryption enabled for sensitive data
+- ✅ **Access Controls**: Principle of least privilege implemented
+- ✅ **Audit Logging**: All access and changes logged
+- ✅ **Network Security**: Firewall rules and network segmentation
+- ✅ **Regular Updates**: Security patches applied promptly
+- ✅ **Backup**: Regular configuration and data backups
+- ✅ **Monitoring**: Real-time monitoring and alerting
+
+#### Audit and Compliance Reporting
+
+```bash
+# Generate compliance report
+cat > /usr/local/bin/samba-compliance-report.sh << 'EOF'
+#!/bin/bash
+
+echo "Samba Security Compliance Report - $(date)"
+echo "=========================================="
+
+# Check SMB protocol versions
+echo "SMB Protocol Configuration:"
+testparm -s 2>/dev/null | grep -E "(server min protocol|client min protocol|smb encrypt)"
+
+# Check user accounts
+echo -e "\nSamba User Accounts:"
+pdbedit -L | wc -l
+echo "Total Samba users configured"
+
+# Check share permissions
+echo -e "\nShare Security:"
+testparm -s 2>/dev/null | grep -E "(guest ok|read only|valid users)"
+
+# Check logging configuration
+echo -e "\nAudit Logging:"
+testparm -s 2>/dev/null | grep -E "(log level|full_audit)"
+
+# Check recent access
+echo -e "\nRecent Access (last 24 hours):"
+find /var/log/samba -name "*.log" -mtime -1 -exec grep -l "connect\|disconnect" {} \; | wc -l
+echo "Log files with recent activity"
+EOF
+
+chmod +x /usr/local/bin/samba-compliance-report.sh
+```
+
+---
+
+## Summary
+
+You have successfully installed and configured a complete Samba/SMB file sharing solution with:
+
+✅ **Professional Samba installation** on Linux and Windows platforms  
+✅ **Advanced security hardening** with encryption and access controls  
+✅ **Performance optimization** with tuned configurations and caching  
+✅ **Enterprise integration** with Active Directory and domain services  
+✅ **Application integration** with Nextcloud, Jellyfin, and media servers  
+✅ **Comprehensive monitoring** with health checks and performance metrics  
+✅ **Production deployment** strategies with high availability and load balancing  
+✅ **Security compliance** with audit logging and reporting capabilities  
+
+Your Samba/SMB file sharing infrastructure is now ready for professional network storage with enterprise-level features, security, and reliability.
 
 <Tabs>
   <TabItem value="Setting up a SMB/Samba Share on Windows" label="Setting up a SMB/Samba Share on Windows" default>
