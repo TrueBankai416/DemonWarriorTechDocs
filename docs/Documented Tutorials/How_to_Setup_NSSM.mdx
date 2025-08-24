@@ -1,0 +1,75 @@
+---
+title: How to Setup NSSM
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+
+### Setting up NSSM to Auto-start Caddy
+
+#### Downloads
+
+[NSSM](https://nssm.cc/release/nssm-2.24.zip)
+
+1.Please add Caddy and NSSM to your enviroment variables shown [here](https://docs.demonwarriortech.com/Documented%20Tutorials/How_to_Install_Wordpress_on_Windows#setting-up-php-7x)
+
+2. Open an administrative powershell
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/0123715b-a4e3-4bf6-9cc9-6c76420a5e32)
+
+3. Type commmand below to register a service
+
+```css
+nssm install Caddy
+```
+
+4. Now it will show NSSM GUI
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/dfa654e9-97f7-42e3-8823-0bfee141c7cf)
+
+5. Configure like below
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/974876ea-ca08-4b18-90c3-3fd890fd4fcd)
+
+Path= Your Caddy.exe (IE `C:\Tools\Caddy\caddy.exe`)
+
+Startup Directory= Your Root Caddy folder (IE `C:/Tools/Caddy`)
+
+Arguments= this will be the command your run to start caddy in the background
+
+(IE `run --config Caddyfile`)
+
+When done it should look like this 
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/a3f7d5f2-87aa-4456-80a3-50cccb215cdd)
+
+6. Now Select Install Service
+
+7. Start the service in the administrative powershell by running 
+
+```css
+nssm start caddy
+``` 
+
+(so if you name it something else in the nssm install myappname it will be nssm install sonarr to setup in nssm gui and nssm start sonarr to auto start the service)
+
+8. You can check to see if its running succesful by typing 
+
+```css
+nssm status Caddy
+```
+
+9. To restart it 
+
+```css
+nssm restart Caddy
+```
+
+10. To stop the service 
+
+```css
+nssm stop Caddy
+```
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)

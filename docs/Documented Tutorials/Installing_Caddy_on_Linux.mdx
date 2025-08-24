@@ -1,0 +1,321 @@
+---
+title: How to Install Caddy on Linux
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+### Downloading Caddy
+
+1. Check our system OS type in terminal
+
+```
+lsb_release -a
+```
+
+ie. im on Ubuntu 24.04
+
+![image](https://i.imgur.com/dl4285m.png)
+
+
+2. Installing Caddy
+
+:::caution
+**You Need to Note to Add the Cloudflare and Duckdns Plugins before Downloading**
+:::
+
+[Caddy Download](https://caddyserver.com/download?package=github.com%2Fcaddy-dns%2Fcloudflare&package=github.com%2Fcaddy-dns%2Fduckdns)
+
+2. Once Downloaded lets go to the directory we downloaded it to 
+
+```
+cd ~/Downloads
+```
+
+3. You need to rename caddy from the downloaded name to caddy
+
+```
+sudo mv caddy_linux_amd64_custom ./caddy
+```
+
+and check to make sure its correct now 
+
+```
+ls
+```
+
+4. You have to give caddy read, write and execute permissions by running
+
+```
+sudo chmod +x caddy
+```
+
+5. Check to make sure the permissions are now correct for caddy by running 
+
+```
+ls -la
+```
+
+6. Copy the Caddy binary the execution folder where we can run it in the OS.
+
+```
+sudo cp caddy /usr/bin/
+```
+
+7. Check to make sure its able to be run and executed 
+
+```
+caddy version
+```
+
+8. You should recieve an output like this
+
+![image](https://i.imgur.com/cQ1o0UQ.png)
+
+9. Now you need to create a group named caddy
+
+```
+sudo groupadd --system caddy
+```
+
+10. Also create a user named caddy with writeable home directory
+
+```
+sudo useradd --system \
+    --gid caddy \
+    --create-home \
+    --home-dir /var/lib/caddy \
+    --shell /usr/sbin/nologin \
+    --comment "Caddy web server" \
+    caddy
+```
+
+11. You have to go into the systemd directory to make the file
+
+```
+cd /etc/systemd/system
+```
+
+12. Create our caddy.service file
+
+```
+sudo nano caddy.service
+```
+
+
+13. Paste below in our caddy.service so it starts on boot
+
+```
+# caddy.service
+#
+# For using Caddy with a config file.
+#
+# Make sure the ExecStart and ExecReload commands are correct
+# for your installation.
+#
+# See https://caddyserver.com/docs/install for instructions.
+#
+# WARNING: This service does not use the --resume flag, so if you
+# use the API to make changes, they will be overwritten by the
+# Caddyfile next time the service is restarted. If you intend to
+# use Caddy's API to configure it, add the --resume flag to the
+# `caddy run` command or use the caddy-api.service file instead.
+
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+User=caddy
+Group=caddy
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile --force
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+PrivateTmp=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+# Automatically restart caddy if it crashes except if the exit code was 1
+RestartPreventExitStatus=1
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+14. CTRL + O and ENTER to save the file
+
+15. CTRL + X and Enter to exit
+
+16. We need to make the caddyfile directory where it will be run
+
+```
+cd /etc
+```
+
+```
+sudo mkdir caddy
+```
+
+```
+cd /etc/caddy
+```
+
+
+17. You need to make the Caddyfile
+
+```
+sudo nano Caddyfile
+```
+
+18. Copy examples for your choice from 
+
+[Caddy Examples](https://docs.demonwarriortech.com/Examples/Caddy_Examples)
+
+19. To find our Local ip were going to install net tool to use ifconfig to figure out our internal ip of the system
+
+```
+sudo apt install net-tools
+```
+
+type your passwsord
+
+```
+ifconfig
+```
+
+Find your internal ipv4 ie 192.168.0.224
+
+### Duckdns Setup
+
+1. Make an account if you already havent by clicking one of the applicable links
+
+![image](https://i.imgur.com/aWXAoft.png)
+
+2. Create a new domain like below and click add a domain
+
+![image](https://i.imgur.com/GINDccu.png)
+
+3. Go to the install link on the top binary
+
+[Duckdns Installation](https://www.duckdns.org/install.jsp)
+
+Select Linux GUI
+
+![image](https://i.imgur.com/f2fdIbx.png)
+
+Select your domain from the dropdown
+
+4. Download the cron so it autoruns on boot
+
+```
+sudo apt-get install zenity cron curl
+```
+
+5. Download the Duckdns Linux GUI
+
+[Duckdns Linux GUI](https://www.duckdns.org/scripts/duck-setup-gui.sh)
+
+Save it Downloads
+
+6. Go to downloads
+
+```
+cd ~/Downloads
+```
+
+7. Make it executable
+
+```
+chmod +x duck-setup-gui.sh
+```
+
+8. You need to run it
+
+```
+./duck-setup-gui.sh
+```
+
+9. Once its launched it should look like this
+
+![image](https://www.duckdns.org/img/linux-gui-01.png)
+
+input your duckdns domain
+
+ie. demonwarriorflix
+
+then input your token like below
+
+![image](https://www.duckdns.org/img/linux-gui-02.png)
+
+10. Once thats done it should show success. Now run the cronjob to auto run on boot and refresh every 5 minutes
+
+```
+crontab -l
+```
+
+### Opening Ports
+
+1. Open your ports using your Router/ISP's Guide
+
+You can check here to see if there Open
+
+[Check if Ports are Open](https://portchecker.co/)
+
+### Running Caddy
+
+1. Reload system services so it reads the new service file
+
+```
+sudo systemctl daemon-reload
+```
+
+2. Enable the Caddy Service
+
+```
+sudo systemctl enable --now caddy
+```
+
+### Other Caddy commands
+ 
+Check to make sure its running 
+
+```
+sudo systemctl status caddy
+```
+
+Restart Caddy service
+
+```
+sudo systemctl restart caddy
+```
+
+Stop Caddy
+
+```
+sudo systemctl stop caddy
+```
+
+start Caddy
+
+```
+sudo systemctl start Caddy
+```
+
+Once you edit the config file to reload it 
+
+```
+sudo systemctl reload caddy
+```
+
+If you want to view logs run this
+
+```
+journalctl -u caddy --no-pager | less +G
+```
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)

@@ -1,0 +1,665 @@
+---
+title: Jellyfin Themes & Extras
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="Jellyfin Themes" label="Jellyfin Themes" default>
+
+### Jellyfin Themes
+
+#### Jellyskin
+
+Description:  Vibrante/minimal Jellyfin CSS using custom Icons and more!!, created for Jellyfin web 🎞️, can be used by just one line. 
+
+Examples
+
+Login Page
+
+![image](https://cdn.jsdelivr.net/gh/prayag17/JellySkin/img/login.jpg)
+
+Home/Index Page
+
+![image](https://cdn.jsdelivr.net/gh/prayag17/JellySkin/img/Home.jpg)
+
+Library Page
+
+![image](https://cdn.jsdelivr.net/gh/prayag17/JellySkin/img/Movies.jpg)
+
+Title Page
+
+![image](https://cdn.jsdelivr.net/gh/prayag17/JellySkin/img/Title%20Page-Movie.jpg)
+
+Dashboard
+
+![image](https://user-images.githubusercontent.com/55829513/200133302-5d7e7ac1-201b-4cb4-a839-ee53c5c6a6f2.png)
+
+##### Installation
+
+  ```css
+  @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/main.css");
+  ```
+
+    To enable Logos add this to custom css:
+
+  ```css
+  @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/logo.css");
+  ```
+  
+    You can also use Jellyfin-Skin-Manager-Plugin : (https://github.com/danieladov/jellyfin-plugin-skin-manager)
+  
+   **Note** : Jellyfin Skin Manager has not been updated for some time and doesn't have the latest JellySkin css available.
+
+    Addons
+
+    Improve Performance
+    
+    Remove BackdropFilter
+
+  This remove the frosted glass like effect from every place.
+
+      ```css
+      @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/addons/improvePerformance/removeBackdropFilter.css");
+      ```
+
+    Remove scroll fade
+
+  This remove the faded scroll view
+
+      ```css
+      @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/addons/improvePerformance/removeFadingScroll.css");
+      ```
+
+    Compact Poster
+
+    Want to use compact posters instead of normal cards, add this to your custom css:
+
+    ```css
+    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/addons/compactPosters.css");
+    ```
+
+    Example:
+    
+    ![image](https://user-images.githubusercontent.com/55829513/200132447-5307c19f-97e5-4022-ab42-c5b8bf632d6b.png)
+
+    **Warning** : Compact posters might not look as expected for some screen sizes
+
+    Horizontal My Media
+
+    Brings back the horizontal section for My Media
+
+    ```css
+    @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/addons/horizontalMyMedia.css");
+    ```
+
+    Using/Changing default gradient accent
+
+    If you want want to change the default jellyfin gradient accent to some other preset gradient use:
+     **Note** : Remember to put gradient css files below the main.css file import. Also this won't affect the login mesh background's colors.
+    
+    Mauve:
+
+      ```css
+      @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/addons/gradients/mauve.css");
+      ```
+
+      Example:
+
+      ![image](https://user-images.githubusercontent.com/55829513/200132732-d188392a-5642-47f7-bb62-f204a85d992e.png)
+
+    NightSky:
+
+      ```css
+      @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/addons/gradients/nightSky.css");
+      ```
+
+      Example:
+
+      ![image](https://user-images.githubusercontent.com/55829513/200132808-5b02c8e9-29c1-4a6b-ad3c-514588cf717a.png)
+
+    Sea:
+
+      ```css
+      @import url("https://cdn.jsdelivr.net/npm/jellyskin@latest/dist/addons/gradients/sea.css");
+      ```
+
+      Example:
+
+      ![image](https://user-images.githubusercontent.com/55829513/200132840-984deaf3-c228-4092-be8f-44c325d57782.png)
+
+[JellySkin Github](https://github.com/prayag17/JellySkin)
+
+#### Jellyflix
+
+Description:  Jellyfin but Looks, Feels and Smells like Netflix 
+
+Examples
+
+Login
+
+![image](https://camo.githubusercontent.com/0049d35b9a4ad4e069422ea967b60548fd13d52e9a2c78159c3558d4a9435d5d/68747470733a2f2f63646e2e6a7364656c6976722e6e65742f67682f70726179616731372f4a656c6c79466c6978406c61746573742f696d672f4c6f67696e2e6a7067)
+
+Homepage
+
+![image](https://camo.githubusercontent.com/5bc6f56ffed7d4aa5e75212e77c8dedad9614eaff487865202a7e9a769fcdf27/68747470733a2f2f63646e2e6a7364656c6976722e6e65742f67682f70726179616731372f4a656c6c79466c6978406c61746573742f696d672f486f6d652e6a7067)
+
+Library
+
+![image](https://camo.githubusercontent.com/87377afdebdc223ec3f9bb733af9e85497b5e99d9e0038b31e0b87e0a3697b1f/68747470733a2f2f63646e2e6a7364656c6976722e6e65742f67682f70726179616731372f4a656c6c79466c6978406c61746573742f696d672f4d6f766965732e6a7067)
+
+Movie Title Page
+
+![image](https://camo.githubusercontent.com/5f02c9e51830c47c0e22dc2674053d946c2c7b188f6b598c5d69c415099b59c3/68747470733a2f2f63646e2e6a7364656c6976722e6e65742f67682f70726179616731372f4a656c6c79466c6978406c61746573742f696d672f5469746c65253230506167652d4d6f7669652e6a7067)
+
+TV-Show Title Page
+
+![image](https://camo.githubusercontent.com/40538aa5c8911c56a1f24fa99b2ec84c3740aa6182d1dd311d9002d560cfe459/68747470733a2f2f63646e2e6a7364656c6976722e6e65742f67682f70726179616731372f4a656c6c79466c6978406c61746573742f696d672f5469746c65253230506167652d54562e6a7067)
+
+##### Installation
+
+<h5>Auto Update: </h5>
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@latest/default.css");
+```
+
+<h5>Custom  Version:</h5>
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@<version-number>/default.css");
+```
+
+<h4>With Logos(recommended):</h4>
+
+<h5>Auto Update:</h5>
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@latest/default.css");
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@latest/addons/Logo.css");
+```
+
+<h5>Custom Version:</h5>
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@<version-number>/default.css");
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@<version-number>/addons/Logo.css");
+```
+
+<h5>You can also use Jellyfin colors instead of Netflix red </h5>
+
+Jellyfin-Blue:
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@9.0.4/addons/jf-blue.css");
+```
+
+Jellyfin-Purple:
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/prayag17/JellyFlix@9.0.4/addons/jf-purple.css");
+```
+
+[Jellyflix Github](https://github.com/prayag17/JellyFlix)
+
+#### Ultrachromic
+
+Description:  The final form, the true evolution of the chromic theme saga! 
+
+Example
+
+![image](https://user-images.githubusercontent.com/4365015/127774204-03957527-7178-4ea2-8674-d83fe6a97d1c.png)
+
+Login Page
+
+![image](https://user-images.githubusercontent.com/4365015/127768970-e827c7e4-f4ce-4229-a68a-b2e87a723ef0.png)
+
+Home/Index Page
+
+![image](https://user-images.githubusercontent.com/4365015/127774204-03957527-7178-4ea2-8674-d83fe6a97d1c.png)
+
+Library Page
+
+![image](https://raw.githubusercontent.com/danieladov/jellyfin-plugin-skin-manager/master/src/img/Monochromic/Lib.jpg)
+
+Title Page
+
+![image](https://user-images.githubusercontent.com/4365015/127778994-ddee8235-6bb2-42ae-a8b1-f9023dc69398.png)
+
+##### Installation
+
+Multiple iterations and combinations to use with Ultrachromic. Check the github for more combination
+
+[Ultrachromic Github](https://github.com/CTalvio/Ultrachromic)
+
+#### Monochromic
+
+Description: This theme aims to be minimalistic and somewhat muted in color. Add-ons and custom accent colors are possible, but not entirely supported by this plug-in. Visit the github of the theme for more information
+
+Examples
+
+Login Page
+
+![image](https://github.com/danieladov/jellyfin-plugin-skin-manager/blob/master/src/img/Monochromic/login.jpg?raw=true)
+
+Home/Index Page
+
+![image](https://github.com/CTalvio/Monochromic/blob/master/screenshots/1.png?raw=true)
+
+Library Page
+
+![image](https://raw.githubusercontent.com/danieladov/jellyfin-plugin-skin-manager/master/src/img/Monochromic/Lib.jpg)
+
+Title Page
+
+![image](https://github.com/CTalvio/Monochromic/raw/master/screenshots/2.png)
+
+##### Installation
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/CTalvio/Ultrachromic/presets/monochromic_preset.css');
+```
+
+[Monochromic Github](https://github.com/CTalvio/Monochromic)
+
+#### Kaleidochromic
+Description: A more colorful custom theme for Jellyfin mediaserver created using CSS overrides 
+
+Examples
+
+Login Page
+
+![image](https://github.com/danieladov/jellyfin-plugin-skin-manager/blob/master/src/img/Kaleidochromic/Login.jpg?raw=true)
+
+Home/Index Page
+
+![image](https://github.com/CTalvio/Kaleidochromic/raw/main/screenshots/6.png)
+
+Library Page
+
+![image](https://github.com/CTalvio/Kaleidochromic/raw/main/screenshots/5.png)
+
+Title Page
+
+![image](https://github.com/CTalvio/Kaleidochromic/raw/main/screenshots/1.png)
+
+
+
+##### Installation
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/CTalvio/Ultrachromic/presets/kaleidochromic_preset.css');
+```
+
+[Kaleidochromic Github](https://github.com/CTalvio/Kaleidochromic)
+
+#### Novachromic
+Description: My third theme for Jellyfin media server, part of the "chromic" family. 
+
+Examples
+
+Home/Index Oage
+
+![image](https://raw.githubusercontent.com/CTalvio/Novachromic/main/screenshots/one.png)
+
+Library Page
+
+![image](https://github.com/CTalvio/Novachromic/raw/main/screenshots/six.pn)
+
+Title Page
+
+![image](https://github.com/CTalvio/Novachromic/raw/main/screenshots/four.png)
+
+Dashboard page
+
+![image](https://github.com/CTalvio/Novachromic/raw/main/screenshots/two.png)
+
+
+##### Installation
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/CTalvio/Ultrachromic/presets/novachromic_preset.css');
+```
+
+[Novachromic Github](https://github.com/CTalvio/Novachromic)
+
+#### DarkFlix
+Description:  DarkFlix For Jellyfin is one of The Best Netflix Dark Theme for Jellyfin Around! Plus a big thanks to @prayag17 for the base and inspiration! 
+
+Examples
+
+HomePage
+
+![image](https://github.com/DevilsDesigns/Jellyfin-DarkFlix-Theme/raw/85b06cd71e8a0cd6de0b1654a102b39de3642ac7/UI-Proof/v5/Admin-Dashboard.gif)
+
+Admin Dashboard
+
+![image](https://github.com/DevilsDesigns/Jellyfin-DarkFlix-Theme/raw/85b06cd71e8a0cd6de0b1654a102b39de3642ac7/UI-Proof/v5/Admin-Dashboard.gif)
+
+BoxStyle Actors
+
+![image](https://github.com/DevilsDesigns/Jellyfin-DarkFlix-Theme/raw/85b06cd71e8a0cd6de0b1654a102b39de3642ac7/UI-Proof/v5/Character-Selection.gif)
+
+Video Player UI
+
+![image](https://github.com/DevilsDesigns/Jellyfin-DarkFlix-Theme/raw/3b550986e64c392b8601fadddcb649196ae7e30a/UI-Proof/v5/Video-Player-Colors-RESIZED.gif)
+
+##### Installation
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/DevilsDesigns/Jellyfin-DarkFlix-Theme/Darkflix-v5.1.css");
+```
+
+[Darkflix Github](https://github.com/DevilsDesigns/Jellyfin-DarkFlix-Theme)
+
+
+#### Finimalism
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/65438b6d-c5d9-4c9c-85d0-9f47b0096812)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/6170f7a4-d37a-43f0-8f5c-3564fec98a6f)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/262c1209-2ece-4a8e-919c-e5647541e747)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/a4a91591-9558-4ea9-b09d-c9844ac68480)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/0789e684-a103-46ec-838b-ccf1e2539b41)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/0e4cb786-dd1d-4f27-a6fe-7bb965621339)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/8f91619f-acca-415b-b90b-1a1f340ebebc)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/361ef2a4-7779-4eee-8503-3109e1271140)
+
+![image](https://github.com/tedhinklater/finimalism/assets/66086488/ef0a3dfa-cd7d-41db-ad57-0c746e4ff3a4)
+
+##### Installation
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/tedhinklater/finimalism@main/finimalism7.css");
+```
+
+[Finimalism Github](https://github.com/tedhinklater/finimalism)
+
+#### Glassmorphism
+
+![image](https://github.com/alexyle/jellyfin-theme/blob/main/assets/298199066-a7b851a6-303f-8412-a7bc-6362a92e0d0a.gif?raw=true)
+
+
+![image](https://github.com/alexyle/jellyfin-theme/assets/53535044/fdf4ad37-5cd5-4f94-985f-196143d8daf8)
+
+
+![image](https://github.com/alexyle/jellyfin-theme/assets/53535044/024a3f5f-f19d-4ad2-825c-23353e630223)
+
+
+![image](https://github.com/alexyle/jellyfin-theme/assets/53535044/a7b851a6-303f-4489-a7bc-6362a92e0d0a)
+
+##### Installation
+
+```css
+@import 'https://cdn.jsdelivr.net/gh/alexyle/jellyfin-theme@main/glassmorphism/theme.css';
+```
+
+[Glassmorphism Github](https://github.com/alexyle/jellyfin-theme)
+
+#### Scyfin
+
+![image](https://github.com/loof2736/scyfin/blob/main/images/homepage.png?raw=true)
+
+![image](https://github.com/loof2736/scyfin/blob/main/images/homepage-backdrops.png?raw=true)
+
+![image](https://github.com/loof2736/scyfin/blob/main/images/details.png?raw=true)
+
+![image](https://github.com/loof2736/scyfin/blob/main/images/details-backdrops.png?raw=true)
+
+![image](https://github.com/loof2736/scyfin/blob/main/images/movies.png?raw=true)
+
+![image](https://github.com/loof2736/scyfin/blob/main/images/dashboard.png?raw=true)
+
+![image](https://github.com/loof2736/scyfin/blob/main/images/login.png?raw=true)
+
+
+##### Installation
+
+Scyfin theme
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/loof2736/scyfin@latest/CSS/scyfin-theme.css');
+```
+
+Scyfin Backdrops
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/loof2736/scyfin@v1.0.14/CSS/css-scyfin/scyfin-theme-backdrop.css');
+```
+
+[Scyfin Github](https://github.com/loof2736/scyfin)
+
+#### Finality
+
+<img src="https://github.com/user-attachments/assets/2b4ba531-9ab0-4567-a260-a6cd7b9605fb" width="49.5%" height="49.5%" /> <img src="https://github.com/user-attachments/assets/a6812016-26a5-4a2c-8f7d-b24de0de2a1c" width="49.5%" height="49.5%" /> 
+<img src="https://github.com/user-attachments/assets/de1b7233-eddf-4be3-b809-45ddb1537a15" width="49.5%" height="49.5%" /> <img src="https://github.com/user-attachments/assets/21d9c86d-6a3d-4740-91d6-09133342b4aa" width="49.5%" height="49.5%" />
+<img src="https://github.com/user-attachments/assets/f19f9d26-393e-410b-a95b-e0471d5d9764" width="49.5%" height="49.5%" /> <img src="https://github.com/user-attachments/assets/f105a049-c1f7-49c8-be97-7449d1d7517b" width="49.5%" height="49.5%" /> 
+
+# Player 
+![14](https://github.com/tedhinklater/finality/assets/66086488/84d70061-5216-4921-bff0-fbb25de59cca)
+
+# Mobile
+![mobile](https://github.com/tedhinklater/finality/assets/66086488/a0fb2aec-2794-4d68-b96c-9a144844729a)
+
+Under "Display" make sure you enable backdrops and use the Dark theme
+
+![darkbackdrops](https://github.com/user-attachments/assets/b69b1143-22c1-48df-b8e5-5aaa1869a97f)
+
+##### Installation
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/tedhinklater/finality@main/finality.css");
+```
+
+or, import the colour version with
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/tedhinklater/finality@main/Finality-Coloured.css");
+```
+
+[Finality Github](https://github.com/tedhinklater/finality)
+
+#### Jamifin
+
+Home
+
+![image](https://github.com/JamsRepos/Jamfin/blob/main/assets/screenshots/home.jpg?raw=true)
+
+Details
+
+![image](https://github.com/JamsRepos/Jamfin/blob/main/assets/screenshots/details.jpg?raw=true)
+
+Library
+![image](https://github.com/JamsRepos/Jamfin/blob/main/assets/screenshots/library.jpg?raw=true)
+
+Admin
+![image](https://github.com/JamsRepos/Jamfin/blob/main/assets/screenshots/admin.jpg?raw=true)
+
+##### 🧩 Modules
+
+You can find our plug-and-play modules in the [modules folder](theme/modules/README.md). Each module's folder contains an explanation of its purpose and detailed instructions on how to use it.
+
+##### Installation
+
+Base
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/JamsRepos/Jamfin@latest/theme/base.css");
+```
+Complete
+
+```css
+@import url("https://cdn.jsdelivr.net/gh/JamsRepos/Jamfin@latest/theme/complete.css");
+```
+
+##### 🖌️ Customisation
+
+Not sure if you like our colour scheme? No worries, we allow easy access to our themes colours. Paste these below your import and customise away!
+
+```css
+:root {
+    /* Colours */
+    --theme-background-colour: #101010;
+    --theme-sidebar-background-colour: #222222;
+    --theme-menu-background-colour: #3a3a3a80;
+    --theme-menu-shadow-colour: #fff3;
+    --theme-base-colour: #696969;
+    --theme--hover-colour: #dbdbdb;
+    --theme-restart-colour: #da87287e;
+    --theme-shutdown-colour: #c21c1c9d;
+    --theme-progress-bar-colour: #cfcfcf;
+    --theme-progress-bar-background-colour: #2c2c2c;
+    --theme-progress-bar-transcoding-colour: #eb7e25;
+
+    /* General Appearance */
+    --theme-roundness: .75rem;
+    --theme-blur: 16px;
+}
+```
+
+[Jamifin Github](https://github.com/JamsRepos/Jamfin)
+
+#### Zombie 
+
+##### Desktop
+
+Login
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/desktop/login.png?raw=true)
+
+Homepage
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/desktop/homepage.png?raw=true)
+
+Desktop Details
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/desktop/detail.png?raw=true)
+
+Sidebar
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/desktop/sidebar.png?raw=true)
+
+TV-services
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/desktop/tv-series.png?raw=true)
+
+Seasons Page
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/desktop/seasonpage.png?raw=true)
+
+
+##### Mobile
+
+Login
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/mobile/mobile_login.png?raw=true)
+
+Homepage
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/mobile/mobile_homepage.png?raw=true)
+
+Item Page
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/mobile/mobile_itempage.png?raw=true)
+
+Details
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/mobile/mobile_detail-alt.png?raw=true)
+
+Landscape
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/mobile/mobile_landscape.png?raw=true)
+
+##### Tablet
+
+Portrait
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/tablet/tablet_portrait.png?raw=true)
+
+Landscape
+
+![image](https://github.com/MakD/zombie-release/blob/main/img/tablet/tablet_landscape.png?raw=true)
+
+##### Installation
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/MakD/zombie-release@latest/zombie-min-git.css');
+```
+
+##### Addon (Alternate View for Mobile-Portrait) (Add below your main import)
+
+```css
+@import URL('https://cdn.jsdelivr.net/gh/MakD/zombie-release@latest/mobile-alt-layout.css');
+```
+
+or
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/MakD/zombie-release@latest/mobile-alt-layout-v2.css');
+```
+
+[Zombie Github](https://github.com/MakD/zombie-release)
+
+</TabItem>
+
+<TabItem value="Mods" label="Mods">
+
+### Mods
+
+#### Jellyfin Mods
+
+Description:  This is just a guide for various modifications and dumping ground for jellyfin mods so i dont have to make a new jftool for every platform and revision 
+
+Tutorials
+
+[Jellyfin-Mods Github](https://github.com/BobHasNoSoul/jellyfin-mods)
+
+#### Title Cards
+
+Description:  Automated title card maker for Plex, Jellyfin, and Emby 
+
+[Title Cards Wiki](https://github.com/CollinHeist/TitleCardMaker/wiki)
+
+[Title Cards Github](https://github.com/CollinHeist/TitleCardMaker)
+
+#### Custom Jellyfin Library Thumbnails
+
+Description:  These are custom Library thumbnails 
+
+Previews
+
+TV-Shows and Movies
+
+![image](https://user-images.githubusercontent.com/35183970/213533941-ecfbf531-4681-4348-b738-d7c2234c1ff5.png)
+
+
+Home Movies
+
+![image](https://user-images.githubusercontent.com/35183970/213535097-98d5e699-b913-4b4f-a7a6-29743bdf8f01.png)
+
+War Movies, Sports, Holiday Movies, Rock Music
+
+![image](https://user-images.githubusercontent.com/35183970/213534088-35a4efc6-7593-4203-87b5-7e0e768dd478.png)
+
+EDM MUSIC, BOKS, COMIC BOOKS, COUNTRY MUSIC, HALLOWEEN MUSIC
+
+![image](https://user-images.githubusercontent.com/35183970/213534138-3a59a8e0-5a94-48ea-ae5e-eaba91ec2b7a.png)
+
+Magazines, Scary Movies, Christmas Music, Adult XXX 18+, Documentaries
+
+![image](https://user-images.githubusercontent.com/35183970/213534200-af5a9872-1d7a-4264-99f9-817807303a04.png)
+
+[Darkflix Custom Library Thumbnails](https://github.com/DevilsDesigns/Devils-Designs-Custom-Jellyfin-Thumbnails/releases)
+
+  </TabItem>
+</Tabs>

@@ -1,0 +1,1377 @@
+---
+title: Docker Examples
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="Nextcloud Example" label="Nextcloud Example" default>
+
+### Nextcloud
+
+```
+name: nextcloud
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - C:\Tools\Nextcloud\db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=SQLROOTPASSWORD
+      - MYSQL_PASSWORD=MYSQLPASSOWRD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+  app:
+    image: bankaitech/nextcloud:latest
+    container_name: nextcloud
+    restart: always
+    ports:
+      - 9111:80
+    links:
+      - db
+    volumes:
+      - J:/Nextcloud:/data
+      - J:/Nextcloud:/var/www/html
+    environment:
+      - MYSQL_DPASSWORD=MYSQLPASSWORD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+  cron:
+    image: bankaitech/nextcloud:latest
+    container_name: cron
+    restart: always
+    volumes:
+      -  J:/Nextcloud:/var/www/html:z
+    depends_on:
+      - db
+      - redis
+    entrypoint: /cron.sh
+  redis:
+    container_name: redis
+    image: redis:latest
+    expose:
+      - 6379
+    command: redis-server --save 60 1 --loglevel warning
+    restart: always
+  #ONLY REMOVE THE # FOR HWA IF YOU HAVE A GPU AND WANT TO USE MEMORIES APP INSIDE NEXTCLOUD
+  go-vod:
+    image: radialapps/go-vod
+    container_name: go_vod
+    restart: always
+    depends_on:
+      - app
+#    devices:
+#      - /dev/dri:/dev/dri # VA-API (omit for NVENC)
+    environment:
+      - NEXTCLOUD_HOST=https://NEXTCLOUD.DOMAIN.COM
+      - NEXTCLOUD_ALLOW_INSECURE=1 # (self-signed certs or no HTTPS)
+    volumes:
+      #this is where you want your files stored on nextcloud
+      - J:/Nextcloud:/data
+      #this is where your configs and all nextcloud system files are stored
+      - J:/Nextcloud:/var/www/html      
+      #only enable if you have a nvidia 1xxx or later and want to use it to transcode
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+  collabora:
+    container_name: collabora
+    hostname: collabora
+    privileged: true
+    tty: true
+    ports:
+      - 9980:9980
+    cap_add:
+      - MKNOD
+    image: collabora/code:latest
+    env_file:
+      - .collabora.env
+    restart: always
+```
+
+### Dockerfile
+
+```
+# Use the Nextcloud production image as the base
+FROM nextcloud:production
+
+# Install gosu (Debian/Ubuntu)
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+
+# Update the package lists and install various dependencies
+# These dependencies include tools and libraries required for Nextcloud and its features
+RUN apt-get update \
+ && apt-get install -y \
+    cmake \
+    ffmpeg \
+    ghostscript \
+    ghostwriter \
+    git \
+    imagemagick \
+    inotify-tools \
+    libbz2-dev \
+    liblapack-dev \
+    libopenblas-dev \
+    libx11-dev \
+    sudo \
+    nano \
+    libmagickcore-6.q16-6-extra \
+ && apt-get clean
+
+RUN pecl install inotify && \
+    echo "extension=inotify.so" | tee /usr/local/etc/php/conf.d/docker-php-ext-inotify.ini
+
+# Clone and build dlib, a toolkit for making real world machine learning and data analysis applications
+RUN git clone https://github.com/davisking/dlib.git \
+ && cd dlib/dlib \
+ && mkdir build \
+ && cd build \
+ && cmake -DBUILD_SHARED_LIBS=ON .. \
+ && make \
+ && make install
+
+# Clone and install pdlib, a PHP extension for dlib
+RUN git clone https://github.com/goodspb/pdlib.git /usr/src/php/ext/pdlib
+
+# Install the pdlib PHP extension
+RUN docker-php-ext-install pdlib
+
+# Install the bz2 PHP extension
+RUN docker-php-ext-install bz2
+
+# Add cron jobs for Nextcloud's background tasks
+RUN echo '12 * * * * php /var/www/html/occ face:background_job' >> /var/spool/cron/crontabs/www-data
+RUN echo '37 * * * * php /var/www/html/occ preview:pre-generate' >> /var/spool/cron/crontabs/www-data
+
+# Install additional utilities
+RUN apt update \
+  && apt install -y wget gnupg2 unzip
+
+# Enable the repository for pdlib and install dlib
+RUN mkdir -m 0755 -p /etc/apt/keyrings/ \
+  && wget -qO - https://repo.delellis.com.ar/repo.gpg.key | sudo apt-key add - \
+  && wget -O- https://repo.delellis.com.ar/repo.gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/php-pdlib.gpg > /dev/null \
+  && echo "deb [signed-by=/etc/apt/keyrings/php-pdlib.gpg arch=amd64] https://repo.delellis.com.ar bullseye bullseye" | sudo tee /etc/apt/sources.list.d/php-pdlib.list \
+RUN apt update \
+  && apt install -y libdlib-dev
+
+# Install pdlib extension from a downloaded archive
+RUN wget https://github.com/goodspb/pdlib/archive/master.zip \
+  && mkdir -p /usr/src/php/ext/ \
+  && unzip -d /usr/src/php/ext/ master.zip \
+  && rm master.zip
+RUN docker-php-ext-install pdlib-master
+
+# Increase PHP memory limit for Nextcloud
+RUN echo memory_limit=1024M > /usr/local/etc/php/conf.d/memory-limit.ini
+
+RUN echo 'apc.enable_cli=1' >> "${PHP_INI_DIR}/conf.d/docker-php-ext-apcu.ini"
+
+# Increase opcache memory
+RUN sed -i 's/opcache.memory_consumption=128/opcache.memory_consumption=512/g' /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+# Download and test the pdlib extension
+RUN wget https://github.com/matiasdelellis/pdlib-min-test-suite/archive/master.zip \
+  && unzip -d /tmp/ master.zip \
+  && rm master.zip
+RUN cd /tmp/pdlib-min-test-suite-master \
+    && make
+
+# Install PHP extensions and configure them
+RUN set -ex; \
+    \
+    savedAptMark="$(apt-mark showmanual)"; \
+    \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        libbz2-dev \
+        libc-client-dev \
+        libkrb5-dev \
+        libsmbclient-dev \
+    ; \
+    \
+    docker-php-ext-configure imap --with-kerberos --with-imap-ssl; \
+    docker-php-ext-install \
+        bz2 \
+        imap \
+    ; \
+    pecl install smbclient; \
+    docker-php-ext-enable smbclient; \
+    \
+    apt-mark auto '.*' > /dev/null; \
+    apt-mark manual $savedAptMark; \
+    ldd "$(php -r 'echo ini_get("extension_dir");')"/*.so \
+        | awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) { next }; gsub("^/(usr/)?", "", so); print so }' \
+        | sort -u \
+        | xargs -r dpkg-query --search \
+        | cut -d: -f1 \
+        | sort -u \
+        | xargs -rt apt-mark manual; \
+    \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy and adjust permissions for cron
+COPY cron.sh /
+RUN chmod +x /cron.sh
+
+# Set an environment variable to indicate that Nextcloud should be updated
+ENV NEXTCLOUD_UPDATE=1
+
+# Set the command to run supervisord on container start
+# Health check to ensure Nextcloud is running and accessible
+# The health check pings the Nextcloud status.php page and expects an HTTP 200 response
+# Adjust the interval, timeout, start period, and retries as necessary for your environment
+HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost/status.php || exit 1
+
+```
+
+### cron.sh
+
+```
+#!/bin/sh
+set -eu
+
+exec busybox crond -f -L /dev/stdout
+```
+
+### nextcloud.ini
+
+```
+memory_limit = 10G
+upload_max_filesize= 10G
+post_max_size = 10G
+max_execution_time = 3600
+max_input_time = 3600
+```
+  
+### .collabora.env
+
+```css
+username=admin #Change to Any Username You Choose
+password=PASSWORD #Change to Any Password you Choose
+domain=nextcloud\\.domain\\.com #Change this to your subdomain.\\domain\\.com example memories\\.demonwarriortech\\.com
+```
+
+### supervisord.conf
+
+```
+[supervisord]
+nodaemon=true
+logfile=/var/log/supervisord/supervisord.log
+pidfile=/var/run/supervisord/supervisord.pid
+childlogdir=/var/log/supervisord/
+logfile_maxbytes=50MB                           ; maximum size of logfile before rotation
+logfile_backups=10                              ; number of backed up logfiles
+loglevel=error
+
+[program:apache2]
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+command=apache2-foreground
+
+[program:cron]
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+command=/cron.sh
+
+```
+
+  </TabItem>
+
+  <TabItem value="Jellyfin Example" label="Jellyfin Example" default>
+
+### Jellyfin
+
+#### docker-compose.yml
+
+  ```
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    ports:
+      - "8096:8096"
+      - "8920:8920"     
+    volumes:
+      - C:/Tools/Jellyfin/config:/config
+      - C:/Tools/Jellyfin/cache:/cache
+      - type: bind
+        source: J:/TV-Shows #(PUT YOUR MEDIA DIRECTORIES FOLDER PATH HERE)
+        target: /TV-Shows
+      - type: bind
+        source: J:/Movies #(PUT YOUR MEDIAI DIRECTORIES FOLDER PATH HERE)
+        target: /Movies
+      - type: bind
+        source: J:/Music #(PUT YOUR MEDIAI DIRECTORIES FOLDER PATH HERE)
+        target: /Music
+      - type: bind
+        source: J:/Home-Movies #(PUT YOUR MEDIAI DIRECTORIES FOLDER PATH HERE)
+        target: /Home-Movies
+      - type: bind
+        source: J:/Anime #(PUT YOUR MEDIAI DIRECTORIES FOLDER PATH HERE)
+        target: /Anime
+        read_only: true
+    restart: 'unless-stopped'
+    # Optional - alternative address used for autodiscovery
+    environment:
+#   (REMOVE THE # BELOW TO ENABLE QUICKSYNC)
+#  - UDOCKER_OPTS=--device /dev/dri:/dev/dri
+      - JELLYFIN_PublishedServerUrl=https://sub.domain.com #(CHANGE THIS TO YOUR DOMAIN)
+    # Optional - may be necessary for docker healthcheck to pass if running in host network mode
+#    extra_hosts:
+#      - 'host.docker.internal:host-gateway'
+# (REMOVE THE # FOR THE 3 LINES BELOW TO ENABLED CADDY REVERSE PROXY USING MY TUTORIAL IF YOU WANT TO LIMIT IT TO JUST INSIDE THE CADDY NETWORK)
+# networks:
+#  caddy-network:
+#    driver: bridge
+#   (ENABLE REMOVE THE # for EVERYTHING BELOW THIS LINE FOR NVIDIA GPUs)
+#    runtime: nvidia
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities: [gpu]
+  ```
+
+  </TabItem>
+<TabItem value="Jellyseerr Example" label="Jellyseerr Example">
+
+### Jellyseerr
+
+```
+services:
+    jellyseerr:
+       image: fallenbagel/jellyseerr:latest
+       container_name: jellyseerr
+       environment:
+            - LOG_LEVEL=debug
+            - TZ=America/Chicago
+       ports:
+            - 5055:5055
+       volumes:
+            - /path/to/appdata/config:/app/config
+       restart: unless-stopped
+```
+  </TabItem>
+
+<TabItem value="Jellystat Example" label="Jellystat Example">
+
+### Jellystat
+
+```
+services:
+  jellystat-db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: MyPassword
+    volumes:
+    - C:/Tools/Jellystat/postgres-data:/var/lib/postgresql/data # Mounting the volume
+  jellystat:
+    image: cyfershepard/jellystat:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: MyPassword
+      POSTGRES_IP: jellystat-db
+      POSTGRES_PORT: 5432
+      JWT_SECRET: 'MyPassword'
+    ports:
+      - "3000:3000" #Server Port
+      - "3004:3004" #websocket port
+    volumes:
+      - C:/Tools/Jellystat/backup-data:/app/backend/backup-data # Mounting the volume
+
+    depends_on:
+      - jellystat-db
+    restart: unless-stopped
+networks:
+  default:
+```
+  </TabItem>
+<TabItem value="Cloudflare DDNS Example" label="Cloudflare DDNS Example">
+
+### Cloudflare DDNS
+
+```
+services:
+  cloudflare-ddns:
+    image: favonia/cloudflare-ddns:latest
+    # Choose the appropriate tag based on your need:
+    # - "latest" for the latest stable version (which could become 2.x.y
+    #   in the future and break things)
+    # - "1" for the latest stable version whose major version is 1
+    # - "1.x.y" to pin the specific version 1.x.y
+    network_mode: host
+    # This bypasses network isolation and makes IPv6 easier (optional; see below)
+    restart: always
+    # Restart the updater after reboot
+    user: "1000:1000"
+    # Run the updater with specific user and group IDs (in that order).
+    # You can change the two numbers based on your need.
+    read_only: true
+    # Make the container filesystem read-only (optional but recommended)
+    cap_drop: [all]
+    # Drop all Linux capabilities (optional but recommended)
+    security_opt: [no-new-privileges:true]
+    # Another protection to restrict superuser privileges (optional but recommended)
+    environment:
+      - CLOUDFLARE_API_TOKEN=YOUR-CLOUDFLARE-API-TOKEN
+        # Your Cloudflare API token
+      - DOMAINS=example.org,www.example.org,example.io
+        # Your domains (separated by commas)
+      - PROXIED=true
+        # Tell Cloudflare to cache webpages and hide your IP (optional)
+#networks:
+#  LAN0:
+#    external: true
+#    name: LAN0
+# Introduce custom Docker networks to the 'services' in this file. A common use case
+# for this is binding one of the 'services' to a specific network interface available at
+# Docker's host. This section is required for the 'networks' section of each 'services'.
+```
+
+</TabItem>
+
+<TabItem value="KitchenOwl Example" label="KitchenOwl Example">
+
+### Kitchen Owl
+
+```
+services:
+  front:
+    image: tombursch/kitchenowl-web:latest
+    environment:
+      - FRONT_URL=https://yoururl.com
+      # - BACK_URL=back:5000 # Optional should not be changed unless you know what youre doing
+    ports:
+      - "9090:80"
+    depends_on:
+      - back
+    networks:
+      - default
+  back:
+    image: tombursch/kitchenowl:latest
+    restart: unless-stopped
+    ports: # Optional and only needed when only hosting the http backend
+      - "9191:80"
+    networks:
+      - default
+    environment:
+      - JWT_SECRET_KEY=MYSECRETKEY?
+      - FRONT_URL=http://localhost:9090
+    volumes:
+    - kitchenowl_data:/data
+
+volumes:
+  kitchenowl_data:
+
+networks:
+  default:
+```
+  </TabItem>
+
+
+  <TabItem value="Caddy" label="Caddy">
+    <TabItem value="Caddy Example" label="Caddy Example">
+
+### docker-Compose.yml
+
+```
+services:
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - C:/Tools/Caddy/Caddyfile:/etc/caddy/Caddyfile
+      - C:/Tools/Caddy/configs/caddy/site:/srv
+      - C:/Tools/Caddy/caddy_data:/data
+      - C:/Tools/Caddy/caddy_config:/config
+    dns:
+      - 1.0.0.1
+    networks:
+      - caddy-network
+
+networks:
+  caddy-network:
+    external: true
+
+volumes:
+  caddy_data:
+    external: true
+  caddy_config:
+```
+
+### Dockerfile
+
+```
+FROM caddy:2.8.4-builder AS builder
+
+RUN xcaddy build \
+    --with github.com/caddy-dns/cloudflare \
+    --with github.com/caddy-dns/duckdns
+
+FROM caddy:2.8.4
+
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+```
+
+### Commands to run for Docker
+
+```
+docker compose -f docker-compose.yml build
+```
+
+```
+docker network create caddy-network
+```
+
+```
+docker compose -f docker-compose.yml up -d
+```
+
+
+      </TabItem>
+    </TabItem>
+
+  <TabItem value="Immich" label="Immich">
+    <Tabs>
+    <TabItem value="Immich Nvidia Example" label="Immich Nvidia Example">
+### docker-compose.yml
+
+```
+#
+# WARNING: Make sure to use the docker-compose.yml of the current release:
+#
+# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+#
+# The compose file on main may not be compatible with the latest release.
+#
+
+name: immich
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/hardware-transcoding
+      file: hwaccel.transcoding.yml
+      service: nvenc # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    volumes:
+      - ${EXTERNAL_PATH}:/usr/src/app/external
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ports:
+      - 2283:2283
+    depends_on:
+      - redis
+      - database
+    restart: always
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
+    # Example tag: ${IMMICH_VERSION:-release}-cuda
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
+      file: hwaccel.ml.yml
+      service: cuda # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+    volumes:
+      - model-cache:/cache
+    env_file:
+      - .env
+    restart: always
+
+  redis:
+    container_name: immich_redis
+    image: registry.hub.docker.com/library/redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    restart: always
+
+  database:
+    container_name: immich_postgres
+    image: registry.hub.docker.com/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  model-cache:
+
+```
+
+### .env
+
+:::caution
+**Requirements Below** Change only the **UPLOAD_LOCATION** & **EXTERNAL_PATH**
+:::
+
+```
+# You can find documentation for all the supported env variables at https://immich.app/docs/install/environment-variables
+
+# The location where your uploaded files are stored
+UPLOAD_LOCATION=J:/Immich #(Change to an empty folder)
+
+EXTERNAL_PATH=J:/ #(Change to Your root directory where immich will see files)
+
+# The Immich version to use. You can pin this to a specific version like "v1.71.0"
+IMMICH_VERSION=release
+
+# Connection secret for postgres. You should change it to a random password
+DB_PASSWORD=postgres
+
+# The values below this line do not need to be changed
+###################################################################################
+DB_HOSTNAME=immich_postgres
+DB_USERNAME=postgres
+DB_DATABASE_NAME=immich
+DB_DATA_LOCATION=./postgres
+
+REDIS_HOSTNAME=immich_redis
+```
+
+### hwaccel.ml.yml
+
+```
+version: "3.8"
+
+# Configurations for hardware-accelerated machine learning
+
+# If using Unraid or another platform that doesn't allow multiple Compose files,
+# you can inline the config for a backend by copying its contents 
+# into the immich-machine-learning service in the docker-compose.yml file.
+
+# See https://immich.app/docs/features/ml-hardware-acceleration for info on usage.
+
+services:
+  armnn:
+    devices:
+      - /dev/mali0:/dev/mali0
+    volumes:
+      - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset (not always required depending on the driver)
+      - /usr/lib/libmali.so:/usr/lib/libmali.so:ro # Mali driver for your chipset (always required)
+
+  cpu: {}
+
+  cuda:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+
+  openvino:
+    device_cgroup_rules:
+      - "c 189:* rmw"
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+
+  openvino-wsl:
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dxg:/dev/dxg
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - /usr/lib/wsl:/usr/lib/wsl
+```
+### hwaccel.transocding.yml
+
+```
+version: "3.8"
+
+# Configurations for hardware-accelerated transcoding
+
+# If using Unraid or another platform that doesn't allow multiple Compose files,
+# you can inline the config for a backend by copying its contents
+# into the immich-microservices service in the docker-compose.yml file.
+
+# See https://immich.app/docs/features/hardware-transcoding for more info on using hardware transcoding.
+
+services:
+  cpu: {}
+
+  nvenc:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - compute
+                - video
+
+  quicksync:
+    devices:
+      - /dev/dri:/dev/dri
+
+  rkmpp:
+    security_opt: # enables full access to /sys and /proc, still far better than privileged: true
+      - systempaths=unconfined
+      - apparmor=unconfined
+    group_add:
+      - video
+    devices:
+      - /dev/rga:/dev/rga
+      - /dev/dri:/dev/dri
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/mpp_service:/dev/mpp_service
+      #- /dev/mali0:/dev/mali0 # only required to enable OpenCL-accelerated HDR -> SDR tonemapping
+    volumes:
+      #- /etc/OpenCL:/etc/OpenCL:ro # only required to enable OpenCL-accelerated HDR -> SDR tonemapping
+      #- /usr/lib/aarch64-linux-gnu/libmali.so.1:/usr/lib/aarch64-linux-gnu/libmali.so.1:ro # only required to enable OpenCL-accelerated HDR -> SDR tonemapping
+
+  vaapi:
+    devices:
+      - /dev/dri:/dev/dri
+
+  vaapi-wsl: # use this for VAAPI if you're running Immich in WSL2
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /usr/lib/wsl:/usr/lib/wsl
+    environment:
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib
+      - LIBVA_DRIVER_NAME=d3d12
+
+```
+
+      </TabItem>
+      <TabItem value="Immich iGPU Example" label="Immich iGPU Example">
+
+### .env
+
+:::caution
+**Requirements Below** Change only the **UPLOAD_LOCATION** & **EXTERNAL_PATH**
+:::
+
+```
+# You can find documentation for all the supported env variables at https://immich.app/docs/install/environment-variables
+
+# The location where your uploaded files are stored
+UPLOAD_LOCATION=J:/Immich #(Change to an empty folder)
+
+EXTERNAL_PATH=J:/ #(Change to Your root directory where immich will see files)
+
+# The Immich version to use. You can pin this to a specific version like "v1.71.0"
+IMMICH_VERSION=release
+
+# Connection secret for postgres. You should change it to a random password
+DB_PASSWORD=postgres
+
+# The values below this line do not need to be changed
+###################################################################################
+DB_HOSTNAME=immich_postgres
+DB_USERNAME=postgres
+DB_DATABASE_NAME=immich
+DB_DATA_LOCATION=./postgres
+
+REDIS_HOSTNAME=immich_redis
+
+```
+### docker-compose.yml
+
+```
+#
+# WARNING: Make sure to use the docker-compose.yml of the current release:
+#
+# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+#
+# The compose file on main may not be compatible with the latest release.
+#
+
+name: immich
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/hardware-transcoding
+      file: hwaccel.transcoding.yml
+      service: quicksync # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    volumes:
+      - ${EXTERNAL_PATH}:/usr/src/app/external
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ports:
+      - 2283:2283
+    depends_on:
+      - redis
+      - database
+    restart: always
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    # For hardware acceleration, add one of -[armnn, cuda, openvino] to the image tag.
+    # Example tag: ${IMMICH_VERSION:-release}-cuda
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
+      file: hwaccel.ml.yml
+      service: openvino # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+    volumes:
+      - model-cache:/cache
+    env_file:
+      - h.env
+    restart: always
+
+  redis:
+    container_name: immich_redis
+    image: registry.hub.docker.com/library/redis:6.2-alpine@sha256:84882e87b54734154586e5f8abd4dce69fe7311315e2fc6d67c29614c8de2672
+    restart: always
+
+  database:
+    container_name: immich_postgres
+    image: registry.hub.docker.com/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  model-cache:
+
+```
+
+### hwaccel.yml
+
+```
+version: "3.8"
+
+# Configurations for hardware-accelerated machine learning
+
+# If using Unraid or another platform that doesn't allow multiple Compose files,
+# you can inline the config for a backend by copying its contents 
+# into the immich-machine-learning service in the docker-compose.yml file.
+
+# See https://immich.app/docs/features/ml-hardware-acceleration for info on usage.
+
+services:
+  armnn:
+    devices:
+      - /dev/mali0:/dev/mali0
+    volumes:
+      - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset (not always required depending on the driver)
+      - /usr/lib/libmali.so:/usr/lib/libmali.so:ro # Mali driver for your chipset (always required)
+
+  cpu: {}
+
+  cuda:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+
+  openvino:
+    device_cgroup_rules:
+      - "c 189:* rmw"
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+
+  openvino-wsl:
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dxg:/dev/dxg
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - /usr/lib/wsl:/usr/lib/wsl
+
+```
+
+### hwaccel.transcoding.yml
+
+```
+version: "3.8"
+
+# Configurations for hardware-accelerated transcoding
+
+# If using Unraid or another platform that doesn't allow multiple Compose files,
+# you can inline the config for a backend by copying its contents
+# into the immich-microservices service in the docker-compose.yml file.
+
+# See https://immich.app/docs/features/hardware-transcoding for more info on using hardware transcoding.
+
+services:
+  cpu: {}
+
+  nvenc:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+                - compute
+                - video
+
+  quicksync:
+    devices:
+      - /dev/dri:/dev/dri
+
+  rkmpp:
+    security_opt: # enables full access to /sys and /proc, still far better than privileged: true
+      - systempaths=unconfined
+      - apparmor=unconfined
+    group_add:
+      - video
+    devices:
+      - /dev/rga:/dev/rga
+      - /dev/dri:/dev/dri
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/mpp_service:/dev/mpp_service
+      #- /dev/mali0:/dev/mali0 # only required to enable OpenCL-accelerated HDR -> SDR tonemapping
+    volumes:
+      #- /etc/OpenCL:/etc/OpenCL:ro # only required to enable OpenCL-accelerated HDR -> SDR tonemapping
+      #- /usr/lib/aarch64-linux-gnu/libmali.so.1:/usr/lib/aarch64-linux-gnu/libmali.so.1:ro # only required to enable OpenCL-accelerated HDR -> SDR tonemapping
+
+  vaapi:
+    devices:
+      - /dev/dri:/dev/dri
+
+  vaapi-wsl: # use this for VAAPI if you're running Immich in WSL2
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /usr/lib/wsl:/usr/lib/wsl
+    environment:
+      - LD_LIBRARY_PATH=/usr/lib/wsl/lib
+      - LIBVA_DRIVER_NAME=d3d12
+
+```
+
+      </TabItem>
+    </Tabs>
+    </TabItem>
+  <TabItem value="PhotoPrism Example" label="PhotosPrism Example">
+    <Tabs>
+    <TabItem value="PhotoPrism Examples for Locally Hosting with software hwa" label="PhotoPrism Examples for Locally Hosting with software hwa">
+### PhotoPrism Examples for Locally Hosting with software hwa
+
+```
+services:
+  photoprism:
+    ## Use photoprism/photoprism:preview for testing preview builds:
+    image: photoprism/photoprism:latest
+    ## Don't enable automatic restarts until PhotoPrism has been properly configured and tested!
+    ## If the service gets stuck in a restart loop, this points to a memory, filesystem, network, or database issue:
+    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
+    # restart: unless-stopped
+    stop_grace_period: 10s
+    depends_on:
+      - mariadb
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ## Server port mapping in the format "Host:Container". To use a different port, change the host port on
+    ## the left-hand side and keep the container port, e.g. "80:2342" (for HTTP) or "443:2342 (for HTTPS):
+    ports:
+      - "2333:2342"
+    ## Before you start the service, please check the following config options (and change them as needed):
+    ## https://docs.photoprism.app/getting-started/config-options/
+    environment:
+      PHOTOPRISM_ADMIN_USER: "YOUR-ADMIN-USER"                 # admin login username
+      PHOTOPRISM_ADMIN_PASSWORD: "YOUR-ADMIN-USER-PASSWORD"          # initial admin password (8-72 characters)
+      PHOTOPRISM_AUTH_MODE: "password"               # authentication mode (public, password)
+      PHOTOPRISM_SITE_URL: "http://localhost:2333/"  # server URL in the format "http(s)://domain.name(:port)/(path)"
+      PHOTOPRISM_DISABLE_TLS: "false"                # disables HTTPS/TLS even if the site URL starts with https:// and a certificate is available
+      PHOTOPRISM_DEFAULT_TLS: "true"                 # defaults to a self-signed HTTPS/TLS certificate if no other certificate is available
+      PHOTOPRISM_ORIGINALS_LIMIT: 10240               # file size limit for originals in MB (increase for high-res video)
+      PHOTOPRISM_HTTP_COMPRESSION: "gzip"            # improves transfer speed and bandwidth utilization (none or gzip)
+      PHOTOPRISM_DEBUG: "false"                      # run in debug mode, shows additional log messages
+      PHOTOPRISM_READONLY: "false"                   # do not modify originals folder; disables import, upload, and delete
+      PHOTOPRISM_EXPERIMENTAL: "false"               # enables experimental features
+      PHOTOPRISM_DISABLE_CHOWN: "false"              # disables updating storage permissions via chmod and chown on startup
+      PHOTOPRISM_DISABLE_WEBDAV: "false"             # disables built-in WebDAV server
+      PHOTOPRISM_DISABLE_SETTINGS: "false"           # disables settings UI and API
+      PHOTOPRISM_DISABLE_TENSORFLOW: "false"         # disables all features depending on TensorFlow
+      PHOTOPRISM_DISABLE_FACES: "false"              # disables face detection and recognition (requires TensorFlow)
+      PHOTOPRISM_DISABLE_CLASSIFICATION: "false"     # disables image classification (requires TensorFlow)
+      PHOTOPRISM_DISABLE_VECTORS: "false"            # disables vector graphics support
+      PHOTOPRISM_DISABLE_RAW: "false"                # disables indexing and conversion of RAW images
+      PHOTOPRISM_RAW_PRESETS: "false"                # enables applying user presets when converting RAW images (reduces performance)
+      PHOTOPRISM_SIDECAR_YAML: "true"                # creates YAML sidecar files to back up picture metadata
+      PHOTOPRISM_BACKUP_ALBUMS: "true"               # creates YAML files to back up album metadata
+      PHOTOPRISM_BACKUP_DATABASE: "true"             # creates regular backups based on the configured schedule
+      PHOTOPRISM_BACKUP_SCHEDULE: "daily"            # backup SCHEDULE in cron format (e.g. "0 12 * * *" for daily at noon) or at a random time (daily, weekly)
+      PHOTOPRISM_INDEX_SCHEDULE: ""                  # indexing SCHEDULE in cron format (e.g. "@every 3h" for every 3 hours; "" to disable)
+      PHOTOPRISM_AUTO_INDEX: 300                     # delay before automatically indexing files in SECONDS when uploading via WebDAV (-1 to disable)
+      PHOTOPRISM_AUTO_IMPORT: -1                     # delay before automatically importing files in SECONDS when uploading via WebDAV (-1 to disable)
+      PHOTOPRISM_DETECT_NSFW: "false"                # automatically flags photos as private that MAY be offensive (requires TensorFlow)
+      PHOTOPRISM_UPLOAD_NSFW: "true"                 # allows uploads that MAY be offensive (no effect without TensorFlow)
+      PHOTOPRISM_DATABASE_DRIVER: "mysql"            # MariaDB 10.5.12+ (MySQL successor) offers significantly better performance compared to SQLite
+      PHOTOPRISM_DATABASE_SERVER: "mariadb:3306"     # MariaDB database server hostname (:port is optional)
+      PHOTOPRISM_DATABASE_NAME: "photoprism"         # MariaDB database schema name
+      PHOTOPRISM_DATABASE_USER: "photoprism"         # MariaDB database user name
+      PHOTOPRISM_DATABASE_PASSWORD: "insecure"       # MariaDB database user password
+      PHOTOPRISM_SITE_CAPTION: "Our Family Memories All in One Place!"
+      PHOTOPRISM_SITE_DESCRIPTION: "All Our Precious Memories Can be Viewed Here"                # meta site description
+      PHOTOPRISM_SITE_AUTHOR: "DemonWarriorTech Photos"                     # meta site author
+      ## Video Transcoding (https://docs.photoprism.app/getting-started/advanced/transcoding/):
+      PHOTOPRISM_FFMPEG_ENCODER: "software"        # H.264/AVC encoder (software, intel, nvidia, apple, raspberry, or vaapi)
+      PHOTOPRISM_FFMPEG_SIZE: "1920"               # video size limit in pixels (720-7680) (default: 3840)
+      PHOTOPRISM_FFMPEG_BITRATE: "32"              # video bitrate limit in Mbit/s (default: 50)
+    working_dir: "/photoprism" # do not change or remove
+    ## Storage Folders: use "/" not "\" as separator, "~" is a shortcut for C:/user/{username}, "." for the current directory
+    volumes:
+      # "C:/user/username/folder:/photoprism/folder"       # example
+      - "J:/PhotoPrism/Originals:/photoprism/originals"  #CHANGE ME # original media files (photos and videos)
+      - "J:/Google-Photos/ALBUM1:/photoprism/originals/Disney-World-2022" #CHANGE ME                
+      - "C:/Users/Administrator/Pictures/ALBUM2:/photoprism/originals/youtube-pictures" #CHANGE ME # *additional* media folders can be mounted like this
+      - "J:/Photorprism/upload:/photoprism/import" #YOUR CACHE FOLDER (OPTIONAL) # *optional* base folder from which files can be imported to originals
+      - "J:/PhotoPrism:/photoprism/storage"        #CHANGE ME            # *writable* storage folder for cache, database, and sidecar files (never remove)
+
+  ## MariaDB Database Server (recommended)
+  ## see https://docs.photoprism.app/getting-started/faq/#should-i-use-sqlite-mariadb-or-mysql
+  mariadb:
+    image: mariadb:11
+    ## If MariaDB gets stuck in a restart loop, this points to a memory or filesystem issue:
+    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
+    restart: unless-stopped
+    stop_grace_period: 5s
+    security_opt: # see https://github.com/MariaDB/mariadb-docker/issues/434#issuecomment-1136151239
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ## --lower-case-table-names=1 stores tables in lowercase and compares names in a case-insensitive manner
+    ## see https://mariadb.com/kb/en/server-system-variables/#lower_case_table_names
+    command: --innodb-buffer-pool-size=512M --lower-case-table-names=1 --transaction-isolation=READ-COMMITTED --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max-connections=512 --innodb-rollback-on-timeout=OFF --innodb-lock-wait-timeout=120
+    volumes:
+      - "database:/var/lib/mysql" # Named volume "database" is defined at the bottom (DO NOT REMOVE)
+    environment:
+      MARIADB_AUTO_UPGRADE: "1"
+      MARIADB_INITDB_SKIP_TZINFO: "1"
+      MARIADB_DATABASE: "photoprism"
+      MARIADB_USER: "photoprism"
+      MARIADB_PASSWORD: "insecure"
+      MARIADB_ROOT_PASSWORD: "insecure"
+
+  ## Watchtower upgrades services automatically (optional)
+  ## see https://docs.photoprism.app/getting-started/updates/#watchtower
+  #
+#   watchtower:
+#     restart: unless-stopped
+#     image: containrrr/watchtower
+#     environment:
+#       WATCHTOWER_CLEANUP: "true"
+#       WATCHTOWER_POLL_INTERVAL: 7200 # checks for updates every two hours
+#     volumes:
+#       - "/var/run/docker.sock:/var/run/docker.sock"
+#       - "~/.docker/config.json:/config.json" # optional, for authentication if you have a Docker Hub account
+
+## Create named volumes, advanced users may remove this if they mount a regular host folder
+## for the database or use SQLite instead (never remove otherwise)
+volumes:
+  database:
+    driver: local
+#networks:
+#  caddy-network:
+#    external: true
+```
+      </TabItem>
+      <TabItem value="PhotoPrism Reverse Proxy with NVIDIA HWA" label="PhotoPrism Reverse Proxy with NVIDIA HWA">
+
+### PhotoPrism Reverse Proxy with NVIDIA HWA
+
+
+```
+services:
+  photoprism:
+    ## Use photoprism/photoprism:preview for testing preview builds:
+    image: photoprism/photoprism:latest
+    ## Don't enable automatic restarts until PhotoPrism has been properly configured and tested!
+    ## If the service gets stuck in a restart loop, this points to a memory, filesystem, network, or database issue:
+    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
+    # restart: unless-stopped
+    stop_grace_period: 10s
+    depends_on:
+      - mariadb
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ## Server port mapping in the format "Host:Container". To use a different port, change the host port on
+    ## the left-hand side and keep the container port, e.g. "80:2342" (for HTTP) or "443:2342 (for HTTPS):
+    ports:
+      - "2333:2342"
+    ## Before you start the service, please check the following config options (and change them as needed):
+    ## https://docs.photoprism.app/getting-started/config-options/
+    environment:
+      PHOTOPRISM_ADMIN_USER: "YOUR-ADMIN-USER"                 # admin login username
+      PHOTOPRISM_ADMIN_PASSWORD: "YOUR-ADMIN-USER-PASSWORD"          # initial admin password (8-72 characters)
+      PHOTOPRISM_AUTH_MODE: "password"               # authentication mode (public, password)
+      PHOTOPRISM_SITE_URL: "http://subdomain.domain.com/"  # server URL in the format "http(s)://domain.name(:port)/(path)"
+      PHOTOPRISM_DISABLE_TLS: "false"                # disables HTTPS/TLS even if the site URL starts with https:// and a certificate is available
+      PHOTOPRISM_DEFAULT_TLS: "true"                 # defaults to a self-signed HTTPS/TLS certificate if no other certificate is available
+      PHOTOPRISM_ORIGINALS_LIMIT: 10240               # file size limit for originals in MB (increase for high-res video)
+      PHOTOPRISM_HTTP_COMPRESSION: "gzip"            # improves transfer speed and bandwidth utilization (none or gzip)
+      PHOTOPRISM_DEBUG: "false"                      # run in debug mode, shows additional log messages
+      PHOTOPRISM_READONLY: "false"                   # do not modify originals folder; disables import, upload, and delete
+      PHOTOPRISM_EXPERIMENTAL: "false"               # enables experimental features
+      PHOTOPRISM_DISABLE_CHOWN: "false"              # disables updating storage permissions via chmod and chown on startup
+      PHOTOPRISM_DISABLE_WEBDAV: "false"             # disables built-in WebDAV server
+      PHOTOPRISM_DISABLE_SETTINGS: "false"           # disables settings UI and API
+      PHOTOPRISM_DISABLE_TENSORFLOW: "false"         # disables all features depending on TensorFlow
+      PHOTOPRISM_DISABLE_FACES: "false"              # disables face detection and recognition (requires TensorFlow)
+      PHOTOPRISM_DISABLE_CLASSIFICATION: "false"     # disables image classification (requires TensorFlow)
+      PHOTOPRISM_DISABLE_VECTORS: "false"            # disables vector graphics support
+      PHOTOPRISM_DISABLE_RAW: "false"                # disables indexing and conversion of RAW images
+      PHOTOPRISM_RAW_PRESETS: "false"                # enables applying user presets when converting RAW images (reduces performance)
+      PHOTOPRISM_SIDECAR_YAML: "true"                # creates YAML sidecar files to back up picture metadata
+      PHOTOPRISM_BACKUP_ALBUMS: "true"               # creates YAML files to back up album metadata
+      PHOTOPRISM_BACKUP_DATABASE: "true"             # creates regular backups based on the configured schedule
+      PHOTOPRISM_BACKUP_SCHEDULE: "daily"            # backup SCHEDULE in cron format (e.g. "0 12 * * *" for daily at noon) or at a random time (daily, weekly)
+      PHOTOPRISM_INDEX_SCHEDULE: ""                  # indexing SCHEDULE in cron format (e.g. "@every 3h" for every 3 hours; "" to disable)
+      PHOTOPRISM_AUTO_INDEX: 300                     # delay before automatically indexing files in SECONDS when uploading via WebDAV (-1 to disable)
+      PHOTOPRISM_AUTO_IMPORT: -1                     # delay before automatically importing files in SECONDS when uploading via WebDAV (-1 to disable)
+      PHOTOPRISM_DETECT_NSFW: "false"                # automatically flags photos as private that MAY be offensive (requires TensorFlow)
+      PHOTOPRISM_UPLOAD_NSFW: "true"                 # allows uploads that MAY be offensive (no effect without TensorFlow)
+      PHOTOPRISM_DATABASE_DRIVER: "mysql"            # MariaDB 10.5.12+ (MySQL successor) offers significantly better performance compared to SQLite
+      PHOTOPRISM_DATABASE_SERVER: "mariadb:3306"     # MariaDB database server hostname (:port is optional)
+      PHOTOPRISM_DATABASE_NAME: "photoprism"         # MariaDB database schema name
+      PHOTOPRISM_DATABASE_USER: "photoprism"         # MariaDB database user name
+      PHOTOPRISM_DATABASE_PASSWORD: "insecure"       # MariaDB database user password
+      PHOTOPRISM_SITE_CAPTION: "Our Family Memories All in One Place!"
+      PHOTOPRISM_SITE_DESCRIPTION: "All Our Precious Memories Can be Viewed Here"                # meta site description
+      PHOTOPRISM_SITE_AUTHOR: "DemonWarriorTech Photos"                     # meta site author
+      ## Video Transcoding (https://docs.photoprism.app/getting-started/advanced/transcoding/):
+      PHOTOPRISM_FFMPEG_ENCODER: "nvidia"        # H.264/AVC encoder (software, intel, nvidia, apple, raspberry, or vaapi)
+      PHOTOPRISM_FFMPEG_SIZE: "1920"               # video size limit in pixels (720-7680) (default: 3840)
+      PHOTOPRISM_FFMPEG_BITRATE: "32"              # video bitrate limit in Mbit/s (default: 50)
+    working_dir: "/photoprism" # do not change or remove
+    ## Storage Folders: use "/" not "\" as separator, "~" is a shortcut for C:/user/{username}, "." for the current directory
+    volumes:
+      # "C:/user/username/folder:/photoprism/folder"       # example
+      - "J:/PhotoPrism/Originals:/photoprism/originals"  #CHANGE ME # original media files (photos and videos)
+      - "J:/Google-Photos/ALBUM1:/photoprism/originals/Disney-World-2022" #CHANGE ME                
+      - "C:/Users/Administrator/Pictures/ALBUM2:/photoprism/originals/youtube-pictures" #CHANGE ME # *additional* media folders can be mounted like this
+      - "J:/Photorprism/upload:/photoprism/import" #YOUR CACHE FOLDER (OPTIONAL) # *optional* base folder from which files can be imported to originals
+      - "J:/PhotoPrism:/photoprism/storage"        #CHANGE ME            # *writable* storage folder for cache, database, and sidecar files (never remove)
+
+  ## MariaDB Database Server (recommended)
+  ## see https://docs.photoprism.app/getting-started/faq/#should-i-use-sqlite-mariadb-or-mysql
+  mariadb:
+    image: mariadb:11
+    ## If MariaDB gets stuck in a restart loop, this points to a memory or filesystem issue:
+    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
+    restart: unless-stopped
+    stop_grace_period: 5s
+    security_opt: # see https://github.com/MariaDB/mariadb-docker/issues/434#issuecomment-1136151239
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ## --lower-case-table-names=1 stores tables in lowercase and compares names in a case-insensitive manner
+    ## see https://mariadb.com/kb/en/server-system-variables/#lower_case_table_names
+    command: --innodb-buffer-pool-size=512M --lower-case-table-names=1 --transaction-isolation=READ-COMMITTED --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max-connections=512 --innodb-rollback-on-timeout=OFF --innodb-lock-wait-timeout=120
+    volumes:
+      - "database:/var/lib/mysql" # Named volume "database" is defined at the bottom (DO NOT REMOVE)
+    environment:
+      MARIADB_AUTO_UPGRADE: "1"
+      MARIADB_INITDB_SKIP_TZINFO: "1"
+      MARIADB_DATABASE: "photoprism"
+      MARIADB_USER: "photoprism"
+      MARIADB_PASSWORD: "insecure"
+      MARIADB_ROOT_PASSWORD: "insecure"
+
+  ## Watchtower upgrades services automatically (optional)
+  ## see https://docs.photoprism.app/getting-started/updates/#watchtower
+  #
+#   watchtower:
+#     restart: unless-stopped
+#     image: containrrr/watchtower
+#     environment:
+#       WATCHTOWER_CLEANUP: "true"
+#       WATCHTOWER_POLL_INTERVAL: 7200 # checks for updates every two hours
+#     volumes:
+#       - "/var/run/docker.sock:/var/run/docker.sock"
+#       - "~/.docker/config.json:/config.json" # optional, for authentication if you have a Docker Hub account
+
+## Create named volumes, advanced users may remove this if they mount a regular host folder
+## for the database or use SQLite instead (never remove otherwise)
+volumes:
+  database:
+    driver: local
+## ONLY ENABLED BELOW IF YOUR USING CADDY FOR YOUR REVERSE PROXY
+#networks:
+#  caddy-network:
+#    external: true
+```
+    </TabItem>
+    <TabItem value="PhotoPrism Reverse Proxy with INTEL HWA" label="PhotoPrism Reverse Proxy with INTEL HWA">
+
+### PhotoPrism Reverse Proxy with INTEL HWA
+
+```
+services:
+  photoprism:
+    ## Use photoprism/photoprism:preview for testing preview builds:
+    image: photoprism/photoprism:latest
+    ## Don't enable automatic restarts until PhotoPrism has been properly configured and tested!
+    ## If the service gets stuck in a restart loop, this points to a memory, filesystem, network, or database issue:
+    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
+    # restart: unless-stopped
+    stop_grace_period: 10s
+    depends_on:
+      - mariadb
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ## Server port mapping in the format "Host:Container". To use a different port, change the host port on
+    ## the left-hand side and keep the container port, e.g. "80:2342" (for HTTP) or "443:2342 (for HTTPS):
+    ports:
+      - "2333:2342"
+    ## Before you start the service, please check the following config options (and change them as needed):
+    ## https://docs.photoprism.app/getting-started/config-options/
+    environment:
+      PHOTOPRISM_ADMIN_USER: "YOUR-ADMIN-USER"                 # admin login username
+      PHOTOPRISM_ADMIN_PASSWORD: "YOUR-ADMIN-USER-PASSWORD"          # initial admin password (8-72 characters)
+      PHOTOPRISM_AUTH_MODE: "password"               # authentication mode (public, password)
+      PHOTOPRISM_SITE_URL: "http://subdomain.domain.com/"  # server URL in the format "http(s)://domain.name(:port)/(path)"
+      PHOTOPRISM_DISABLE_TLS: "false"                # disables HTTPS/TLS even if the site URL starts with https:// and a certificate is available
+      PHOTOPRISM_DEFAULT_TLS: "true"                 # defaults to a self-signed HTTPS/TLS certificate if no other certificate is available
+      PHOTOPRISM_ORIGINALS_LIMIT: 10240               # file size limit for originals in MB (increase for high-res video)
+      PHOTOPRISM_HTTP_COMPRESSION: "gzip"            # improves transfer speed and bandwidth utilization (none or gzip)
+      PHOTOPRISM_DEBUG: "false"                      # run in debug mode, shows additional log messages
+      PHOTOPRISM_READONLY: "false"                   # do not modify originals folder; disables import, upload, and delete
+      PHOTOPRISM_EXPERIMENTAL: "false"               # enables experimental features
+      PHOTOPRISM_DISABLE_CHOWN: "false"              # disables updating storage permissions via chmod and chown on startup
+      PHOTOPRISM_DISABLE_WEBDAV: "false"             # disables built-in WebDAV server
+      PHOTOPRISM_DISABLE_SETTINGS: "false"           # disables settings UI and API
+      PHOTOPRISM_DISABLE_TENSORFLOW: "false"         # disables all features depending on TensorFlow
+      PHOTOPRISM_DISABLE_FACES: "false"              # disables face detection and recognition (requires TensorFlow)
+      PHOTOPRISM_DISABLE_CLASSIFICATION: "false"     # disables image classification (requires TensorFlow)
+      PHOTOPRISM_DISABLE_VECTORS: "false"            # disables vector graphics support
+      PHOTOPRISM_DISABLE_RAW: "false"                # disables indexing and conversion of RAW images
+      PHOTOPRISM_RAW_PRESETS: "false"                # enables applying user presets when converting RAW images (reduces performance)
+      PHOTOPRISM_SIDECAR_YAML: "true"                # creates YAML sidecar files to back up picture metadata
+      PHOTOPRISM_BACKUP_ALBUMS: "true"               # creates YAML files to back up album metadata
+      PHOTOPRISM_BACKUP_DATABASE: "true"             # creates regular backups based on the configured schedule
+      PHOTOPRISM_BACKUP_SCHEDULE: "daily"            # backup SCHEDULE in cron format (e.g. "0 12 * * *" for daily at noon) or at a random time (daily, weekly)
+      PHOTOPRISM_INDEX_SCHEDULE: ""                  # indexing SCHEDULE in cron format (e.g. "@every 3h" for every 3 hours; "" to disable)
+      PHOTOPRISM_AUTO_INDEX: 300                     # delay before automatically indexing files in SECONDS when uploading via WebDAV (-1 to disable)
+      PHOTOPRISM_AUTO_IMPORT: -1                     # delay before automatically importing files in SECONDS when uploading via WebDAV (-1 to disable)
+      PHOTOPRISM_DETECT_NSFW: "false"                # automatically flags photos as private that MAY be offensive (requires TensorFlow)
+      PHOTOPRISM_UPLOAD_NSFW: "true"                 # allows uploads that MAY be offensive (no effect without TensorFlow)
+      PHOTOPRISM_DATABASE_DRIVER: "mysql"            # MariaDB 10.5.12+ (MySQL successor) offers significantly better performance compared to SQLite
+      PHOTOPRISM_DATABASE_SERVER: "mariadb:3306"     # MariaDB database server hostname (:port is optional)
+      PHOTOPRISM_DATABASE_NAME: "photoprism"         # MariaDB database schema name
+      PHOTOPRISM_DATABASE_USER: "photoprism"         # MariaDB database user name
+      PHOTOPRISM_DATABASE_PASSWORD: "insecure"       # MariaDB database user password
+      PHOTOPRISM_SITE_CAPTION: "Our Family Memories All in One Place!"
+      PHOTOPRISM_SITE_DESCRIPTION: "All Our Precious Memories Can be Viewed Here"                # meta site description
+      PHOTOPRISM_SITE_AUTHOR: "DemonWarriorTech Photos"                     # meta site author
+      ## Video Transcoding (https://docs.photoprism.app/getting-started/advanced/transcoding/):
+      PHOTOPRISM_FFMPEG_ENCODER: "intel"        # H.264/AVC encoder (software, intel, nvidia, apple, raspberry, or vaapi)
+      PHOTOPRISM_FFMPEG_SIZE: "1920"               # video size limit in pixels (720-7680) (default: 3840)
+      PHOTOPRISM_FFMPEG_BITRATE: "32"              # video bitrate limit in Mbit/s (default: 50)
+    working_dir: "/photoprism" # do not change or remove
+    ## Storage Folders: use "/" not "\" as separator, "~" is a shortcut for C:/user/{username}, "." for the current directory
+    volumes:
+      # "C:/user/username/folder:/photoprism/folder"       # example
+      - "J:/PhotoPrism/Originals:/photoprism/originals"  #CHANGE ME # original media files (photos and videos)
+      - "J:/Google-Photos/ALBUM1:/photoprism/originals/Disney-World-2022" #CHANGE ME                
+      - "C:/Users/Administrator/Pictures/ALBUM2:/photoprism/originals/youtube-pictures" #CHANGE ME # *additional* media folders can be mounted like this
+      - "J:/Photorprism/upload:/photoprism/import" #YOUR CACHE FOLDER (OPTIONAL) # *optional* base folder from which files can be imported to originals
+      - "J:/PhotoPrism:/photoprism/storage"        #CHANGE ME            # *writable* storage folder for cache, database, and sidecar files (never remove)
+
+  ## MariaDB Database Server (recommended)
+  ## see https://docs.photoprism.app/getting-started/faq/#should-i-use-sqlite-mariadb-or-mysql
+  mariadb:
+    image: mariadb:11
+    ## If MariaDB gets stuck in a restart loop, this points to a memory or filesystem issue:
+    ## https://docs.photoprism.app/getting-started/troubleshooting/#fatal-server-errors
+    restart: unless-stopped
+    stop_grace_period: 5s
+    security_opt: # see https://github.com/MariaDB/mariadb-docker/issues/434#issuecomment-1136151239
+      - seccomp:unconfined
+      - apparmor:unconfined
+    ## --lower-case-table-names=1 stores tables in lowercase and compares names in a case-insensitive manner
+    ## see https://mariadb.com/kb/en/server-system-variables/#lower_case_table_names
+    command: --innodb-buffer-pool-size=512M --lower-case-table-names=1 --transaction-isolation=READ-COMMITTED --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --max-connections=512 --innodb-rollback-on-timeout=OFF --innodb-lock-wait-timeout=120
+    volumes:
+      - "database:/var/lib/mysql" # Named volume "database" is defined at the bottom (DO NOT REMOVE)
+    environment:
+      MARIADB_AUTO_UPGRADE: "1"
+      MARIADB_INITDB_SKIP_TZINFO: "1"
+      MARIADB_DATABASE: "photoprism"
+      MARIADB_USER: "photoprism"
+      MARIADB_PASSWORD: "insecure"
+      MARIADB_ROOT_PASSWORD: "insecure"
+
+  ## Watchtower upgrades services automatically (optional)
+  ## see https://docs.photoprism.app/getting-started/updates/#watchtower
+  #
+#   watchtower:
+#     restart: unless-stopped
+#     image: containrrr/watchtower
+#     environment:
+#       WATCHTOWER_CLEANUP: "true"
+#       WATCHTOWER_POLL_INTERVAL: 7200 # checks for updates every two hours
+#     volumes:
+#       - "/var/run/docker.sock:/var/run/docker.sock"
+#       - "~/.docker/config.json:/config.json" # optional, for authentication if you have a Docker Hub account
+
+## Create named volumes, advanced users may remove this if they mount a regular host folder
+## for the database or use SQLite instead (never remove otherwise)
+volumes:
+  database:
+    driver: local
+## ONLY ENABLED BELOW IF YOUR USING CADDY FOR YOUR REVERSE PROXY
+#networks:
+#  caddy-network:
+#    external: true
+```
+    </TabItem>
+    </Tabs>
+  </TabItem>
+</Tabs>
+
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)

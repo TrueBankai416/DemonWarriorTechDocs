@@ -1,0 +1,181 @@
+---
+title: Caddy Examples
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="Cloudflare" label="Cloudflare Examples" default>
+
+## Cloudflare
+
+### Jellyfin
+
+```
+sub.domain.com {
+    reverse_proxy 127.0.0.1:8096
+    tls {
+        dns cloudflare cloudflare-api
+    }
+}
+```
+
+Save as
+Caddyfile
+
+### NextCloud
+
+```
+files.domain.com {
+    header Strict-Transport-Security "max-age=15552000; includeSubDomains; preload"
+    redir /.well-known/carddav /remote.php/dav 301
+    redir /.well-known/caldav /remote.php/dav 301
+    reverse_proxy 127.0.0.1:9111 {
+        header_up X-Real-IP 127.0.0.1
+        header_up X-Forward-For 127.0.0.1
+    }
+    tls {
+        dns cloudflare cloudflare-api
+    }
+}
+```
+
+Save as
+Caddyfile
+
+### JFA-Go
+
+```
+jellyfin.domain.com {
+    reverse_proxy /Users/ForgotPassword 192.168.0.111:8096 {
+        header_up X-Forwarded-For 192.168.0.111
+    }
+    reverse_proxy /Users/ForgotPassword/Pin 192.168.0.111:8096 {
+        header_up X-Forwarded-For 192.168.0.111
+    }
+    reverse_proxy 192.168.0.111:8096
+    tls {
+        dns cloudflare test-api-key
+    }
+}
+jfa-go.domain.com {
+    reverse_proxy 192.168.0.111:8056
+    tls {
+        dns cloudflare test-api-key
+    }
+}
+```
+
+Save as
+Caddyfile
+
+  </TabItem>
+
+<TabItem value="Duckdns" label="Duckdns Examples">
+
+## Duckdns
+
+
+### Jellyfin
+
+```
+subdomain.duckdns.org {
+    reverse_proxy 127.0.0.1:8096
+}
+```
+
+Save as 
+Caddyfile
+
+### NextCloud
+
+```
+subdomain.duckdns.org {
+    header Strict-Transport-Security "max-age=15552000; includeSubDomains; preload"
+    redir /.well-known/carddav /remote.php/dav 301
+    redir /.well-known/caldav /remote.php/dav 301
+    reverse_proxy 127.0.0.1:9111 {
+        header_up X-Real-IP 127.0.0.1
+        header_up X-Forward-For 127.0.0.1
+    }
+}
+```
+
+Save as
+Caddyfile
+
+### JFA-Go
+
+```
+jellyfin.ducksdns.org {
+    reverse_proxy /Users/ForgotPassword 192.168.0.111:8096 {
+        header_up X-Forwarded-For 192.168.0.111
+    }
+    reverse_proxy /Users/ForgotPassword/Pin 192.168.0.111:8096 {
+        header_up X-Forwarded-For 192.168.0.111
+    }
+    reverse_proxy 192.168.0.111:8096
+}
+jfa-go.duckdns.org {
+    reverse_proxy 192.168.0.111:8056
+}
+```
+
+Save as
+Caddyfile
+
+## Wordpress
+
+```
+sub.yourdomain.com {
+    root C:\directory\wheres-your-wordpress-root-is\yourdomain
+    php_fastcgi 127.0.0.1:9000
+    file_server
+    encode gzip
+}
+```
+
+Save as 
+Caddyfile
+
+  </TabItem>
+
+<TabItem value="multi-sub-domains" label="Multiple Sub Domains Example">
+## Multiple Sub Domains
+
+### Cloudflare
+
+```
+sub.domain.com {
+    reverse_proxy 127.0.0.1:8096
+    tls {
+        dns cloudflare cloudflare-api
+    }
+}
+sub2.domain.com {
+    reverse_proxy 127.0.0.1:5055
+    tls {
+        dns cloudflare cloudflare-api
+    }
+}
+```
+
+### DuckDNS
+
+```
+subdomain.duckdns.org {
+    reverse_proxy 127.0.0.1:8096
+}
+subdomain2.duckdns.org {
+    reverse_proxy 127.0.0.1:5055
+}
+```
+
+  </TabItem>
+</Tabs>
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)

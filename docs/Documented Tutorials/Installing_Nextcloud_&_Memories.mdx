@@ -1,0 +1,409 @@
+---
+title: Installing Nextcloud & Memories
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="Installing Nextcloud Video" label="Video" default>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/1UEsUucYjmE?si=QBbvhz8Bf0Pr3Zsr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+</TabItem>
+
+  <TabItem value="Installing Nextcloud" label="Installing Nextcloud">
+
+### Installing Nextcloud
+
+1. Make a directory inside C:\Tools called Nextcloud
+2. You need to make 3 files inside your Nextcloud Directory. You can get the code that needs to go in these files from here. [Nextcloud Building Files](/Examples/Docker_Examples#nextcloud)
+
+```css
+     - docker-compose.yml
+     - supervisord.conf
+     - nextcloud.ini
+     - Dockerfile
+     - cron.sh
+     - .collabora.env #Add if you want to use collabora and office on nextcloud
+```
+
+it will look like this when done
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/96ad2a28-21f0-4bbe-8590-34dae68b1304)
+
+3. We need to run our initial setup of nextcloud to do this we need to edit our docker-compose as seen in the video on youtube
+4. Once we have edited this we have to wait for initial configurations and once it says loaded we can connect to localhost:9111
+5. Set your Administrative Username for the Admin Account. Set your password for the admin account.
+6. set your data directory to wherever you want your images/videos to be placed.
+7. Set your mysql and database user and database password.
+8. Set your DB from localhost to db:3306
+9. Once all the categories are filled out click install. **(NOTE): Installation may take upwards of 15-20 minutes.**
+10. Once installed we need to go to Apps and install Memories
+
+### Enabled Go-Vod
+
+1. Now that Memories is installed we need to activate the go-vod in the compose for our nvidia GPU
+2. It Should look like below once we uncomment the go-vod section
+
+```css
+name: nextcloud
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - C:\Tools\Nextcloud\db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=SQLROOTPASSWORD
+      - MYSQL_PASSWORD=MYSQLPASSOWRD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+  app:
+    image: bankaitech/nextcloud:latest
+    restart: always
+    ports:
+      - 9111:80
+    links:
+      - db
+    volumes:
+      - J:/Nextcloud:/data
+      - J:/Nextcloud:/var/www/html
+    environment:
+      - MYSQL_DPASSWORD=MYSQLPASSWORD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+  cron:
+    image: bankaitech/nextcloud:latest
+    container_name: cron
+    restart: always
+    volumes:
+      -  J:/Nextcloud:/var/www/html:z
+    depends_on:
+      - db
+      - redis
+    entrypoint: /cron.sh
+  redis:
+    container_name: redis
+    image: redis:latest
+    expose:
+      - 6379
+    command: redis-server --save 60 1 --loglevel warning
+    restart: always
+  #ONLY REMOVE THE # FOR HWA IF YOU HAVE A GPU AND WANT TO USE MEMORIES APP INSIDE NEXTCLOUD
+  go-vod:
+    image: radialapps/go-vod
+    container_name: go_vod
+    restart: always
+    depends_on:
+      - app
+#    devices:
+#      - /dev/dri:/dev/dri # VA-API (omit for NVENC)
+    environment:
+      - NEXTCLOUD_HOST=https://NEXTCLOUD.DOMAIN.COM
+      - NEXTCLOUD_ALLOW_INSECURE=1 # (self-signed certs or no HTTPS)
+    volumes:
+      #this is where you want your files stored on nextcloud
+      - J:/Nextcloud:/data
+      #this is where your configs and all nextcloud system files are stored
+      - J:/Nextcloud:/var/www/html      
+      #only enable if you have a nvidia 1xxx or later and want to use it to transcode
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+  collabora:
+    container_name: collabora
+    hostname: collabora
+    privileged: true
+    tty: true
+    ports:
+      - 9980:9980
+    cap_add:
+      - MKNOD
+    image: collabora/code:latest
+    env_file:
+      - .collabora.env
+    restart: always
+```
+
+3. Now we can run 
+
+```css
+docker compose up -d --force-recreate --remove-orphans
+```
+
+ to recreate the container and remove old resources
+5. We need to go into Adminstrative Settings ---> Memories ---> Binary Path and add in the connection address this
+
+Bind Address
+
+```css
+127.0.0.1:47788
+```
+
+Connection Adress
+
+```css
+go-vod:47788
+``` 
+
+
+like so 
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4477cd8b-0560-4d07-8086-eb547680955a)
+
+4. Now we can see if the hwa is working. So we need to go to Admin Settings on nextcloud ---> memories -->  make the transcoding section look like below
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4712d296-85aa-4a2e-b91b-004e19b4cf4e)
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/48a74e59-a230-42ff-bd9d-cb7ce4845012)
+
+5. Now that thats done. We need to test so input a video inside nextcloud photos or any directory and try to play it.
+You should see two options when you select the gear icon
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/4f4b8d9b-df40-456a-95cf-e0c4bf556aca)
+if you see this it is working correctly. Congrats!
+
+You can also check docker desktop go-vod container and see if the logs say something alike to this
+
+
+```
+2023-12-19 00:12:38 2023/12/19 06:12:38 33w0pebs2le0-480p: /usr/local/bin/ffmpeg -loglevel warning -hwaccel cuda -i /var/www/html/data/__groupfolders/2/20231216_160438.mp4 -copyts -fflags +genpts -vf "format=nv12|cuda,hwupload,scale_cuda=force_original_aspect_ratio=decrease:passthrough=0:w=854:h=854" -map "0:v:0" "-c:v" h264_nvenc -preset p6 -tune ll -rc vbr -rc-lookahead 30 -cq 42 -temporal-aq 1 -map "0:a:0?" "-c:a" aac -ac 1 -start_number 0 -avoid_negative_ts disabled -f hls -hls_flags split_by_time -hls_time 3 -hls_segment_type mpegts -hls_segment_filename /tmp/go-vod/33w0pebs2le0-1296945068/480p-%06d.ts -force_key_frames "expr:gte(t,n_forced*3)" -
+2023-12-19 00:12:40 2023/12/19 06:12:40 33w0pebs2le0-480p: recv 480p-000000.ts
+2023-12-19 00:12:41 2023/12/19 06:12:41 33w0pebs2le0-480p: recv 480p-000001.ts
+2023-12-19 00:12:42 2023/12/19 06:12:42 33w0pebs2le0-480p: recv 480p-000002.ts
+2023-12-19 00:12:43 2023/12/19 06:12:43 ffmpeg-error: More than 1000 frames duplicated
+2023-12-19 00:12:44 2023/12/19 06:12:44 33w0pebs2le0-480p: recv 480p-000003.ts
+2023-12-19 00:12:45 2023/12/19 06:12:45 33w0pebs2le0-480p: recv 480p-000004.ts
+2023-12-19 00:12:45 2023/12/19 06:12:45 33w0pebs2le0-480p: goal satisfied: 4
+2023-12-19 00:12:46 2023/12/19 06:12:46 33w0pebs2le0-480p: resuming transcoding
+2023-12-19 00:12:48 2023/12/19 06:12:48 33w0pebs2le0-480p: recv 480p-000005.ts
+2023-12-19 00:12:49 2023/12/19 06:12:49 33w0pebs2le0-480p: recv 480p-000006.ts
+2023-12-19 00:12:50 2023/12/19 06:12:50 33w0pebs2le0-480p: recv 480p-000007.ts
+2023-12-19 00:12:51 2023/12/19 06:12:51 33w0pebs2le0-480p: recv 480p-000008.ts
+2023-12-19 00:12:51 2023/12/19 06:12:51 33w0pebs2le0-480p: goal satisfied: 8
+```
+
+  </TabItem>
+
+  <TabItem value="Building the Custom Dockerfile" label="Building the Custom Dockerfile" default>
+
+### Building the Custom Dockerfile for FFMPEG & Facial Recognition
+
+**We will now build our custom repo for with ffmpeg previews and facial recognition**
+1. Open Terminal/Powershell and run inside C:\Tools\Nextcloud
+
+```css
+docker build . -t nextcloud-apache-ffmpeg
+```
+
+2. It should start building the custom repo
+3. Once done we need to edit our docker-compose.yml to use that repo so edit it like so.
+
+
+```
+name: nextcloud
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: mariadb
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - C:\Tools\Nextcloud\db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=SQLROOTPASSWORD
+      - MYSQL_PASSWORD=MYSQLPASSOWRD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+  app:
+    image: nextcloud-apache-ffmpeg
+    image: bankaitech/nextcloud:latest
+    container_name: nextcloud
+    restart: always
+    ports:
+      - 9111:80
+    links:
+      - db
+    volumes:
+      - J:/Nextcloud:/data
+      - J:/Nextcloud:/var/www/html
+    environment:
+      - MYSQL_DPASSWORD=MYSQLPASSWORD
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+  cron:
+    image: bankaitech/nextcloud:latest
+    container_name: cron
+    restart: always
+    volumes:
+      -  J:/Nextcloud:/var/www/html:z
+    depends_on:
+      - db
+      - redis
+    entrypoint: /cron.sh
+  redis:
+    container_name: redis
+    image: redis:latest
+    expose:
+      - 6379
+    command: redis-server --save 60 1 --loglevel warning
+    restart: always
+  #ONLY REMOVE THE # FOR HWA IF YOU HAVE A GPU AND WANT TO USE MEMORIES APP INSIDE NEXTCLOUD
+  go-vod:
+    image: radialapps/go-vod
+    restart: always
+    depends_on:
+      - app
+#    devices:
+#      - /dev/dri:/dev/dri # VA-API (omit for NVENC)
+    environment:
+      - NEXTCLOUD_HOST=https://NEXTCLOUD.DOMAIN.COM
+      - NEXTCLOUD_ALLOW_INSECURE=1 # (self-signed certs or no HTTPS)
+    volumes:
+      #this is where you want your files stored on nextcloud
+      - J:/Nextcloud:/data
+      #this is where your configs and all nextcloud system files are stored
+      - J:/Nextcloud:/var/www/html      
+      #only enable if you have a nvidia 1xxx or later and want to use it to transcode
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+  collabora:
+    container_name: collabora
+    hostname: collabora
+    privileged: true
+    tty: true
+    ports:
+      - 9980:9980
+    cap_add:
+      - MKNOD
+    image: collabora/code:latest
+    env_file:
+      - .collabora.env
+    restart: always
+```
+
+We are only changing this line for others who changed mysql password and other things
+From
+
+```css
+  app:
+    image: nextcloud:production
+```
+
+to 
+
+```css
+  app:
+    image: nextcloud-apache-ffmpeg
+```
+
+5. Once this is done we can rebuild and docker-compose again by typing `docker compose up -d --force-recreate --remove-orphans`
+6. This time we should now have ffmpeg and facial recognition now ready.
+7. So go into the Admin Settings and go to Memories then this
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/e0957e44-90cf-4d90-8a75-07fb90c5fae8)
+
+8. to find ffmpeg location go to docker find your nextcloud app and click on the 3 dots next to our app and select terminal like so
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/fe8e1ca7-4026-467c-b1f9-7478e2bd352a)
+
+9. type 2 commands to give us our ffmpeg and ffprobe binary's
+
+```css
+whereis ffmpeg
+```
+
+
+```css
+whereis ffprobe
+```
+
+10. Copy the path into those empty ffmpeg paths box and ffprobe path box.
+11. Once you click out of the box it should update.
+
+### Installing Facial Recognition
+
+1. Now we need 2 more apps from the app store. So we go to Adminstrative Panel --> Apps ---> Recognize
+Adminstrative Panel ---> Apps ---> Preview Generator
+2. Once this is done we need to enable recognize inside the Adminstrative Settings ---> Recognize and enable the slider
+
+![image](https://github.com/DevilsDesigns/Youtube-Docs/assets/35183970/c65726de-201a-42ee-befc-b99d67e0997c)
+
+</TabItem>
+
+  <TabItem value="Reverse Proxy Setup for Nextcloud" label="Reverse Proxy Setup for Nextcloud">
+
+### Reverse Proxy Setup for Nextcloud
+
+  1. Open Your Nextcloud /var/html/www directory. For me thats in J:/Nextcloud. If you do not know where this is go to your Docker-Compose.yml and look for this line
+
+ ![image](https://i.imgur.com/4Vxm8aJ.png)
+
+The Folder Should Look Like this!
+
+![image](https://i.imgur.com/ISfyeXl.png)
+
+  2. Go into Config Folder and Open Config.php
+
+![image](https://i.imgur.com/uV6zZk8.png)
+
+  3. Add these lines below
+
+  ```css
+  'trusted_domains' => 
+  array (
+    0 => 'NEXTCLOUD.DOMAIN.COM',
+#    1 => 'OFFICE.DOMAIN.COM', #UCOMMENT THIS IF YOU HAVE ADDED collabora TO YOUR INSTALL
+  ),
+  'trusted_proxies' => 
+  array (
+    0 => '127.0.0.1', #adding localhost for local use
+    1 => '192.168.x.xxx', #add your ip for your local machine here
+    2 => '172.19.0.1', #This is our docker internal ip
+  ),
+  'forwarded_for_headers' => 
+  array (
+    0 => 'HTTP_X_FORWARDED_FOR',
+  ),
+  ```
+
+it should look like this
+
+![image](https://i.imgur.com/SgJCQ9i.png)
+
+  4. Now SAVE and run the commands below in Powershell
+
+```css
+docker compose down
+```
+
+```css
+docker compose up -d
+```
+
+
+
+</TabItem>
+
+</Tabs>
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)

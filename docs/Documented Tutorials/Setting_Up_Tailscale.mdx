@@ -1,0 +1,46 @@
+---
+title: Setting Up Tailscale
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="Tailscale Commands for Exit Node/Enable Subnets" label="Tailscale Commands for Exit Node/Enable Subnets" default>
+
+### Tailscale Commands for Exit Node/Enable Subnets
+
+Taiscale firewall and opening exit node commands
+
+Reference:
+https://tailscale.com/kb/1019/subnets/?tab=linux
+
+EXIT Node/Subnet Enable Command
+
+```css
+sudo tailscale up --advertise-routes=192.168.1.0/24 --accept-routes --advertise-exit-node
+```
+
+Allowing ipv4 through exit node
+
+```css
+echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
+sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
+```
+  </TabItem>
+  <TabItem value="Extra Advice" label="Extra Advice" default>
+#### Extra Advice
+
+I would Recommend You Install Windows Terminal its a good way to have all your VM's, Powershell, and CMD's all in one place
+
+![image](https://user-images.githubusercontent.com/35183970/214385251-1a36a732-f99c-465d-9929-b5802892a7d4.png)
+
+[Windows Terminal Install](https://www.microsoft.com/store/productId/9N0DX20HK701)
+  </TabItem>
+</Tabs>
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)

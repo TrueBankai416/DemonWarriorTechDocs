@@ -1,0 +1,330 @@
+---
+title: Jellyfin Plugins
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+---
+
+### Insallation from Repository
+
+Installing From Repository (Recommended)
+
+1. Go to the Admin Dashboard.
+2. In the left navigation menu, click on Plugins.
+3. In the top menu, click Repositories.
+4. Click the + icon to add a new repository.
+5. Repository Name can be anything.
+6. Add url from maintaner
+7. If done correctly you should see a new repository on the page.
+8. In the top menu, navigate to Catalog.
+9. Under the Metadata section click on the plugin that was installed.
+10.    Click Install.
+11. Restart Jellyfin.
+12. On the left navigation menu, click on Plugins.
+13. If successful, you will see YourPlugin with status as Active
+
+
+Manual Installation (Hard)
+
+1. Navigate to the releases page.
+2. Download the latest zip file.
+3. Unzip contents into (jellyfin data directory/plugins/YoutubeMetadata)
+4. Restart Jellyfin.
+5. On the left navigation menu, click on Plugins.
+6. If successful, you will see the plugin with status as Active
+
+
+### Intro Skipper
+
+Description: Fingerprint audio to automatically detect and skip intro sequences in Jellyfin 
+
+Installation
+
+1. Add this plugin repository to your server: `
+
+```css
+https://manifest.intro-skipper.org/manifest.json
+```
+
+### Subtitles Extract
+
+Description: Plugin to automatically extract embedded subtitles.
+
+Installation
+
+:::caution
+
+Manual Install Only Available
+
+:::
+
+Download
+
+[Subtitles Extract](https://github.com/jellyfin/jellyfin-plugin-subtitleextract/releases)
+
+### M3U-Editor
+
+Description: A Way to edit m3u's/livetv directely in jellyfin
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://simoni.dev/jellyfin/repo.json
+```
+
+### Intros
+
+Description:  This is a plugin built with DotNet that can download flashy intros from prerolls.video for your movies. 
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/dkanada/jellyfin-plugin-intros/master/manifest.json
+```
+
+Extra Info
+
+[Intros Github](https://github.com/dkanada/jellyfin-plugin-intros)
+
+### PhoenixAdult
+
+Description: This metadata provider helps fill Jellyfin/Emby with information for your adult videos by pulling from the original site
+
+Repository (Jellyfin only):
+
+1. Add to the list this URL 
+
+```css
+https://raw.githubusercontent.com/DirtyRacer1337/Jellyfin.Plugin.PhoenixAdult/master/manifest.json
+```
+
+Extra Info
+
+[Pheonix Adult Github](https://github.com/DirtyRacer1337/Jellyfin.Plugin.PhoenixAdult)
+
+### Stash Integration
+
+Descriptions: Pulls data from your Stash using the filename to query on.
+
+Installation
+
+:::caution
+
+Manual Install Only Available 
+
+:::
+
+[Stash Integration Github](https://github.com/DirtyRacer1337/Jellyfin.Plugin.Stash)
+
+[Manual Install Github Release](https://jellyfin.org/docs/general/server/plugins/index.html#installing)
+
+### Jellyfin Merge Versions Plugin
+
+Description:  Jellyfin Merge Versions plugin is a plugin that automatically groups every repeated movie; 
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/danieladov/JellyfinPluginManifest/master/manifest.json
+```
+
+Extra Info
+
+[Jellyfin Merge Version Github](https://github.com/danieladov/jellyfin-plugin-mergeversions)
+
+### LastFM
+
+Description: Enables audio scrobbling to Last.FM as well as a metadata fetcher source.
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://jellyfin-repo.jesseward.com/manifest.json
+```
+
+Extra Info
+
+[LastFM Github](https://github.com/jesseward/jellyfin-plugin-lastfm)
+
+### Shokofin
+
+Description: A Jellyfin plugin to integrate Jellyfin with Shoko Server.
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/ShokoAnime/Shokofin/master/manifest.json
+```
+
+Extra Info
+
+[Shokofin Github](https://github.com/ShokoAnime/Shokofin)
+
+### Skin Manager
+
+Description:
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/danieladov/JellyfinPluginManifest/master/manifest.json
+```
+
+Extra Info
+
+[Jellyfin Skin Manager Github](https://github.com/danieladov/jellyfin-plugin-skin-manager)
+
+### Ani-Sync
+
+Descriptions: Synchronize anime watch status between Jellyfin and anime tracking sites. 
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/vosmiic/jellyfin-ani-sync/master/manifest.json
+```
+
+### Themerr
+
+Description: Themerr-jellyfin is a plugin for Jellyfin that adds theme songs to movies using ThemerrDB.
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://app.lizardbyte.dev/jellyfin-plugin-repo/manifest.json
+```
+
+Extra Info
+
+[Documentation](http://themerr-jellyfin.readthedocs.io/)
+
+### Tube Archivist
+
+Description: This plugin adds the metadata provider for TubeArchivist.
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://github.com/DarkFighterLuke/TubeArchivistMetadata/raw/master/manifest.json
+```
+
+Extra Info
+
+[Tube Archivist Github](https://github.com/DarkFighterLuke/TubeArchivistMetadata)
+
+### Yotube Metadata
+
+Description: Plugin for Jellyfin that retrieves metadata for content from Youtube.
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/ankenyr/jellyfin-plugin-repo/master/manifest.json
+```
+
+Extra Info
+
+[Youtube Metadata Github](https://github.com/ankenyr/jellyfin-youtube-metadata-plugin)
+
+### SMS Notifications
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/k-matti/jellyfin-plugin-repository/master/manifest.json
+```
+
+Extra Info
+[SMS Notification Github](https://github.com/k-matti/jellyfin-plugin-sms)
+
+### The Porn DB
+
+Description: Manage Your Adult Videos in Jellyfin/Emby. This metadata provider helps fill Jellyfin/Emby with information for your adult videos by pulling from the ThePornDB.
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/ThePornDatabase/Jellyfin.Plugin.ThePornDB/main/manifest.json
+```
+
+Extra Info
+
+[The PornDB Github](https://github.com/ThePornDatabase/Jellyfin.Plugin.ThePornDB)
+
+[The PornDB Website](https://theporndb.net/)
+
+### VGMDB
+
+Description: Adds support for VGMdb to music libraries. Can provide both images and metadata for artists and albums.
+
+Installation:
+
+1. Add this plugin repository to your server: 
+
+```css
+https://repo.jellyfin.org/releases/plugin/manifest-stable.json
+```
+
+Extra Info
+
+[VGMDB Github](https://github.com/jellyfin/jellyfin-plugin-vgmdb)
+
+### Jellyscrub
+
+Description: Create BIF files for media to be used for trickplay scrubbing previews. Smooth mouse-over video scrubbing previews.
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/nicknsy/jellyscrub/main/manifest.json
+```
+
+Extra Info
+
+[Jellyscrub Gihtub](https://github.com/nicknsy/jellyscrub)
+
+### Jellyfin Media Bar
+
+Description: A Jellyfin Featured Content Bar to show off your media collection 
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://www.iamparadox.dev/jellyfin/plugins/manifest.json
+```
+2. Install "File Transformation" at least 2.2.1.0
+3. Install latest "Media Bar"
+4. Restart Jellyfin
+
+Extra Info
+
+[Jellyfin Media Bar](https://github.com/IAmParadox27/jellyfin-plugin-media-bar)
+
