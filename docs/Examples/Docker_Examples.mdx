@@ -11,10 +11,7 @@ import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
 ## Docker Examples
 
-<Tabs>
-  <TabItem value="Nextcloud Example" label="Nextcloud Example" default>
-
-**Nextcloud:**
+### Nextcloud
 
 ```
 name: nextcloud
@@ -105,7 +102,7 @@ services:
     restart: always
 ```
 
-**Dockerfile:**
+### Dockerfile
 
 ```
 # Use the Nextcloud production image as the base
@@ -243,7 +240,7 @@ HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=3 \
 
 ```
 
-**cron.sh:**
+### cron.sh
 
 ```
 #!/bin/sh
@@ -252,7 +249,7 @@ set -eu
 exec busybox crond -f -L /dev/stdout
 ```
 
-**nextcloud.ini:**
+### nextcloud.ini
 
 ```
 memory_limit = 10G
@@ -262,7 +259,7 @@ max_execution_time = 3600
 max_input_time = 3600
 ```
   
-**.collabora.env:**
+### .collabora.env
 
 ```css
 username=admin #Change to Any Username You Choose
@@ -270,7 +267,7 @@ password=PASSWORD #Change to Any Password you Choose
 domain=nextcloud\\.domain\\.com #Change this to your subdomain.\\domain\\.com example memories\\.demonwarriortech\\.com
 ```
 
-**supervisord.conf:**
+### supervisord.conf
 
 ```
 [supervisord]
@@ -298,13 +295,9 @@ command=/cron.sh
 
 ```
 
-  </TabItem>
+### Jellyfin
 
-  <TabItem value="Jellyfin Example" label="Jellyfin Example" default>
-
-**Jellyfin:**
-
-**docker-compose.yml:**
+#### docker-compose.yml
 
   ```
 services:
@@ -357,10 +350,7 @@ services:
 #              capabilities: [gpu]
   ```
 
-  </TabItem>
-<TabItem value="Jellyseerr Example" label="Jellyseerr Example">
-
-**Jellyseerr:**
+### Jellyseerr
 
 ```
 services:
@@ -376,11 +366,8 @@ services:
             - /path/to/appdata/config:/app/config
        restart: unless-stopped
 ```
-  </TabItem>
-
-<TabItem value="Jellystat Example" label="Jellystat Example">
-
-**Jellystat:**
+  
+### Jellystat
 
 ```
 services:
@@ -411,8 +398,8 @@ services:
 networks:
   default:
 ```
-  </TabItem>
-<TabItem value="Cloudflare DDNS Example" label="Cloudflare DDNS Example">
+  
+
 
 ### Cloudflare DDNS
 
@@ -454,9 +441,9 @@ services:
 # Docker's host. This section is required for the 'networks' section of each 'services'.
 ```
 
-</TabItem>
 
-<TabItem value="KitchenOwl Example" label="KitchenOwl Example">
+
+
 
 ### Kitchen Owl
 
@@ -492,11 +479,11 @@ volumes:
 networks:
   default:
 ```
-  </TabItem>
+  
 
 
-  <TabItem value="Caddy" label="Caddy">
-    <TabItem value="Caddy Example" label="Caddy Example">
+  
+    
 
 ### docker-Compose.yml
 
@@ -562,12 +549,12 @@ docker compose -f docker-compose.yml up -d
 ```
 
 
-      </TabItem>
-    </TabItem>
+      
+    
 
-  <TabItem value="Immich" label="Immich">
-    <Tabs>
-    <TabItem value="Immich Nvidia Example" label="Immich Nvidia Example">
+  
+    
+    
 ### docker-compose.yml
 
 ```
@@ -778,8 +765,8 @@ services:
 
 ```
 
-      </TabItem>
-      <TabItem value="Immich iGPU Example" label="Immich iGPU Example">
+      
+      
 
 ### .env
 
@@ -993,12 +980,12 @@ services:
 
 ```
 
-      </TabItem>
-    </Tabs>
-    </TabItem>
-  <TabItem value="PhotoPrism Example" label="PhotosPrism Example">
-    <Tabs>
-    <TabItem value="PhotoPrism Examples for Locally Hosting with software hwa" label="PhotoPrism Examples for Locally Hosting with software hwa">
+      
+    
+    
+  
+    
+    
 ### PhotoPrism Examples for Locally Hosting with software hwa
 
 ```
@@ -1120,8 +1107,8 @@ volumes:
 #  caddy-network:
 #    external: true
 ```
-      </TabItem>
-      <TabItem value="PhotoPrism Reverse Proxy with NVIDIA HWA" label="PhotoPrism Reverse Proxy with NVIDIA HWA">
+      
+      
 
 ### PhotoPrism Reverse Proxy with NVIDIA HWA
 
@@ -1246,8 +1233,8 @@ volumes:
 #  caddy-network:
 #    external: true
 ```
-    </TabItem>
-    <TabItem value="PhotoPrism Reverse Proxy with INTEL HWA" label="PhotoPrism Reverse Proxy with INTEL HWA">
+    
+    
 
 ### PhotoPrism Reverse Proxy with INTEL HWA
 
@@ -1371,10 +1358,10 @@ volumes:
 #  caddy-network:
 #    external: true
 ```
-    </TabItem>
-    </Tabs>
-  </TabItem>
-</Tabs>
+    
+    
+  
+
 
 
 <BuyMeACoffeeButton />
