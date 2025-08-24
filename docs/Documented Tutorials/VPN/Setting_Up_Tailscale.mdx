@@ -63,7 +63,6 @@ Before beginning the installation, ensure your system meets all requirements:
 #### Supported Operating Systems
 - **Linux**: Ubuntu, Debian, CentOS, RHEL, Fedora, Arch Linux
 - **Windows**: Windows 10/11, Windows Server 2019/2022
-- **macOS**: macOS 10.15 (Catalina) or later
 - **Mobile**: iOS 14+, Android 6.0+
 - **Network Devices**: Synology, QNAP, pfSense, OPNsense
 
@@ -126,53 +125,10 @@ Before beginning the installation, ensure your system meets all requirements:
 # - Key expiry policies
 ```
 
-### Step 2: Linux Installation
+### Step 2: Platform Installation
 
-#### Ubuntu/Debian Installation
-
-```bash
-# Add Tailscale's package signing key and repository
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.list | sudo tee /etc/apt/sources.list.d/tailscale.list
-
-# Update package list and install Tailscale
-sudo apt update
-sudo apt install tailscale
-
-# Verify installation
-tailscale version
-```
-
-#### CentOS/RHEL/Fedora Installation
-
-```bash
-# Add Tailscale repository
-sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/rhel/8/tailscale.repo
-
-# Install Tailscale
-sudo dnf install tailscale
-
-# Enable and start the service
-sudo systemctl enable --now tailscaled
-
-# Verify installation
-tailscale version
-```
-
-#### Arch Linux Installation
-
-```bash
-# Install from AUR
-yay -S tailscale
-
-# Or using pacman (if available in official repos)
-sudo pacman -S tailscale
-
-# Enable and start the service
-sudo systemctl enable --now tailscaled
-```
-
-### Step 3: Windows Installation
+<Tabs>
+  <TabItem value="windows" label="Windows" default>
 
 #### Download and Install
 
@@ -189,7 +145,7 @@ Start-Process -FilePath $output -ArgumentList "/S" -Wait -Verb RunAs
 tailscale version
 ```
 
-#### Windows Service Configuration
+#### Service Configuration
 
 ```powershell
 # Check service status
@@ -202,30 +158,114 @@ Start-Service Tailscale
 Set-Service Tailscale -StartupType Automatic
 ```
 
-### Step 4: macOS Installation
+#### Initial Device Setup
+
+```powershell
+# Start Tailscale and authenticate
+tailscale up
+
+# Follow the authentication URL provided
+# Complete authentication in web browser
+# Device will appear in Tailscale admin console
+```
+
+#### Verify Connection
+
+```powershell
+# Check Tailscale status
+tailscale status
+
+# List connected devices
+tailscale status --peers
+
+# Test connectivity to another device
+ping [device-tailscale-ip]
+```
+
+#### Configure Device Name
+
+```powershell
+# Set a custom device name
+tailscale up --hostname=my-windows-pc
+
+# Update device tags (for ACL organization)
+tailscale up --advertise-tags=tag:windows,tag:client
+```
+
+#### Basic Network Configuration
+
+```powershell
+# Enable MagicDNS for automatic hostname resolution
+# This is configured in the admin console:
+# Settings → DNS → Enable MagicDNS
+
+# Set custom DNS servers (optional)
+tailscale up --accept-dns=false
+
+# Or use specific DNS servers
+tailscale up --accept-dns --dns=1.1.1.1,8.8.8.8
+```
+
+  </TabItem>
+  <TabItem value="linux" label="Linux">
 
 #### Download and Install
 
+##### Ubuntu/Debian Installation
+
 ```bash
-# Download Tailscale for macOS
-curl -o tailscale-macos.zip https://pkgs.tailscale.com/stable/tailscale-latest-macos.zip
+# Add Tailscale's package signing key and repository
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.list | sudo tee /etc/apt/sources.list.d/tailscale.list
 
-# Extract and install
-unzip tailscale-macos.zip
-sudo installer -pkg Tailscale.pkg -target /
-
-# Or install via Homebrew
-brew install tailscale
+# Update package list and install Tailscale
+sudo apt update
+sudo apt install tailscale
 
 # Verify installation
 tailscale version
 ```
 
-## Basic Configuration
+##### CentOS/RHEL/Fedora Installation
 
-### Step 5: Initial Device Setup
+```bash
+# Add Tailscale repository
+sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/rhel/8/tailscale.repo
 
-#### Authenticate Device
+# Install Tailscale
+sudo dnf install tailscale
+
+# Enable and start the service
+sudo systemctl enable --now tailscaled
+
+# Verify installation
+tailscale version
+```
+
+##### Arch Linux Installation
+
+```bash
+# Install from AUR
+yay -S tailscale
+
+# Or using pacman (if available in official repos)
+sudo pacman -S tailscale
+
+# Enable and start the service
+sudo systemctl enable --now tailscaled
+```
+
+#### Service Configuration
+
+```bash
+# Enable and start the service (if not already done)
+sudo systemctl enable --now tailscaled
+
+# Check service status
+sudo systemctl status tailscaled
+```
+
+#### Initial Device Setup
 
 ```bash
 # Start Tailscale and authenticate
@@ -253,25 +293,19 @@ ping [device-tailscale-ip]
 
 ```bash
 # Set a custom device name
-sudo tailscale up --hostname=my-server
+sudo tailscale up --hostname=my-linux-server
 
 # Update device tags (for ACL organization)
-sudo tailscale up --advertise-tags=tag:server,tag:production
+sudo tailscale up --advertise-tags=tag:linux,tag:server
 ```
 
-### Step 6: Basic Network Configuration
-
-#### Enable MagicDNS
+#### Basic Network Configuration
 
 ```bash
 # Enable MagicDNS for automatic hostname resolution
 # This is configured in the admin console:
 # Settings → DNS → Enable MagicDNS
-```
 
-#### Configure DNS Settings
-
-```bash
 # Set custom DNS servers (optional)
 sudo tailscale up --accept-dns=false
 
@@ -279,9 +313,12 @@ sudo tailscale up --accept-dns=false
 sudo tailscale up --accept-dns --dns=1.1.1.1,8.8.8.8
 ```
 
+  </TabItem>
+</Tabs>
+
 ## Advanced Configuration
 
-### Step 7: Exit Node Configuration
+### Step 3: Exit Node Configuration
 
 #### Setup Exit Node
 
@@ -335,7 +372,7 @@ tailscale up --exit-node=[exit-node-ip]
 tailscale up --exit-node=
 ```
 
-### Step 8: Subnet Routing Configuration
+### Step 4: Subnet Routing Configuration
 
 #### Setup Subnet Router
 
@@ -380,7 +417,7 @@ sudo iptables-save | sudo tee /etc/iptables/rules.v4
 5. **Select "Edit route settings"**
 6. **Enable the advertised routes**
 
-### Step 9: Access Control Lists (ACLs)
+### Step 5: Access Control Lists (ACLs)
 
 #### Basic ACL Configuration
 
@@ -462,7 +499,7 @@ sudo iptables-save | sudo tee /etc/iptables/rules.v4
 
 ## Security Hardening
 
-### Step 10: Security Best Practices
+### Step 6: Security Best Practices
 
 #### Device Authentication
 
@@ -500,7 +537,7 @@ tailscale status --json | jq '.Peer[] | {Name: .HostName, LastSeen: .LastSeen, O
 tailscale status --peers
 ```
 
-### Step 11: Enterprise Features
+### Step 7: Enterprise Features
 
 #### SSO Integration
 
@@ -551,7 +588,7 @@ tailscale status --peers
 
 ## Monitoring and Maintenance
 
-### Step 12: Monitoring Setup
+### Step 8: Monitoring Setup
 
 #### Health Monitoring
 
@@ -800,7 +837,7 @@ sudo journalctl -u tailscaled | grep -i auth
 
 ## Production Deployment
 
-### Step 14: Enterprise Deployment
+### Step 9: Enterprise Deployment
 
 #### Infrastructure as Code
 
@@ -861,7 +898,7 @@ find "$BACKUP_DIR" -name "state_*" -mtime +30 -delete
 find "$BACKUP_DIR" -name "acl_*" -mtime +30 -delete
 ```
 
-### Step 15: Security Compliance
+### Step 10: Security Compliance
 
 #### Compliance Checklist
 
