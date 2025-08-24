@@ -12,6 +12,12 @@ const config = {
   tagline: 'Docs',
   favicon: 'img/favicon.ico',
 
+  // Adopt Docusaurus Faster and v4
+  future: {
+    experimental_faster: true,
+    v4: true,
+  },
+  
   // Set the production url of your site here
   url: 'https://docs.demonwarriortech.com',
   // Set the /<baseUrl>/ pathname under which your site is served
