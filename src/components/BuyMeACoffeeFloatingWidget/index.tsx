@@ -2,7 +2,7 @@ import React from 'react';
 
 const BuyMeACoffeeFloatingWidget: React.FC = () => {
   const handleClick = () => {
-    window.open('https://www.buymeacoffee.com/BankaiTech', '_blank');
+    window.open('https://buymeacoffee.com/demonwarriortech', '_blank');
   };
 
   return (
