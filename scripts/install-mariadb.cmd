@@ -12,17 +12,25 @@ if not exist "%TEMP%\mariadb-latest-winx64.msi" (
     exit /b 1
 )
 
-msiexec /i "%TEMP%\mariadb-latest-winx64.msi" /quiet SERVICENAME=MariaDB PASSWORD=SecureRootPassword123! UTF8=1
+msiexec /i "%TEMP%\mariadb-latest-winx64.msi" /quiet /wait SERVICENAME=MariaDB PASSWORD=SecureRootPassword123! UTF8=1
 if %ERRORLEVEL% NEQ 0 (
     echo ❌ MariaDB installation failed (exit code: %ERRORLEVEL%)
     exit /b 1
 )
-echo ✅ MariaDB installed
 
-REM Wait for service to start
+REM Wait for service to start and verify installation
 echo.
 echo [2/3] Waiting for MariaDB service to start...
-timeout /t 10 /nobreak
+timeout /t 15 /nobreak
+
+REM Verify MariaDB service is running
+sc query MariaDB >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ MariaDB installed and service is running
+) else (
+    echo ❌ MariaDB installation failed - service not found
+    exit /b 1
+)
 
 REM Create WordPress database and user
 echo.

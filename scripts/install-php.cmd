@@ -20,9 +20,11 @@ echo [2/4] Extracting PHP...
 set EXTRACT_SUCCESS=false
 for %%f in ("%TEMP%\php-*-nts-Win32-vs16-x64.zip") do (
     echo Found PHP file: %%~nxf
-    %SystemRoot%\system32\tar.exe -xf "%%f" -C "C:\Tools"
+    echo Using PowerShell to extract archive...
+    powershell -NoProfile -Command "try { Expand-Archive -Path '%%f' -DestinationPath 'C:\Tools\PHP' -Force; exit 0 } catch { Write-Host 'Extraction failed: $_'; exit 1 }"
     if %ERRORLEVEL% EQU 0 (
         set EXTRACT_SUCCESS=true
+        echo ✅ PHP extracted to C:\Tools\PHP
     ) else (
         echo ❌ Failed to extract PHP archive
         exit /b 1
@@ -34,25 +36,11 @@ if "%EXTRACT_SUCCESS%"=="false" (
     exit /b 1
 )
 
-echo Moving PHP files to correct location...
-set MOVE_SUCCESS=false
-for /d %%i in ("C:\Tools\php-*-nts-Win32-vs16-x64") do (
-    xcopy "%%i\*" "C:\Tools\PHP\" /E /I /Y /Q
-    if %ERRORLEVEL% EQU 0 (
-        rmdir "%%i" /S /Q
-        set MOVE_SUCCESS=true
-    ) else (
-        echo ❌ Failed to move PHP files
-        exit /b 1
-    )
-)
-
-if "%MOVE_SUCCESS%"=="false" (
-    echo ❌ No extracted PHP directory found
+REM Verify extraction worked
+if not exist "C:\Tools\PHP\php.exe" (
+    echo ❌ PHP extraction failed - php.exe not found
     exit /b 1
 )
-
-echo ✅ PHP extracted to C:\Tools\PHP
 
 REM Copy php.ini template
 echo.
