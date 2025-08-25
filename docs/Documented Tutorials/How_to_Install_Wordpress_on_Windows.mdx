@@ -341,31 +341,22 @@ $mariaConfig = @"
 bind-address = 127.0.0.1
 port = 3306
 datadir = $($mariaDataPath -replace '\\', '/')
-```
 
-```powershell
 # Performance Settings
 innodb_buffer_pool_size = 1G
 innodb_log_file_size = 256M
 innodb_flush_log_at_trx_commit = 2
 innodb_flush_method = O_DIRECT
-```
 
-Security Settings
-```powershell
+# Security Settings
 skip-name-resolve
 sql_mode = STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
-```
-Character Set
 
-```
+# Character Set
 character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
-```
 
-Logging
-
-```
+# Logging
 log-error = $($mariaDataPath -replace '\\', '/')/error.log
 slow_query_log = 1
 slow_query_log_file = $($mariaDataPath -replace '\\', '/')/slow.log
