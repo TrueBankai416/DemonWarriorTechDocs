@@ -178,8 +178,15 @@ if ($install -match '^[Yy]') {
     if (-not $phpInstalled) {
         Write-Host "Installing PHP..." -ForegroundColor Yellow
         try {
-            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd").Content
-            Write-Host "✅ PHP installation completed" -ForegroundColor Green
+            $phpScript = Join-Path $env:TEMP "install-php.cmd"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd" -OutFile $phpScript
+            $result = & cmd /c "`"$phpScript`""
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ PHP installation completed" -ForegroundColor Green
+            } else {
+                Write-Host "❌ PHP installation failed" -ForegroundColor Red
+            }
+            Remove-Item $phpScript -ErrorAction SilentlyContinue
         } catch {
             Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
         }
@@ -191,8 +198,15 @@ if ($install -match '^[Yy]') {
     if (-not $mariaInstalled) {
         Write-Host "Installing MariaDB..." -ForegroundColor Yellow
         try {
-            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd").Content
-            Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
+            $mariaScript = Join-Path $env:TEMP "install-mariadb.cmd"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd" -OutFile $mariaScript
+            $result = & cmd /c "`"$mariaScript`""
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
+            } else {
+                Write-Host "❌ MariaDB installation failed" -ForegroundColor Red
+            }
+            Remove-Item $mariaScript -ErrorAction SilentlyContinue
         } catch {
             Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
         }
