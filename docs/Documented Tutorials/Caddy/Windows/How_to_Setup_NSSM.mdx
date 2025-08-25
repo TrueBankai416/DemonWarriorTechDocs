@@ -87,27 +87,27 @@ Add both Caddy and NSSM to your system PATH for easy command-line access.
    - Add your NSSM directory (e.g., `C:\Tools\NSSM\win64`)
 
 #### Method 2: Using PowerShell (Command Line)
-# Add Caddy to PATH (replace with your actual path)
+ Add Caddy to PATH (replace with your actual path)
 
 ```powershell
 $env:PATH += ";C:\Tools\Caddy"
 ```
-# Add NSSM to PATH (replace with your actual path)
+ Add NSSM to PATH (replace with your actual path)
 ```
 $env:PATH += ";C:\Tools\NSSM\win64"
 ```
-# Make changes permanent (requires admin)
+ Make changes permanent (requires admin)
 ```
 [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [EnvironmentVariableTarget]::Machine)
 ```
 
 #### Verify Installation
-# Test NSSM installation
+ Test NSSM installation
 
 ```powershell
 nssm version
 
-# Test Caddy installation
+ Test Caddy installation
 
 ```
 caddy version
