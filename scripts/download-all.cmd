@@ -199,6 +199,19 @@ if /i "%install%"=="y" (
         echo ⏭️  Skipping MariaDB installation (already installed)
     )
     
+    if "%WP_INSTALLED%"=="false" (
+        echo Installing WordPress...
+        curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-wordpress.cmd | cmd
+        if %ERRORLEVEL% EQU 0 (
+            echo ✅ WordPress installation completed
+        ) else (
+            echo ❌ WordPress installation failed
+        )
+        echo.
+    ) else (
+        echo ⏭️  Skipping WordPress installation (already installed)
+    )
+    
     echo.
     echo ================================================================
     echo Installation completed!
@@ -210,5 +223,6 @@ if /i "%install%"=="y" (
     echo Installation skipped. You can install manually using:
     echo - PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%%233/scripts/install-php.cmd ^| cmd
     echo - MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%%233/scripts/install-mariadb.cmd ^| cmd
+    echo - WordPress: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%%233/scripts/install-wordpress.cmd ^| cmd
     echo - Caddy: Follow the guide at the link above
 )

@@ -166,9 +166,34 @@ Write-Host "================================================================" -F
 Write-Host "All downloads completed successfully!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Downloaded versions:" -ForegroundColor Yellow
-Write-Host "- PHP: $phpVersion" -ForegroundColor White
-Write-Host "- MariaDB: $mariaVersion" -ForegroundColor White
-Write-Host "- WordPress: Latest" -ForegroundColor White
+
+# Extract PHP version from downloaded file
+$phpFile = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($phpFile) {
+    $phpVersionFromFile = $phpFile.Name -replace "php-(\d+\.\d+\.\d+)-nts-Win32-vs16-x64\.zip", '$1'
+    Write-Host "- PHP: $phpVersionFromFile" -ForegroundColor White
+} else {
+    Write-Host "- PHP: Not downloaded" -ForegroundColor Gray
+}
+
+# Extract MariaDB version from downloaded file or variable
+$mariaFile = Get-ChildItem "$env:TEMP\mariadb-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($mariaFile -and $mariaVersion) {
+    Write-Host "- MariaDB: $mariaVersion" -ForegroundColor White
+} elseif ($mariaFile) {
+    Write-Host "- MariaDB: Downloaded" -ForegroundColor White
+} else {
+    Write-Host "- MariaDB: Not downloaded" -ForegroundColor Gray
+}
+
+# WordPress version
+$wpFile = Get-ChildItem "$env:TEMP\wordpress-latest.zip" -ErrorAction SilentlyContinue
+if ($wpFile) {
+    Write-Host "- WordPress: Latest" -ForegroundColor White
+} else {
+    Write-Host "- WordPress: Not downloaded" -ForegroundColor Gray
+}
+
 Write-Host ""
 Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
 Write-Host "================================================================" -ForegroundColor Cyan
@@ -236,6 +261,26 @@ if ($install -match '^[Yy]') {
         Write-Host "⏭️  Skipping MariaDB installation (already installed)" -ForegroundColor Cyan
     }
     
+    if (-not $wpInstalled) {
+        Write-Host "Installing WordPress..." -ForegroundColor Yellow
+        try {
+            $wpScript = Join-Path $env:TEMP "install-wordpress.cmd"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-wordpress.cmd" -OutFile $wpScript
+            $result = & cmd /c "`"$wpScript`""
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ WordPress installation completed" -ForegroundColor Green
+            } else {
+                Write-Host "❌ WordPress installation failed" -ForegroundColor Red
+            }
+            Remove-Item $wpScript -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "❌ WordPress installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host ""
+    } else {
+        Write-Host "⏭️  Skipping WordPress installation (already installed)" -ForegroundColor Cyan
+    }
+    
     Write-Host ""
     Write-Host "================================================================" -ForegroundColor Cyan
     Write-Host "Installation completed!" -ForegroundColor Green
@@ -247,5 +292,6 @@ if ($install -match '^[Yy]') {
     Write-Host "Installation skipped. You can install manually using:" -ForegroundColor Yellow
     Write-Host "- PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd | cmd" -ForegroundColor White
     Write-Host "- MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd | cmd" -ForegroundColor White
+    Write-Host "- WordPress: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-wordpress.cmd | cmd" -ForegroundColor White
     Write-Host "- Caddy: Follow the guide at the link above" -ForegroundColor White
 }
