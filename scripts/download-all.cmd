@@ -164,7 +164,7 @@ if /i "%install%"=="y" (
     REM Install only missing components
     if "%PHP_INSTALLED%"=="false" (
         echo Installing PHP...
-        curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd | cmd
+        curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd | cmd
         if %ERRORLEVEL% EQU 0 (
             echo ✅ PHP installation completed
         ) else (
@@ -177,7 +177,7 @@ if /i "%install%"=="y" (
     
     if "%MARIA_INSTALLED%"=="false" (
         echo Installing MariaDB...
-        curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd | cmd
+        curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd | cmd
         if %ERRORLEVEL% EQU 0 (
             echo ✅ MariaDB installation completed
         ) else (
@@ -197,7 +197,7 @@ if /i "%install%"=="y" (
 ) else (
     echo.
     echo Installation skipped. You can install manually using:
-    echo - PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd ^| cmd
-    echo - MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd ^| cmd
+    echo - PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%%233/scripts/install-php.cmd ^| cmd
+    echo - MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%%233/scripts/install-mariadb.cmd ^| cmd
     echo - Caddy: Follow the guide at the link above
 )

@@ -178,7 +178,7 @@ if ($install -match '^[Yy]') {
     if (-not $phpInstalled) {
         Write-Host "Installing PHP..." -ForegroundColor Yellow
         try {
-            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd").Content
+            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd").Content
             Write-Host "✅ PHP installation completed" -ForegroundColor Green
         } catch {
             Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
@@ -191,7 +191,7 @@ if ($install -match '^[Yy]') {
     if (-not $mariaInstalled) {
         Write-Host "Installing MariaDB..." -ForegroundColor Yellow
         try {
-            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd").Content
+            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd").Content
             Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
         } catch {
             Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
@@ -210,7 +210,7 @@ if ($install -match '^[Yy]') {
 } else {
     Write-Host ""
     Write-Host "Installation skipped. You can install manually using:" -ForegroundColor Yellow
-    Write-Host "- PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd | cmd" -ForegroundColor White
-    Write-Host "- MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd | cmd" -ForegroundColor White
+    Write-Host "- PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd | cmd" -ForegroundColor White
+    Write-Host "- MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd | cmd" -ForegroundColor White
     Write-Host "- Caddy: Follow the guide at the link above" -ForegroundColor White
 }
