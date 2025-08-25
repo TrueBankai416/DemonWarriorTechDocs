@@ -64,24 +64,26 @@ Before beginning the installation, ensure your system meets the following requir
 ### Step 2: Install Caddy
 
 1. **Create Tools Directory**:
-   ```powershell
    # Create directory structure
+   ```powershell
    New-Item -ItemType Directory -Path "C:\Tools\Caddy" -Force
    ```
 
 2. **Extract and Install**:
-   ```powershell
    # Move downloaded caddy.exe to Tools directory
+```powershell
    Move-Item "Downloads\caddy.exe" "C:\Tools\Caddy\caddy.exe"
-   
+```   
    # Add to system PATH
-   $env:PATH += ";C:\Tools\Caddy"
+
+```   $env:PATH += ";C:\Tools\Caddy"
    [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [EnvironmentVariableTarget]::Machine)
    ```
 
 3. **Verify Installation**:
-   ```powershell
    # Check Caddy version
+
+   ```powershell
    caddy version
    ```
 
