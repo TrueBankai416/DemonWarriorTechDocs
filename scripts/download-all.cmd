@@ -18,7 +18,7 @@ if %ERRORLEVEL% EQU 0 (
 
 REM Get latest MariaDB LTS
 echo.
-echo [2/5] Getting latest MariaDB LTS version...
+echo [2/5] Using stable MariaDB LTS version...
 set MARIA_VERSION=10.11.6
 echo Using stable MariaDB LTS: %MARIA_VERSION%
 curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
