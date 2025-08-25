@@ -179,7 +179,7 @@ if ($install -match '^[Yy]') {
         Write-Host "Installing PHP..." -ForegroundColor Yellow
         try {
             $phpScript = Join-Path $env:TEMP "install-php.cmd"
-            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd" -OutFile $phpScript
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-php.cmd" -OutFile $phpScript
             $result = & cmd /c "`"$phpScript`""
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ PHP installation completed" -ForegroundColor Green
@@ -199,7 +199,7 @@ if ($install -match '^[Yy]') {
         Write-Host "Installing MariaDB..." -ForegroundColor Yellow
         try {
             $mariaScript = Join-Path $env:TEMP "install-mariadb.cmd"
-            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd" -OutFile $mariaScript
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-mariadb.cmd" -OutFile $mariaScript
             $result = & cmd /c "`"$mariaScript`""
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
