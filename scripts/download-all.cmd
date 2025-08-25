@@ -86,17 +86,23 @@ set WP_INSTALLED=false
 if exist "C:\inetpub\wwwroot\wordpress\wp-config.php" (
     echo ✅ WordPress installation found
     set WP_INSTALLED=true
-) else if exist "C:\Tools\WordPress\wp-config.php" (
-    echo ✅ WordPress installation found
-    set WP_INSTALLED=true
-) else if exist "C:\inetpub\wwwroot\wordpress\index.php" (
-    echo ⚠️  WordPress files found but not configured
-    set WP_INSTALLED=true
-) else if exist "C:\Tools\WordPress\index.php" (
-    echo ⚠️  WordPress files found but not configured
-    set WP_INSTALLED=true
 ) else (
-    echo ❌ WordPress not installed
+    if exist "C:\Tools\WordPress\wp-config.php" (
+        echo ✅ WordPress installation found
+        set WP_INSTALLED=true
+    ) else (
+        if exist "C:\inetpub\wwwroot\wordpress\index.php" (
+            echo ⚠️  WordPress files found but not configured
+            set WP_INSTALLED=true
+        ) else (
+            if exist "C:\Tools\WordPress\index.php" (
+                echo ⚠️  WordPress files found but not configured
+                set WP_INSTALLED=true
+            ) else (
+                echo ❌ WordPress not installed
+            )
+        )
+    )
 )
 
 REM Determine what needs to be installed
