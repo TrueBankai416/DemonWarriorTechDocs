@@ -197,7 +197,12 @@ Extract PHP
 ```cmd
 REM Extract PHP using built-in tar command
 echo Extracting PHP...
-tar -xf "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" -C "C:\Tools\PHP" --strip-components=0
+tar -xf "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" -C "C:\Tools"
+echo Moving PHP files to correct location...
+for /d %%i in ("C:\Tools\php-*-nts-Win32-vs16-x64") do (
+    move "%%i\*" "C:\Tools\PHP\"
+    rmdir "%%i"
+)
 echo PHP extracted to C:\Tools\PHP
 ```
 
@@ -281,9 +286,14 @@ echo PHP directories created
 Add PHP to system PATH
 
 ```cmd
-REM Add PHP to system PATH
-setx PATH "%PATH%;C:\Tools\PHP" /M
-echo ✅ PHP added to system PATH
+REM Add PHP to system PATH (check for duplicates first)
+echo %PATH% | find /i "C:\Tools\PHP" >nul
+if errorlevel 1 (
+    setx PATH "%PATH%;C:\Tools\PHP" /M
+    echo ✅ PHP added to system PATH
+) else (
+    echo ✅ PHP already in system PATH
+)
 
 REM Verify PHP installation (restart CMD after PATH change)
 echo Please restart Command Prompt and run: php --version
@@ -317,9 +327,10 @@ echo GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost'; >> "%TEMP%\
 echo FLUSH PRIVILEGES; >> "%TEMP%\setup_db.sql"
 
 REM Execute database setup (find MariaDB installation dynamically)
-for /d %%i in ("C:\Program Files\MariaDB*") do set "MARIADB_PATH=%%i"
-"%MARIADB_PATH%\bin\mysql.exe" -u root -p"SecureRootPassword123!" < "%TEMP%\setup_db.sql"
-echo ✅ WordPress database created
+for /d %%i in ("C:\Program Files\MariaDB*") do (
+    "%%i\bin\mysql.exe" -u root -p"SecureRootPassword123!" < "%TEMP%\setup_db.sql"
+    echo ✅ WordPress database created
+)
 
 REM Clean up
 del "%TEMP%\setup_db.sql"
@@ -331,36 +342,35 @@ Create secure configuration
 
 ```cmd
 REM Get MariaDB installation path dynamically and create configuration
-for /d %%i in ("C:\Program Files\MariaDB*") do set "MARIADB_PATH=%%i"
-set "MARIA_DATA_PATH=%MARIADB_PATH%\data"
-
-REM Create MariaDB configuration file
-echo [mysqld] > "%MARIA_DATA_PATH%\my.ini"
-echo # Basic Settings >> "%MARIA_DATA_PATH%\my.ini"
-echo bind-address = 127.0.0.1 >> "%MARIA_DATA_PATH%\my.ini"
-echo port = 3306 >> "%MARIA_DATA_PATH%\my.ini"
-echo datadir = %MARIA_DATA_PATH:\=/% >> "%MARIA_DATA_PATH%\my.ini"
-echo. >> "%MARIA_DATA_PATH%\my.ini"
-echo # Performance Settings >> "%MARIA_DATA_PATH%\my.ini"
-echo innodb_buffer_pool_size = 1G >> "%MARIA_DATA_PATH%\my.ini"
-echo innodb_log_file_size = 256M >> "%MARIA_DATA_PATH%\my.ini"
-echo innodb_flush_log_at_trx_commit = 2 >> "%MARIA_DATA_PATH%\my.ini"
-echo innodb_flush_method = O_DIRECT >> "%MARIA_DATA_PATH%\my.ini"
-echo. >> "%MARIA_DATA_PATH%\my.ini"
-echo # Security Settings >> "%MARIA_DATA_PATH%\my.ini"
-echo skip-name-resolve >> "%MARIA_DATA_PATH%\my.ini"
-echo sql_mode = STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO >> "%MARIA_DATA_PATH%\my.ini"
-echo. >> "%MARIA_DATA_PATH%\my.ini"
-echo # Character Set >> "%MARIA_DATA_PATH%\my.ini"
-echo character-set-server = utf8mb4 >> "%MARIA_DATA_PATH%\my.ini"
-echo collation-server = utf8mb4_unicode_ci >> "%MARIA_DATA_PATH%\my.ini"
-echo. >> "%MARIA_DATA_PATH%\my.ini"
-echo # Logging >> "%MARIA_DATA_PATH%\my.ini"
-echo log-error = %MARIA_DATA_PATH:\=/%/error.log >> "%MARIA_DATA_PATH%\my.ini"
-echo slow_query_log = 1 >> "%MARIA_DATA_PATH%\my.ini"
-echo slow_query_log_file = %MARIA_DATA_PATH:\=/%/slow.log >> "%MARIA_DATA_PATH%\my.ini"
-echo long_query_time = 2 >> "%MARIA_DATA_PATH%\my.ini"
-echo ✅ MariaDB configuration updated at %MARIA_DATA_PATH%\my.ini
+for /d %%i in ("C:\Program Files\MariaDB*") do (
+    REM Create MariaDB configuration file
+    echo [mysqld] > "%%i\data\my.ini"
+    echo # Basic Settings >> "%%i\data\my.ini"
+    echo bind-address = 127.0.0.1 >> "%%i\data\my.ini"
+    echo port = 3306 >> "%%i\data\my.ini"
+    echo datadir = %%i/data >> "%%i\data\my.ini"
+    echo. >> "%%i\data\my.ini"
+    echo # Performance Settings >> "%%i\data\my.ini"
+    echo innodb_buffer_pool_size = 1G >> "%%i\data\my.ini"
+    echo innodb_log_file_size = 256M >> "%%i\data\my.ini"
+    echo innodb_flush_log_at_trx_commit = 2 >> "%%i\data\my.ini"
+    echo innodb_flush_method = O_DIRECT >> "%%i\data\my.ini"
+    echo. >> "%%i\data\my.ini"
+    echo # Security Settings >> "%%i\data\my.ini"
+    echo skip-name-resolve >> "%%i\data\my.ini"
+    echo sql_mode = STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO >> "%%i\data\my.ini"
+    echo. >> "%%i\data\my.ini"
+    echo # Character Set >> "%%i\data\my.ini"
+    echo character-set-server = utf8mb4 >> "%%i\data\my.ini"
+    echo collation-server = utf8mb4_unicode_ci >> "%%i\data\my.ini"
+    echo. >> "%%i\data\my.ini"
+    echo # Logging >> "%%i\data\my.ini"
+    echo log-error = %%i/data/error.log >> "%%i\data\my.ini"
+    echo slow_query_log = 1 >> "%%i\data\my.ini"
+    echo slow_query_log_file = %%i/data/slow.log >> "%%i\data\my.ini"
+    echo long_query_time = 2 >> "%%i\data\my.ini"
+    echo ✅ MariaDB configuration updated at %%i\data\my.ini
+)
 ```
 
 ### Step 4: Setup NSSM Service Manager
@@ -388,9 +398,14 @@ for /d %%i in ("%TEMP%\nssm-*") do (
 
 Add NSSM to PATH
 ```cmd
-REM Add NSSM to system PATH
-setx PATH "%PATH%;C:\Tools\NSSM" /M
-echo ✅ NSSM added to system PATH
+REM Add NSSM to system PATH (check for duplicates first)
+echo %PATH% | find /i "C:\Tools\NSSM" >nul
+if errorlevel 1 (
+    setx PATH "%PATH%;C:\Tools\NSSM" /M
+    echo ✅ NSSM added to system PATH
+) else (
+    echo ✅ NSSM already in system PATH
+)
 ```
 
 #### Create PHP-FPM Service
