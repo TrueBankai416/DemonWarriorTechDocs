@@ -2,63 +2,7 @@
 Write-Host "WordPress Installation - Download All Components (PowerShell Version)" -ForegroundColor Cyan
 Write-Host "================================================================" -ForegroundColor Cyan
 
-Write-Host "Downloading all components with latest versions..." -ForegroundColor Yellow
-Write-Host ""
-
-# Get latest PHP version
-Write-Host "[1/5] Getting latest PHP 8.x version..." -ForegroundColor Green
-try {
-    $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'
-    # Filter only version number properties (exclude 'announcement', 'tags', etc.)
-    $phpVersion = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
-    if (-not $phpVersion) {
-        # Fallback to known working version
-        $phpVersion = "8.3.24"
-        Write-Host "Using fallback PHP version: $phpVersion" -ForegroundColor Yellow
-    } else {
-        Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
-    }
-    Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip" -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
-    Write-Host "✅ Downloaded PHP $phpVersion" -ForegroundColor Green
-} catch {
-    Write-Host "❌ PHP download failed: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-# Get latest MariaDB LTS
-Write-Host ""
-Write-Host "[2/5] Getting latest MariaDB LTS version..." -ForegroundColor Green
-try {
-    # Use known working MariaDB LTS version due to API complexity
-    $mariaVersion = "10.11.6"
-    $mariaUrl = "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
-    Write-Host "Using stable MariaDB LTS: $mariaVersion" -ForegroundColor White
-    Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
-    Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
-} catch {
-    Write-Host "❌ MariaDB download failed: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-# Download WordPress (already dynamic)
-Write-Host ""
-Write-Host "[3/3] Downloading latest WordPress..." -ForegroundColor Green
-Invoke-WebRequest -Uri "https://wordpress.org/latest.zip" -OutFile "$env:TEMP\wordpress-latest.zip"
-Write-Host "✅ Downloaded WordPress (latest)" -ForegroundColor Green
-
-
-Write-Host ""
-Write-Host "================================================================" -ForegroundColor Cyan
-Write-Host "All downloads completed successfully!" -ForegroundColor Green
-Write-Host ""
-Write-Host "Downloaded versions:" -ForegroundColor Yellow
-Write-Host "- PHP: $phpVersion" -ForegroundColor White
-Write-Host "- MariaDB: $mariaVersion" -ForegroundColor White
-Write-Host "- WordPress: Latest" -ForegroundColor White
-Write-Host ""
-Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
-Write-Host "================================================================" -ForegroundColor Cyan
-
-# Check what's already installed
-Write-Host ""
+# Check what's already installed BEFORE downloading
 Write-Host "Checking existing installations..." -ForegroundColor Yellow
 
 # Check PHP
@@ -110,7 +54,105 @@ if (Test-Path "C:\inetpub\wwwroot\wordpress\wp-config.php" -or Test-Path "C:\Too
     Write-Host "❌ WordPress not installed" -ForegroundColor Red
 }
 
-# Determine what needs to be installed
+# Determine what needs to be downloaded
+$needsDownload = @()
+if (-not $phpInstalled) { $needsDownload += "PHP" }
+if (-not $mariaInstalled) { $needsDownload += "MariaDB" }
+if (-not $wpInstalled) { $needsDownload += "WordPress" }
+
+Write-Host ""
+if ($needsDownload.Count -eq 0) {
+    Write-Host "🎉 All components are already installed!" -ForegroundColor Green
+    Write-Host "No downloads needed. You may still want to install Caddy using the dedicated guide." -ForegroundColor Yellow
+    exit 0
+} else {
+    Write-Host "Components to download: $($needsDownload -join ', ')" -ForegroundColor Yellow
+    Write-Host "Starting selective download process..." -ForegroundColor Yellow
+    Write-Host ""
+}
+
+# Download PHP only if needed
+if (-not $phpInstalled) {
+    Write-Host "[1/?] Getting latest PHP 8.x version..." -ForegroundColor Green
+    
+    # Check if already downloaded
+    $phpFiles = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue
+    if ($phpFiles) {
+        Write-Host "⚡ PHP already downloaded: $($phpFiles[0].Name)" -ForegroundColor Cyan
+    } else {
+        try {
+            $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'
+            # Filter only version number properties (exclude 'announcement', 'tags', etc.)
+            $phpVersion = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
+            if (-not $phpVersion) {
+                # Fallback to known working version
+                $phpVersion = "8.3.24"
+                Write-Host "Using fallback PHP version: $phpVersion" -ForegroundColor Yellow
+            } else {
+                Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
+            }
+            Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip" -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
+            Write-Host "✅ Downloaded PHP $phpVersion" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ PHP download failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+}
+
+# Download MariaDB only if needed
+if (-not $mariaInstalled) {
+    Write-Host ""
+    Write-Host "[2/?] Getting MariaDB LTS version..." -ForegroundColor Green
+    
+    # Check if already downloaded
+    if (Test-Path "$env:TEMP\mariadb-latest-winx64.msi") {
+        Write-Host "⚡ MariaDB already downloaded" -ForegroundColor Cyan
+    } else {
+        try {
+            # Use known working MariaDB LTS version due to API complexity
+            $mariaVersion = "10.11.6"
+            $mariaUrl = "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
+            Write-Host "Using stable MariaDB LTS: $mariaVersion" -ForegroundColor White
+            Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
+            Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ MariaDB download failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+}
+
+# Download WordPress only if needed
+if (-not $wpInstalled) {
+    Write-Host ""
+    Write-Host "[3/?] Downloading latest WordPress..." -ForegroundColor Green
+    
+    # Check if already downloaded
+    if (Test-Path "$env:TEMP\wordpress-latest.zip") {
+        Write-Host "⚡ WordPress already downloaded" -ForegroundColor Cyan
+    } else {
+        try {
+            Invoke-WebRequest -Uri "https://wordpress.org/latest.zip" -OutFile "$env:TEMP\wordpress-latest.zip"
+            Write-Host "✅ Downloaded WordPress (latest)" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ WordPress download failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+}
+
+
+Write-Host ""
+Write-Host "================================================================" -ForegroundColor Cyan
+Write-Host "All downloads completed successfully!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Downloaded versions:" -ForegroundColor Yellow
+Write-Host "- PHP: $phpVersion" -ForegroundColor White
+Write-Host "- MariaDB: $mariaVersion" -ForegroundColor White
+Write-Host "- WordPress: Latest" -ForegroundColor White
+Write-Host ""
+Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
+Write-Host "================================================================" -ForegroundColor Cyan
+
+# Ask user if they want to proceed with installation
 $needsInstall = @()
 if (-not $phpInstalled) { $needsInstall += "PHP" }
 if (-not $mariaInstalled) { $needsInstall += "MariaDB" }
