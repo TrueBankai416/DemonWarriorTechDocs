@@ -433,30 +433,43 @@ sudo crontab -e
 ### Linux Service Commands
 
  Check service status
+
 ```
 sudo systemctl status caddy
 ```
-# Start the service
+
+Start the service
+
 ```
 sudo systemctl start caddy
 ```
-# Stop the service
+
+Stop the service
+
 ```
 sudo systemctl stop caddy
 ```
-# Restart the service
+
+Restart the service
+
 ```
 sudo systemctl restart caddy
 ```
-# Reload configuration without stopping
+
+Reload configuration without stopping
+
 ```
 sudo systemctl reload caddy
 ```
- Enable auto-start on boot
+
+Enable auto-start on boot
+
 ```
 sudo systemctl enable caddy
 ```
- Disable auto-start on boot
+
+Disable auto-start on boot
+
 ```
 sudo systemctl disable caddy
 ```
@@ -466,9 +479,8 @@ sudo systemctl disable caddy
 ### Common Issues
 
 #### Issue 1: Service Won't Start
+Check service status and logs
 
-```bash
-# Check service status and logs
 ```
 sudo systemctl status caddy
 ```
@@ -476,6 +488,7 @@ sudo systemctl status caddy
 ```
 sudo journalctl -u caddy -n 20
 ```
+
 # Common causes:
 # - Configuration syntax errors
 # - Permission issues
@@ -484,6 +497,7 @@ sudo journalctl -u caddy -n 20
 **Solution:**
 
  Validate configuration
+
 ```
 sudo caddy validate --config /etc/caddy/Caddyfile
 ```
