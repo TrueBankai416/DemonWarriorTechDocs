@@ -7,7 +7,7 @@ echo.
 
 REM Get latest PHP version
 echo [1/5] Getting latest PHP 8.x version...
-for /f "delims=" %%i in ('powershell -command "try { $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'; $latest = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1; if (-not $latest) { $latest = '8.3.12' }; Write-Output $latest } catch { Write-Output '8.3.12' }"') do set PHP_VERSION=%%i
+for /f "delims=" %%i in ('powershell -command "try { $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'; $latest = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1; if (-not $latest) { $latest = '8.3.24' }; Write-Output $latest } catch { Write-Output '8.3.24' }"') do set PHP_VERSION=%%i
 echo Latest PHP version: %PHP_VERSION%
 curl -L -o "%TEMP%\php-%PHP_VERSION%-nts-Win32-vs16-x64.zip" "https://windows.php.net/downloads/releases/php-%PHP_VERSION%-nts-Win32-vs16-x64.zip"
 if %ERRORLEVEL% EQU 0 (

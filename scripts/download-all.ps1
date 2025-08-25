@@ -13,7 +13,7 @@ try {
     $phpVersion = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
     if (-not $phpVersion) {
         # Fallback to known working version
-        $phpVersion = "8.3.12"
+        $phpVersion = "8.3.24"
         Write-Host "Using fallback PHP version: $phpVersion" -ForegroundColor Yellow
     } else {
         Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
@@ -62,7 +62,8 @@ Write-Host "✅ Downloaded $nssmVersion" -ForegroundColor Green
 Write-Host ""
 Write-Host "[5/5] Downloading latest Caddy..." -ForegroundColor Green
 try {
-    Invoke-WebRequest -Uri "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip" -OutFile "$env:TEMP\caddy_windows_amd64.zip"
+    # Use -MaximumRedirection to handle GitHub redirects properly
+    Invoke-WebRequest -Uri "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip" -OutFile "$env:TEMP\caddy_windows_amd64.zip" -MaximumRedirection 5
     Write-Host "✅ Downloaded Caddy (latest)" -ForegroundColor Green
 } catch {
     Write-Host "❌ Caddy download failed: $($_.Exception.Message)" -ForegroundColor Red
