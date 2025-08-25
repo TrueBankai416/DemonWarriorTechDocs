@@ -17,21 +17,51 @@ echo ✅ Directories created
 REM Extract PHP
 echo.
 echo [2/4] Extracting PHP...
+set EXTRACT_SUCCESS=false
 for %%f in ("%TEMP%\php-*-nts-Win32-vs16-x64.zip") do (
     echo Found PHP file: %%~nxf
     %SystemRoot%\system32\tar.exe -xf "%%f" -C "C:\Tools"
+    if %ERRORLEVEL% EQU 0 (
+        set EXTRACT_SUCCESS=true
+    ) else (
+        echo ❌ Failed to extract PHP archive
+        exit /b 1
+    )
 )
+
+if "%EXTRACT_SUCCESS%"=="false" (
+    echo ❌ No PHP archive found in %TEMP%
+    exit /b 1
+)
+
 echo Moving PHP files to correct location...
+set MOVE_SUCCESS=false
 for /d %%i in ("C:\Tools\php-*-nts-Win32-vs16-x64") do (
     xcopy "%%i\*" "C:\Tools\PHP\" /E /I /Y /Q
-    rmdir "%%i" /S /Q
+    if %ERRORLEVEL% EQU 0 (
+        rmdir "%%i" /S /Q
+        set MOVE_SUCCESS=true
+    ) else (
+        echo ❌ Failed to move PHP files
+        exit /b 1
+    )
 )
+
+if "%MOVE_SUCCESS%"=="false" (
+    echo ❌ No extracted PHP directory found
+    exit /b 1
+)
+
 echo ✅ PHP extracted to C:\Tools\PHP
 
 REM Copy php.ini template
 echo.
 echo [3/4] Configuring PHP...
 copy "C:\Tools\PHP\php.ini-production" "C:\Tools\PHP\php.ini"
+if %ERRORLEVEL% NEQ 0 (
+    echo ❌ Failed to copy php.ini template
+    exit /b 1
+)
 echo ; ---------- WordPress Custom Configuration ---------- >> "C:\Tools\PHP\php.ini"
 echo ; Memory and Performance >> "C:\Tools\PHP\php.ini"
 echo memory_limit = 512M >> "C:\Tools\PHP\php.ini"
