@@ -178,7 +178,7 @@ if ($install -match '^[Yy]') {
     if (-not $phpInstalled) {
         Write-Host "Installing PHP..." -ForegroundColor Yellow
         try {
-            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd").Content
+            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-php.cmd").Content
             Write-Host "✅ PHP installation completed" -ForegroundColor Green
         } catch {
             Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
