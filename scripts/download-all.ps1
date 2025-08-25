@@ -191,7 +191,7 @@ if ($install -match '^[Yy]') {
     if (-not $mariaInstalled) {
         Write-Host "Installing MariaDB..." -ForegroundColor Yellow
         try {
-            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd").Content
+            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-mariadb.cmd").Content
             Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
         } catch {
             Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
