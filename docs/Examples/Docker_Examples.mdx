@@ -1,17 +1,19 @@
 ---
 title: Docker Examples
+description: Comprehensive collection of Docker Compose examples for self-hosting applications including Nextcloud, Jellyfin, Immich, PhotoPrism, and more
 sidebar_position: 2
 toc_min_heading_level: 2
 toc_max_heading_level: 6
+tags: [docker, docker-compose, self-hosting, nextcloud, jellyfin, immich, photoprism, containers, examples, configuration]
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
-<Tabs>
-  <TabItem value="Nextcloud Example" label="Nextcloud Example" default>
+## Docker Examples
 
-### Nextcloud
+### Nextcloud Example
 
 ```
 name: nextcloud
@@ -102,7 +104,7 @@ services:
     restart: always
 ```
 
-### Dockerfile
+#### Dockerfile
 
 ```
 # Use the Nextcloud production image as the base
@@ -240,7 +242,7 @@ HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=3 \
 
 ```
 
-### cron.sh
+#### cron.sh
 
 ```
 #!/bin/sh
@@ -249,7 +251,7 @@ set -eu
 exec busybox crond -f -L /dev/stdout
 ```
 
-### nextcloud.ini
+#### nextcloud.ini
 
 ```
 memory_limit = 10G
@@ -259,7 +261,7 @@ max_execution_time = 3600
 max_input_time = 3600
 ```
   
-### .collabora.env
+#### .collabora.env
 
 ```css
 username=admin #Change to Any Username You Choose
@@ -267,7 +269,7 @@ password=PASSWORD #Change to Any Password you Choose
 domain=nextcloud\\.domain\\.com #Change this to your subdomain.\\domain\\.com example memories\\.demonwarriortech\\.com
 ```
 
-### supervisord.conf
+#### supervisord.conf
 
 ```
 [supervisord]
@@ -295,11 +297,7 @@ command=/cron.sh
 
 ```
 
-  </TabItem>
-
-  <TabItem value="Jellyfin Example" label="Jellyfin Example" default>
-
-### Jellyfin
+### Jellyfin Example
 
 #### docker-compose.yml
 
@@ -354,10 +352,7 @@ services:
 #              capabilities: [gpu]
   ```
 
-  </TabItem>
-<TabItem value="Jellyseerr Example" label="Jellyseerr Example">
-
-### Jellyseerr
+### Jellyseerr Example
 
 ```
 services:
@@ -373,11 +368,8 @@ services:
             - /path/to/appdata/config:/app/config
        restart: unless-stopped
 ```
-  </TabItem>
-
-<TabItem value="Jellystat Example" label="Jellystat Example">
-
-### Jellystat
+  
+### Jellystat Example
 
 ```
 services:
@@ -408,10 +400,10 @@ services:
 networks:
   default:
 ```
-  </TabItem>
-<TabItem value="Cloudflare DDNS Example" label="Cloudflare DDNS Example">
+  
 
-### Cloudflare DDNS
+
+### Cloudflare DDNS Example
 
 ```
 services:
@@ -451,9 +443,9 @@ services:
 # Docker's host. This section is required for the 'networks' section of each 'services'.
 ```
 
-</TabItem>
 
-<TabItem value="KitchenOwl Example" label="KitchenOwl Example">
+
+
 
 ### Kitchen Owl
 
@@ -489,13 +481,13 @@ volumes:
 networks:
   default:
 ```
-  </TabItem>
+  
 
 
-  <TabItem value="Caddy" label="Caddy">
-    <TabItem value="Caddy Example" label="Caddy Example">
+  
+    
 
-### docker-Compose.yml
+#### docker-Compose.yml
 
 ```
 services:
@@ -530,7 +522,7 @@ volumes:
   caddy_config:
 ```
 
-### Dockerfile
+#### Dockerfile
 
 ```
 FROM caddy:2.8.4-builder AS builder
@@ -544,7 +536,7 @@ FROM caddy:2.8.4
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 ```
 
-### Commands to run for Docker
+#### Commands to run for Docker
 
 ```
 docker compose -f docker-compose.yml build
@@ -559,13 +551,15 @@ docker compose -f docker-compose.yml up -d
 ```
 
 
-      </TabItem>
-    </TabItem>
+      
+    
 
-  <TabItem value="Immich" label="Immich">
-    <Tabs>
-    <TabItem value="Immich Nvidia Example" label="Immich Nvidia Example">
-### docker-compose.yml
+  
+    
+    
+### Immich Example
+
+#### docker-compose.yml
 
 ```
 #
@@ -633,7 +627,7 @@ volumes:
 
 ```
 
-### .env
+#### .env
 
 :::caution
 **Requirements Below** Change only the **UPLOAD_LOCATION** & **EXTERNAL_PATH**
@@ -663,7 +657,7 @@ DB_DATA_LOCATION=./postgres
 REDIS_HOSTNAME=immich_redis
 ```
 
-### hwaccel.ml.yml
+#### hwaccel.ml.yml
 
 ```
 version: "3.8"
@@ -712,7 +706,7 @@ services:
       - /dev/bus/usb:/dev/bus/usb
       - /usr/lib/wsl:/usr/lib/wsl
 ```
-### hwaccel.transocding.yml
+#### hwaccel.transcoding.yml
 
 ```
 version: "3.8"
@@ -775,10 +769,12 @@ services:
 
 ```
 
-      </TabItem>
-      <TabItem value="Immich iGPU Example" label="Immich iGPU Example">
+      
+      
 
-### .env
+### Immich Example (Alternative Configuration)
+
+#### .env
 
 :::caution
 **Requirements Below** Change only the **UPLOAD_LOCATION** & **EXTERNAL_PATH**
@@ -808,7 +804,7 @@ DB_DATA_LOCATION=./postgres
 REDIS_HOSTNAME=immich_redis
 
 ```
-### docker-compose.yml
+#### docker-compose.yml
 
 ```
 #
@@ -876,7 +872,7 @@ volumes:
 
 ```
 
-### hwaccel.yml
+#### hwaccel.yml
 
 ```
 version: "3.8"
@@ -927,7 +923,7 @@ services:
 
 ```
 
-### hwaccel.transcoding.yml
+#### hwaccel.transcoding.yml
 
 ```
 version: "3.8"
@@ -990,12 +986,12 @@ services:
 
 ```
 
-      </TabItem>
-    </Tabs>
-    </TabItem>
-  <TabItem value="PhotoPrism Example" label="PhotosPrism Example">
-    <Tabs>
-    <TabItem value="PhotoPrism Examples for Locally Hosting with software hwa" label="PhotoPrism Examples for Locally Hosting with software hwa">
+      
+    
+    
+  
+    
+    
 ### PhotoPrism Examples for Locally Hosting with software hwa
 
 ```
@@ -1117,8 +1113,8 @@ volumes:
 #  caddy-network:
 #    external: true
 ```
-      </TabItem>
-      <TabItem value="PhotoPrism Reverse Proxy with NVIDIA HWA" label="PhotoPrism Reverse Proxy with NVIDIA HWA">
+      
+      
 
 ### PhotoPrism Reverse Proxy with NVIDIA HWA
 
@@ -1243,8 +1239,8 @@ volumes:
 #  caddy-network:
 #    external: true
 ```
-    </TabItem>
-    <TabItem value="PhotoPrism Reverse Proxy with INTEL HWA" label="PhotoPrism Reverse Proxy with INTEL HWA">
+    
+    
 
 ### PhotoPrism Reverse Proxy with INTEL HWA
 
@@ -1368,10 +1364,10 @@ volumes:
 #  caddy-network:
 #    external: true
 ```
-    </TabItem>
-    </Tabs>
-  </TabItem>
-</Tabs>
+    
+    
+  
 
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)
+
+<BuyMeACoffeeButton />

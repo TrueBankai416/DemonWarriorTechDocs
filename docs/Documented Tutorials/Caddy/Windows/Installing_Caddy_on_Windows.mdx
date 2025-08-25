@@ -1,0 +1,382 @@
+---
+title: Installing Caddy on Windows
+description: Complete guide to installing and configuring Caddy web server on Windows with automatic HTTPS, Cloudflare integration, and service management
+sidebar_position: 1
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+tags: [caddy, windows, installation, web-server, https, reverse-proxy, cloudflare, service, tutorial]
+---
+
+import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
+
+## Overview
+
+Caddy is a powerful, enterprise-ready web server with automatic HTTPS that makes serving your sites easy. This comprehensive guide covers installation and configuration on Windows systems with proper security configurations, service management, and Cloudflare integration.
+
+### What is Caddy?
+
+Caddy is a modern web server that provides:
+- **Automatic HTTPS**: SSL certificates managed automatically
+- **Reverse Proxy**: Route traffic to backend applications
+- **Static File Serving**: Serve websites and files efficiently
+- **Plugin System**: Extend functionality with plugins
+- **Easy Configuration**: Simple, readable configuration files
+
+### Key Features
+
+- **Zero-Config HTTPS**: Automatic SSL certificate provisioning and renewal
+- **HTTP/2 and HTTP/3**: Modern protocol support out of the box
+- **Reverse Proxy**: Load balancing and backend routing
+- **Static Site Hosting**: Perfect for modern web applications
+- **Plugin Ecosystem**: DNS providers, authentication, and more
+
+## Prerequisites
+
+Before beginning the installation, ensure your system meets the following requirements:
+
+### System Requirements
+- **Operating System**: Windows 10/11 or Windows Server 2019/2022
+- **Architecture**: x86_64 (64-bit)
+- **RAM**: Minimum 512MB (1GB+ recommended)
+- **Disk Space**: At least 100MB free space
+- **Network**: Internet connection for downloading and certificates
+
+### Required Permissions
+- **Administrator access** for installation and service setup
+- **Port access**: Ability to bind to ports 80 and 443
+- **Firewall configuration** permissions
+
+## Installation
+
+### Step 1: Download Caddy
+
+1. **Visit the Caddy Download Page**: [Caddy Download Builder](https://caddyserver.com/download)
+
+2. **Select Required Plugins** (if needed):
+   - For Cloudflare: `github.com/caddy-dns/cloudflare`
+   - For DuckDNS: `github.com/caddy-dns/duckdns`
+
+3. **Download for Windows**:
+   - Select **Windows** as the operating system
+   - Select **amd64** architecture
+   - Download the binary
+
+### Step 2: Install Caddy
+
+1. **Create Tools Directory**:
+   ```powershell
+   # Create directory structure
+   New-Item -ItemType Directory -Path "C:\Tools\Caddy" -Force
+   ```
+
+2. **Extract and Install**:
+   ```powershell
+   # Move downloaded caddy.exe to Tools directory
+   Move-Item "Downloads\caddy.exe" "C:\Tools\Caddy\caddy.exe"
+   
+   # Add to system PATH
+   $env:PATH += ";C:\Tools\Caddy"
+   [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [EnvironmentVariableTarget]::Machine)
+   ```
+
+3. **Verify Installation**:
+   ```powershell
+   # Check Caddy version
+   caddy version
+   ```
+
+## Configuration
+
+### Step 3: Basic Configuration
+
+1. **Create Caddyfile**:
+   ```powershell
+   # Navigate to Caddy directory
+   cd C:\Tools\Caddy
+   
+   # Create basic Caddyfile
+   New-Item -ItemType File -Path "Caddyfile"
+   ```
+
+2. **Basic Caddyfile Example**:
+   ```caddyfile
+   # Replace with your domain
+   example.com {
+       respond "Hello, World!"
+   }
+   
+   # Reverse proxy example
+   # app.example.com {
+   #     reverse_proxy localhost:3000
+   # }
+   ```
+
+### Step 4: Running Caddy
+
+#### Manual Execution
+
+```powershell
+# Navigate to Caddy directory
+cd C:\Tools\Caddy
+
+# Run Caddy with configuration
+./caddy run --config Caddyfile
+```
+
+:::caution
+**Accept both permissions** if Windows Firewall prompts appear upon first run.
+:::
+
+#### Service Installation (Recommended)
+
+For production use, install Caddy as a Windows service:
+
+```powershell
+# Install as Windows service
+caddy run --config C:\Tools\Caddy\Caddyfile --service install
+
+# Start the service
+caddy start --service
+
+# Check service status
+caddy status --service
+```
+
+## Cloudflare Integration
+
+If you're using Cloudflare for DNS management:
+
+### Step 5: Setting up A Name Record
+
+1. **Download Cloudflare DDNS**: [CloudFlare DDNS](https://github.com/wyattjoh/cloudflare-ddns/releases)
+
+2. **Extract to directory**: `C:\Tools\CloudflareDDNS`
+
+3. **Open Cloudflare Dashboard**: https://dash.cloudflare.com/
+
+4. **Click DNS** on the sidebar:
+
+![image](https://user-images.githubusercontent.com/35183970/215296063-666a2625-e377-4b03-878f-4856695da230.png)
+
+5. **Click Add a Record**:
+
+![image](https://user-images.githubusercontent.com/35183970/215296074-272ba4a3-759c-4c66-9ec4-6f367b1d3f3d.png)
+
+6. **Get your external IP** from https://ipchicken.com/:
+
+![image](https://user-images.githubusercontent.com/35183970/215296110-3cc4af57-e544-4726-9b6a-d2710eb51296.png)
+
+7. **Click Save**
+
+### Step 6: Getting an API Key
+
+1. **Go to Overview** in the right-hand menu:
+
+![image](https://user-images.githubusercontent.com/35183970/215296144-c99839f2-bf53-4397-b9e0-a47a0d202d18.png)
+
+2. **Scroll down** and click "Get API Token":
+
+![image](https://user-images.githubusercontent.com/35183970/215296159-911009a0-de4b-4f0f-8f68-d758af348a71.png)
+
+3. **Click Create a Token**:
+
+![image](https://user-images.githubusercontent.com/35183970/215296175-26bfe947-0d46-442a-9861-13f24f63611b.png)
+
+4. **Select Custom Token**:
+
+![image](https://user-images.githubusercontent.com/35183970/215296224-f911035a-0f96-4426-8673-43cdd7bf0e53.png)
+
+5. **Configure Token Permissions**:
+
+![image](https://user-images.githubusercontent.com/35183970/215296326-eae964e9-4f20-4132-98a6-07e554d2259e.png)
+
+6. **Copy your token**:
+
+![image](https://user-images.githubusercontent.com/35183970/215296333-b790ded6-84fd-46c6-93f0-b4911fb58284.png)
+
+### Step 7: Running Cloudflare DDNS
+
+1. **Navigate to directory**:
+   ```powershell
+   cd C:\Tools\CloudflareDDNS
+   ```
+
+2. **Run DDNS updater**:
+   ```powershell
+   ./cloudflare-ddns --token your-cloudflare-api-key --domain home.yourdomain.com
+   ```
+
+3. **Expected output**:
+   ```
+   time="2023-01-28T17:54:39-06:00" level=info msg="updated record" content=123.123.123.123 name=home.yourdomain.com
+   ```
+
+### Step 8: Auto-startup CloudflareDDNS
+
+1. **Open Run dialog**:
+
+![image](https://user-images.githubusercontent.com/35183970/215296525-850af871-bae2-427d-b641-f4e73f564c89.png)
+
+2. **Type `shell:startup`** and press Enter
+
+3. **Create batch file**:
+
+![image](https://user-images.githubusercontent.com/35183970/215296594-5d2ac03c-570f-49a3-9993-3ba829d2744f.png)
+
+4. **Add content to CloudFlareDDNS.bat**:
+   ```batch
+   C:\Tools\CloudFlareDDNS\cloudflare-ddns --token your-cloudflare-api-token --domain home.yourdomain.com
+   pause
+   ```
+
+5. **Save and run**
+
+## Service Management
+
+### Windows Service Commands
+
+```powershell
+# Start Caddy service
+net start caddy
+
+# Stop Caddy service
+net stop caddy
+
+# Restart Caddy service
+net stop caddy && net start caddy
+
+# Check service status
+sc query caddy
+```
+
+### Configuration Management
+
+```powershell
+# Test configuration before applying
+caddy validate --config C:\Tools\Caddy\Caddyfile
+
+# Format Caddyfile
+caddy fmt --overwrite C:\Tools\Caddy\Caddyfile
+
+# Reload configuration
+caddy reload --config C:\Tools\Caddy\Caddyfile
+
+# View current configuration
+caddy config --config C:\Tools\Caddy\Caddyfile
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Issue 1: Service Won't Start
+
+```powershell
+# Check Windows Event Logs
+Get-EventLog -LogName Application -Source Caddy -Newest 10
+
+# Check service status
+sc query caddy
+
+# Common causes:
+# - Configuration syntax errors
+# - Permission issues
+# - Port conflicts
+```
+
+**Solution:**
+```powershell
+# Validate configuration
+caddy validate --config C:\Tools\Caddy\Caddyfile
+
+# Check file permissions
+Get-Acl C:\Tools\Caddy\Caddyfile
+
+# Test manual execution
+cd C:\Tools\Caddy
+./caddy run --config Caddyfile
+```
+
+#### Issue 2: Firewall Blocking
+
+```powershell
+# Check Windows Firewall rules
+Get-NetFirewallRule -DisplayName "*Caddy*"
+
+# Add firewall rules if needed
+New-NetFirewallRule -DisplayName "Caddy HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+New-NetFirewallRule -DisplayName "Caddy HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
+```
+
+#### Issue 3: Certificate Issues
+
+```powershell
+# Check certificate status
+caddy list-certificates
+
+# Clear certificate cache if needed
+Remove-Item -Recurse -Force "$env:APPDATA\Caddy\certificates"
+```
+
+## Security Best Practices
+
+### File Permissions
+
+```powershell
+# Secure Caddy directory
+$acl = Get-Acl "C:\Tools\Caddy"
+$acl.SetAccessRuleProtection($true, $false)
+$accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators","FullControl","Allow")
+$acl.SetAccessRule($accessRule)
+Set-Acl "C:\Tools\Caddy" $acl
+```
+
+### Firewall Configuration
+
+```powershell
+# Enable Windows Firewall
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+
+# Configure specific rules
+New-NetFirewallRule -DisplayName "Caddy HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+New-NetFirewallRule -DisplayName "Caddy HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
+```
+
+## Next Steps
+
+### Advanced Configuration
+
+1. **Explore advanced directives**: `header`, `encode`, `rate_limit`
+2. **Set up monitoring**: Windows Performance Counters, health checks
+3. **Configure logging**: Custom log formats and Windows Event Log integration
+4. **Implement security headers**: HSTS, CSP, X-Frame-Options
+
+### Integration Examples
+
+- **IIS Integration**: Run alongside IIS for specific applications
+- **Docker Desktop**: Reverse proxy to Windows containers
+- **Load balancing**: Distribute traffic across multiple Windows servers
+- **API gateway**: Route and transform API requests
+
+### Resources
+
+- **Official Documentation**: [caddyserver.com/docs](https://caddyserver.com/docs)
+- **Community Forum**: [caddy.community](https://caddy.community)
+- **Configuration Examples**: [Caddy Examples](/Examples/Caddy_Examples)
+
+---
+
+## Summary
+
+You have successfully installed Caddy on Windows with:
+
+✅ **Professional installation** with proper directory structure  
+✅ **Windows service integration** for automatic startup  
+✅ **Automatic HTTPS** capability with zero configuration  
+✅ **Cloudflare integration** for dynamic DNS management  
+✅ **Security best practices** - Proper permissions and firewall rules  
+✅ **Production-ready configuration** - Enterprise deployment ready  
+
+Your Caddy installation is now ready for production use with automatic HTTPS, robust security, and professional service management on Windows.
+
+<BuyMeACoffeeButton />

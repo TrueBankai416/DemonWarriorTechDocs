@@ -1,0 +1,8 @@
+{
+  "label": "Caddy",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Documentation and tutorials for Caddy web server setup and configuration"
+  }
+}

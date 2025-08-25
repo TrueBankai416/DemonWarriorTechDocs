@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+.docusaurus/
+
+# Logs
+*.log
+
+# Package files
+package-lock.json
+yarn.lock
+
+# Generated files
+.cache/
+public/
+
+# Config files that should maintain specific formatting
+*.md
+*.mdx

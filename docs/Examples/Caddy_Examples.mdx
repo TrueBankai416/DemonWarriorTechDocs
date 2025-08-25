@@ -1,19 +1,24 @@
 ---
 title: Caddy Examples
+description: Collection of Caddy reverse proxy configuration examples for Cloudflare, DuckDNS, WordPress, and multiple subdomains
 sidebar_position: 2
 toc_min_heading_level: 2
 toc_max_heading_level: 6
+tags: [caddy, reverse-proxy, cloudflare, duckdns, wordpress, ssl, https, web-server, configuration]
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
+
+## Caddy Examples
 
 <Tabs>
   <TabItem value="Cloudflare" label="Cloudflare Examples" default>
 
-## Cloudflare
+**Cloudflare:**
 
-### Jellyfin
+**Jellyfin:**
 
 ```
 sub.domain.com {
@@ -27,7 +32,7 @@ sub.domain.com {
 Save as
 Caddyfile
 
-### NextCloud
+**NextCloud:**
 
 ```
 files.domain.com {
@@ -47,7 +52,7 @@ files.domain.com {
 Save as
 Caddyfile
 
-### JFA-Go
+**JFA-Go:**
 
 ```
 jellyfin.domain.com {
@@ -77,10 +82,9 @@ Caddyfile
 
 <TabItem value="Duckdns" label="Duckdns Examples">
 
-## Duckdns
+**Duckdns:**
 
-
-### Jellyfin
+**Jellyfin:**
 
 ```
 subdomain.duckdns.org {
@@ -91,7 +95,7 @@ subdomain.duckdns.org {
 Save as 
 Caddyfile
 
-### NextCloud
+**NextCloud:**
 
 ```
 subdomain.duckdns.org {
@@ -108,7 +112,7 @@ subdomain.duckdns.org {
 Save as
 Caddyfile
 
-### JFA-Go
+**JFA-Go:**
 
 ```
 jellyfin.ducksdns.org {
@@ -128,7 +132,7 @@ jfa-go.duckdns.org {
 Save as
 Caddyfile
 
-## Wordpress
+**Wordpress:**
 
 ```
 sub.yourdomain.com {
@@ -145,9 +149,9 @@ Caddyfile
   </TabItem>
 
 <TabItem value="multi-sub-domains" label="Multiple Sub Domains Example">
-## Multiple Sub Domains
+**Multiple Sub Domains:**
 
-### Cloudflare
+**Cloudflare:**
 
 ```
 sub.domain.com {
@@ -164,7 +168,7 @@ sub2.domain.com {
 }
 ```
 
-### DuckDNS
+**DuckDNS:**
 
 ```
 subdomain.duckdns.org {
@@ -178,4 +182,4 @@ subdomain2.duckdns.org {
   </TabItem>
 </Tabs>
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/demonwarriortech)
+<BuyMeACoffeeButton />

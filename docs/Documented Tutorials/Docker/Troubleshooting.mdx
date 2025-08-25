@@ -1,0 +1,915 @@
+---
+title: Complete Docker Troubleshooting Guide
+description: Comprehensive professional guide to diagnosing and resolving Docker issues including container problems, networking, storage, performance, and security troubleshooting across Windows and Linux
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+tags: [docker, troubleshooting, debugging, containers, networking, storage, performance, security, windows, linux]
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
+
+## Overview
+
+This comprehensive guide covers systematic troubleshooting approaches for Docker-related issues across different platforms and scenarios. Docker troubleshooting requires understanding container lifecycle, networking, storage, and system integration to effectively diagnose and resolve problems.
+
+### Common Docker Issues Categories
+
+- **Installation and Setup**: Docker daemon, service, and configuration issues
+- **Container Lifecycle**: Starting, stopping, and runtime container problems
+- **Networking**: Port binding, connectivity, and DNS resolution issues
+- **Storage**: Volume mounting, permissions, and disk space problems
+- **Performance**: Resource usage, memory leaks, and optimization issues
+- **Security**: Permission errors, user mapping, and access control problems
+- **Platform-Specific**: Windows, Linux, and macOS specific issues
+
+### Troubleshooting Methodology
+
+1. **Identify the Problem**: Gather symptoms and error messages
+2. **Check System Status**: Verify Docker daemon and system health
+3. **Isolate the Issue**: Determine if it's container, network, or system related
+4. **Gather Information**: Collect logs, configurations, and system state
+5. **Apply Solutions**: Implement fixes systematically
+6. **Verify Resolution**: Test and monitor the solution
+7. **Document**: Record the issue and solution for future reference
+
+## Diagnostic Tools and Commands
+
+### Essential Docker Commands
+
+#### System Information
+
+```bash
+# Check Docker version and system info
+docker version
+docker system info
+docker system df
+
+# Check Docker daemon status
+sudo systemctl status docker  # Linux
+Get-Service Docker            # Windows PowerShell
+
+# View system-wide Docker events
+docker system events
+
+# Check resource usage
+docker system df -v
+docker stats --no-stream
+```
+
+#### Container Diagnostics
+
+```bash
+# List all containers (running and stopped)
+docker ps -a
+
+# Inspect container configuration
+docker inspect <container_name>
+
+# View container logs
+docker logs <container_name>
+docker logs --tail 50 --follow <container_name>
+
+# Execute commands in running container
+docker exec -it <container_name> /bin/bash
+docker exec -it <container_name> /bin/sh
+
+# Check container processes
+docker top <container_name>
+
+# View container resource usage
+docker stats <container_name>
+```
+
+#### Network Diagnostics
+
+```bash
+# List Docker networks
+docker network ls
+
+# Inspect network configuration
+docker network inspect <network_name>
+
+# Test network connectivity
+docker exec <container_name> ping <target>
+docker exec <container_name> nslookup <hostname>
+docker exec <container_name> netstat -tulpn
+
+# Check port bindings
+docker port <container_name>
+```
+
+#### Image and Storage Diagnostics
+
+```bash
+# List images
+docker images -a
+
+# Inspect image layers
+docker history <image_name>
+
+# Check disk usage
+docker system df
+docker system df -v
+
+# List volumes
+docker volume ls
+
+# Inspect volume
+docker volume inspect <volume_name>
+```
+
+## Container Issues
+
+### Issue 1: Container Won't Start
+
+#### Symptoms
+- Container exits immediately after starting
+- "Container exited with code X" errors
+- Container stuck in "Restarting" state
+
+#### Diagnostic Steps
+
+```bash
+# Check container status and exit code
+docker ps -a
+
+# View container logs
+docker logs <container_name>
+
+# Inspect container configuration
+docker inspect <container_name>
+
+# Check if image exists and is accessible
+docker images | grep <image_name>
+
+# Try running container interactively
+docker run -it <image_name> /bin/bash
+```
+
+#### Common Solutions
+
+```bash
+# Fix 1: Check and fix command/entrypoint
+docker run -it --entrypoint /bin/bash <image_name>
+
+# Fix 2: Check environment variables
+docker run -e ENV_VAR=value <image_name>
+
+# Fix 3: Fix volume mount issues
+docker run -v /host/path:/container/path:ro <image_name>
+
+# Fix 4: Check resource limits
+docker run --memory=1g --cpus=1 <image_name>
+
+# Fix 5: Fix user permissions
+docker run --user $(id -u):$(id -g) <image_name>
+```
+
+### Issue 2: Container Performance Problems
+
+#### Symptoms
+- Slow container response
+- High CPU or memory usage
+- Container becoming unresponsive
+
+#### Diagnostic Steps
+
+```bash
+# Monitor resource usage
+docker stats <container_name>
+
+# Check container processes
+docker exec <container_name> top
+docker exec <container_name> ps aux
+
+# Check system resources
+free -h
+df -h
+iostat -x 1
+
+# Analyze container logs for errors
+docker logs <container_name> | grep -i error
+```
+
+#### Solutions
+
+```bash
+# Increase resource limits
+docker run --memory=2g --cpus=2 <image_name>
+
+# Optimize container configuration
+docker run --restart=unless-stopped <image_name>
+
+# Use multi-stage builds to reduce image size
+# Add to Dockerfile:
+# FROM node:alpine AS builder
+# ... build steps ...
+# FROM node:alpine AS runtime
+# COPY --from=builder /app /app
+
+# Enable logging driver optimization
+docker run --log-driver=json-file --log-opt max-size=10m --log-opt max-file=3 <image_name>
+```
+
+### Issue 3: Container Networking Problems
+
+#### Symptoms
+- Cannot connect to container services
+- Port binding failures
+- DNS resolution issues
+
+#### Diagnostic Steps
+
+```bash
+# Check port bindings
+docker port <container_name>
+netstat -tulpn | grep <port>
+
+# Test network connectivity
+docker exec <container_name> ping google.com
+docker exec <container_name> nslookup <hostname>
+
+# Check network configuration
+docker network ls
+docker network inspect bridge
+
+# Test container-to-container communication
+docker exec <container1> ping <container2>
+```
+
+#### Solutions
+
+```bash
+# Fix port binding conflicts
+docker run -p 8080:80 <image_name>  # Use different host port
+
+# Create custom network for container communication
+docker network create mynetwork
+docker run --network=mynetwork --name=app1 <image1>
+docker run --network=mynetwork --name=app2 <image2>
+
+# Fix DNS issues
+docker run --dns=8.8.8.8 <image_name>
+
+# Enable host networking (Linux only)
+docker run --network=host <image_name>
+```
+
+## Networking Issues
+
+### Issue 4: Port Binding and Firewall Problems
+
+#### Windows Firewall Configuration
+
+##### PowerShell Method (Advanced)
+
+```powershell
+# Check if ports are blocked by Windows Firewall
+Test-NetConnection -ComputerName localhost -Port 80
+Test-NetConnection -ComputerName localhost -Port 443
+
+# Add firewall rules for Docker ports
+New-NetFirewallRule -DisplayName "Docker HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+New-NetFirewallRule -DisplayName "Docker HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
+New-NetFirewallRule -DisplayName "Docker Custom" -Direction Inbound -Protocol TCP -LocalPort 9000 -Action Allow
+
+# Check existing firewall rules
+Get-NetFirewallRule | Where-Object {$_.DisplayName -like "*Docker*"}
+
+# Disable Windows Firewall temporarily for testing (not recommended for production)
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+```
+
+##### GUI Method (Step-by-Step)
+
+**If your Docker containers are not loading, follow these steps to allow apps through Windows Firewall:**
+
+1. **Go to Control Panel**
+2. **Search Firewall and Select Windows Defender Firewall**
+
+![image](https://user-images.githubusercontent.com/35183970/213559749-38c2c954-b6dc-410f-9a49-37e053009b5a.png)
+
+3. **Select Advanced Settings**
+
+![image](https://user-images.githubusercontent.com/35183970/213559824-42e45c0b-6fbf-40d9-a48b-ef207d2bb2ce.png)
+
+4. **Click Inbound Rules**
+
+![image](https://user-images.githubusercontent.com/35183970/213559889-d4b5babc-fd5f-4281-91e9-a1a3e76cc615.png)
+
+5. **Click New Rule**
+
+![image](https://user-images.githubusercontent.com/35183970/213559970-66286a1b-96bc-4f70-8723-fc38c68c3446.png)
+
+6. **Check Port**
+
+![image](https://user-images.githubusercontent.com/35183970/213560049-55e11cc7-2bfc-4e19-b9b0-d6a42fa47bc1.png)
+
+7. **Add TCP Ports 9000** **(If you haven't added Caddy ports yet, do so as well for 443, 80, 2019)**
+
+![image](https://user-images.githubusercontent.com/35183970/213560266-e7541f33-ccac-481d-b23a-4488f92d7373.png)
+
+8. **Leave Default Click Next**
+
+![image](https://user-images.githubusercontent.com/35183970/213560324-1f5967a7-99ea-4865-a6b3-dbfb13244b14.png)
+
+9. **Leave Default Click Next**
+
+![image](https://user-images.githubusercontent.com/35183970/213560399-7dde8eb0-20dd-4026-b4e5-040b0c981b31.png)
+
+10. **Name the rule whatever you want**
+
+![image](https://user-images.githubusercontent.com/35183970/213560483-4553e086-acef-46ae-8241-deb9c1a1f315.png)
+
+##### Port Checking
+
+**Checking Your Ports:**
+1. Go to https://portchecker.co/ and see if your port 443 and 80 are open.
+2. If they are not, you need to make sure your router connected to your modem has those ports port-forwarded for your computer hosting the services.
+
+#### Linux Firewall Configuration
+
+```bash
+# Check if ports are accessible
+ss -tulpn | grep :80
+netstat -tulpn | grep :80
+
+# Configure UFW (Ubuntu)
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 9000/tcp
+sudo ufw status
+
+# Configure firewalld (CentOS/RHEL)
+sudo firewall-cmd --permanent --add-port=80/tcp
+sudo firewall-cmd --permanent --add-port=443/tcp
+sudo firewall-cmd --permanent --add-port=9000/tcp
+sudo firewall-cmd --reload
+
+# Configure iptables directly
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+sudo iptables-save | sudo tee /etc/iptables/rules.v4
+```
+
+### Issue 5: Docker Network Connectivity
+
+#### Symptoms
+- Containers cannot communicate with each other
+- External network access issues
+- DNS resolution failures
+
+#### Diagnostic Steps
+
+```bash
+# Check Docker network configuration
+docker network ls
+docker network inspect bridge
+
+# Test container network connectivity
+docker run --rm -it alpine ping google.com
+docker run --rm -it alpine nslookup google.com
+
+# Check Docker daemon network settings
+docker system info | grep -A 10 "Network"
+
+# Verify network interfaces
+ip addr show  # Linux
+ipconfig      # Windows
+```
+
+#### Solutions
+
+```bash
+# Restart Docker networking
+sudo systemctl restart docker
+
+# Reset Docker networks
+docker network prune -f
+
+# Create custom bridge network
+docker network create --driver bridge mynetwork
+docker run --network=mynetwork <image_name>
+
+# Fix DNS issues
+echo '{"dns": ["8.8.8.8", "8.8.4.4"]}' | sudo tee /etc/docker/daemon.json
+sudo systemctl restart docker
+
+# Configure Docker daemon for proxy (if behind corporate firewall)
+sudo mkdir -p /etc/systemd/system/docker.service.d
+sudo tee /etc/systemd/system/docker.service.d/http-proxy.conf > /dev/null << 'EOF'
+[Service]
+Environment="HTTP_PROXY=http://proxy.company.com:8080"
+Environment="HTTPS_PROXY=http://proxy.company.com:8080"
+Environment="NO_PROXY=localhost,127.0.0.1"
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+## Storage and Volume Issues
+
+### Issue 6: Volume Mount Problems
+
+#### Symptoms
+- Files not persisting between container restarts
+- Permission denied errors when accessing mounted volumes
+- Volume mount paths not found
+
+#### Diagnostic Steps
+
+```bash
+# Check volume mounts
+docker inspect <container_name> | grep -A 10 "Mounts"
+
+# List Docker volumes
+docker volume ls
+
+# Inspect volume details
+docker volume inspect <volume_name>
+
+# Check file permissions
+docker exec <container_name> ls -la /mounted/path
+
+# Check disk space
+df -h
+docker system df
+```
+
+#### Solutions
+
+```bash
+# Fix permission issues (Linux)
+sudo chown -R $(id -u):$(id -g) /host/path
+sudo chmod -R 755 /host/path
+
+# Use named volumes instead of bind mounts
+docker volume create myvolume
+docker run -v myvolume:/data <image_name>
+
+# Fix Windows path issues
+docker run -v C:\host\path:/container/path <image_name>  # Windows
+docker run -v /c/host/path:/container/path <image_name>  # Git Bash
+
+# Set correct user in container
+docker run --user $(id -u):$(id -g) -v /host/path:/container/path <image_name>
+
+# Use volume with specific driver
+docker volume create --driver local --opt type=nfs --opt o=addr=192.168.1.100,rw --opt device=:/path/to/dir myvolume
+```
+
+### Issue 7: Disk Space Issues
+
+#### Symptoms
+- "No space left on device" errors
+- Docker operations failing due to disk space
+- Slow container performance
+
+#### Diagnostic Steps
+
+```bash
+# Check overall disk usage
+df -h
+
+# Check Docker disk usage
+docker system df
+docker system df -v
+
+# Check for large containers/images
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | sort -k 3 -h
+
+# Check container logs size
+find /var/lib/docker/containers -name "*.log" -exec ls -lh {} \; | sort -k 5 -h
+```
+
+#### Solutions
+
+```bash
+# Clean up Docker resources
+docker system prune -a -f
+docker container prune -f
+docker image prune -a -f
+docker volume prune -f
+docker network prune -f
+
+# Remove specific unused images
+docker rmi $(docker images -f "dangling=true" -q)
+
+# Configure log rotation
+echo '{"log-driver": "json-file", "log-opts": {"max-size": "10m", "max-file": "3"}}' | sudo tee /etc/docker/daemon.json
+sudo systemctl restart docker
+
+# Move Docker root directory (if needed)
+sudo systemctl stop docker
+sudo mv /var/lib/docker /new/location/docker
+sudo ln -s /new/location/docker /var/lib/docker
+sudo systemctl start docker
+```
+
+## Performance Issues
+
+### Issue 8: High Resource Usage
+
+#### Symptoms
+- High CPU usage by Docker containers
+- Memory leaks and out-of-memory errors
+- Slow I/O performance
+
+#### Diagnostic Steps
+
+```bash
+# Monitor system resources
+top
+htop
+iostat -x 1
+
+# Monitor Docker container resources
+docker stats
+docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}"
+
+# Check container processes
+docker exec <container_name> top
+docker exec <container_name> ps aux --sort=-%cpu
+docker exec <container_name> ps aux --sort=-%mem
+
+# Analyze container logs
+docker logs <container_name> | grep -i "memory\|cpu\|performance"
+```
+
+#### Solutions
+
+```bash
+# Set resource limits
+docker run --memory=1g --cpus=1.5 <image_name>
+docker run --memory=1g --memory-swap=2g <image_name>
+
+# Use Docker Compose with resource limits
+version: '3.8'
+services:
+  app:
+    image: myapp
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+# Optimize Dockerfile
+# Use multi-stage builds
+# Minimize layers
+# Use .dockerignore
+# Choose appropriate base images (alpine, slim)
+
+# Configure Docker daemon for performance
+echo '{
+  "storage-driver": "overlay2",
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 64000,
+      "Soft": 64000
+    }
+  }
+}' | sudo tee /etc/docker/daemon.json
+sudo systemctl restart docker
+```
+
+## Security Issues
+
+### Issue 9: Permission and Access Problems
+
+#### Symptoms
+- Permission denied errors
+- Cannot access files in containers
+- User mapping issues
+
+#### Diagnostic Steps
+
+```bash
+# Check container user
+docker exec <container_name> whoami
+docker exec <container_name> id
+
+# Check file permissions
+docker exec <container_name> ls -la /path/to/files
+
+# Check Docker daemon permissions
+ls -la /var/run/docker.sock
+
+# Check SELinux context (if applicable)
+ls -Z /path/to/mounted/volume
+```
+
+#### Solutions
+
+```bash
+# Run container as specific user
+docker run --user $(id -u):$(id -g) <image_name>
+
+# Fix Docker socket permissions
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Set proper file permissions for volumes
+sudo chown -R $(id -u):$(id -g) /host/volume/path
+sudo chmod -R 755 /host/volume/path
+
+# Configure SELinux for Docker (if needed)
+sudo setsebool -P container_manage_cgroup on
+sudo chcon -Rt svirt_sandbox_file_t /host/volume/path
+
+# Use user namespace mapping
+echo '{"userns-remap": "default"}' | sudo tee /etc/docker/daemon.json
+sudo systemctl restart docker
+```
+
+## Platform-Specific Issues
+
+### Issue 10: Windows-Specific Problems
+
+#### Docker Desktop Issues
+
+```powershell
+# Check Docker Desktop status
+Get-Process "*docker*"
+
+# Restart Docker Desktop
+Stop-Process -Name "Docker Desktop" -Force
+Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+
+# Check WSL2 integration
+wsl --list --verbose
+wsl --set-default-version 2
+
+# Fix Hyper-V issues
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+Enable-WindowsOptionalFeature -Online -FeatureName Containers -All
+
+# Check Windows version compatibility
+Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion
+```
+
+#### Windows Container Issues
+
+```powershell
+# Switch between Linux and Windows containers
+& "C:\Program Files\Docker\Docker\DockerCli.exe" -SwitchDaemon
+
+# Check Windows container support
+docker version --format '{{.Server.Os}}'
+
+# Fix Windows path issues in volumes
+docker run -v C:\host\path:C:\container\path <windows_image>
+
+# Check Windows container networking
+docker run --rm mcr.microsoft.com/windows/nanoserver:ltsc2019 ping google.com
+```
+
+### Issue 11: Linux-Specific Problems
+
+#### SystemD and Service Issues
+
+```bash
+# Check Docker service status
+sudo systemctl status docker
+sudo journalctl -u docker.service -f
+
+# Restart Docker service
+sudo systemctl restart docker
+sudo systemctl enable docker
+
+# Check Docker daemon configuration
+sudo dockerd --debug
+
+# Fix Docker daemon startup issues
+sudo systemctl edit docker.service
+# Add:
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock --debug
+```
+
+#### Cgroup and Resource Issues
+
+```bash
+# Check cgroup version
+mount | grep cgroup
+
+# Enable cgroup v2 (if needed)
+sudo grub-editenv - set "systemd.unified_cgroup_hierarchy=1"
+sudo update-grub
+sudo reboot
+
+# Fix memory cgroup issues
+echo 'GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1"' | sudo tee -a /etc/default/grub
+sudo update-grub
+sudo reboot
+```
+
+## Advanced Troubleshooting
+
+### Issue 12: Docker Compose Problems
+
+#### Symptoms
+- Services not starting in correct order
+- Environment variable issues
+- Network connectivity between services
+
+#### Diagnostic Steps
+
+```bash
+# Validate docker-compose.yml
+docker-compose config
+
+# Check service status
+docker-compose ps
+
+# View service logs
+docker-compose logs <service_name>
+docker-compose logs -f
+
+# Check service dependencies
+docker-compose top
+```
+
+#### Solutions
+
+```bash
+# Fix service dependencies
+version: '3.8'
+services:
+  web:
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Use environment files
+docker-compose --env-file .env up
+
+# Override configurations
+docker-compose -f docker-compose.yml -f docker-compose.override.yml up
+
+# Debug networking issues
+docker-compose exec web ping db
+docker-compose exec web nslookup db
+```
+
+### Issue 13: Registry and Image Issues
+
+#### Symptoms
+- Cannot pull images from registry
+- Authentication failures
+- Image corruption or verification errors
+
+#### Diagnostic Steps
+
+```bash
+# Test registry connectivity
+docker pull hello-world
+
+# Check registry authentication
+docker login <registry_url>
+
+# Verify image integrity
+docker image inspect <image_name>
+
+# Check for image vulnerabilities
+docker scan <image_name>  # Docker Desktop
+```
+
+#### Solutions
+
+```bash
+# Configure registry mirrors
+echo '{
+  "registry-mirrors": ["https://mirror.gcr.io"]
+}' | sudo tee /etc/docker/daemon.json
+sudo systemctl restart docker
+
+# Fix authentication issues
+docker logout
+docker login -u <username> -p <password> <registry>
+
+# Use insecure registry (development only)
+echo '{
+  "insecure-registries": ["myregistry.local:5000"]
+}' | sudo tee /etc/docker/daemon.json
+sudo systemctl restart docker
+
+# Build images with specific platform
+docker buildx build --platform linux/amd64,linux/arm64 -t myimage .
+```
+
+## Monitoring and Logging
+
+### Comprehensive Monitoring Setup
+
+```bash
+# Create monitoring script
+cat > docker-monitor.sh << 'EOF'
+#!/bin/bash
+
+echo "=== Docker System Status ==="
+docker system info | grep -E "(Server Version|Storage Driver|Logging Driver|Cgroup Driver)"
+
+echo -e "\n=== Container Status ==="
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+echo -e "\n=== Resource Usage ==="
+docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}"
+
+echo -e "\n=== Disk Usage ==="
+docker system df
+
+echo -e "\n=== Recent Errors ==="
+docker events --since 1h --filter type=container --filter event=die
+
+echo -e "\n=== Network Status ==="
+docker network ls
+EOF
+
+chmod +x docker-monitor.sh
+```
+
+### Log Analysis
+
+```bash
+# Centralized logging with ELK stack
+version: '3.8'
+services:
+  app:
+    image: myapp
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=myapp"
+
+# Use syslog driver
+docker run --log-driver=syslog --log-opt syslog-address=tcp://logserver:514 myapp
+
+# Analyze container logs
+docker logs --since 1h <container_name> | grep ERROR
+docker logs --tail 100 <container_name> | grep -E "(error|exception|fail)"
+```
+
+## Prevention and Best Practices
+
+### Proactive Monitoring
+
+```bash
+# Set up health checks
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost/ || exit 1
+
+# Use proper restart policies
+docker run --restart=unless-stopped myapp
+
+# Implement resource limits
+docker run --memory=1g --cpus=1 --ulimit nofile=1024:1024 myapp
+```
+
+### Configuration Management
+
+```bash
+# Use Docker Compose for complex applications
+# Implement proper secret management
+# Use multi-stage builds for optimization
+# Implement proper logging strategies
+# Regular security scanning and updates
+```
+
+---
+
+## Summary
+
+This comprehensive Docker troubleshooting guide provides:
+
+✅ **Systematic diagnostic approaches** for identifying and resolving Docker issues  
+✅ **Container lifecycle troubleshooting** with startup, runtime, and performance problems  
+✅ **Network troubleshooting** including firewall configuration and connectivity issues  
+✅ **Storage and volume problem resolution** with permission and mounting issues  
+✅ **Performance optimization** with resource management and monitoring  
+✅ **Security troubleshooting** with permission and access control issues  
+✅ **Platform-specific solutions** for Windows and Linux environments  
+✅ **Advanced troubleshooting** for Docker Compose and registry issues  
+
+Your Docker troubleshooting skills are now equipped with professional diagnostic tools and systematic approaches to resolve complex containerization issues efficiently.
+
+<BuyMeACoffeeButton />

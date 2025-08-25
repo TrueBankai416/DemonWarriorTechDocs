@@ -4,13 +4,19 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
-import {themes as prismThemes} from 'prism-react-renderer';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Demon Warrior Tech Docs',
   tagline: 'Docs',
   favicon: 'img/favicon.ico',
+
+  // Adopt Docusaurus Faster and v4
+  future: {
+    experimental_faster: true,
+    v4: true,
+  },
 
   // Set the production url of your site here
   url: 'https://docs.demonwarriortech.com',
@@ -41,18 +47,20 @@ const config = {
         docs: {
           routeBasePath: '/', // Serve the docs at the site's root
           sidebarPath: './sidebars.js',
+          showLastUpdateAuthor: true,
+          showLastUpdateTime: true,
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-//          editUrl:
-//            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl:
+            'https://github.com/TrueBankai416/DemonWarriorTechDocs/tree/main/',
         },
- //       blog: {
-//         showReadingTime: true,
-//          // Please change this to your repo.
-//          // Remove this to remove the "edit this page" links.
-//          editUrl:
-//            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
-//        },
+        //       blog: {
+        //         showReadingTime: true,
+        //          // Please change this to your repo.
+        //          // Remove this to remove the "edit this page" links.
+        //          editUrl:
+        //            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+        //        },
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -60,9 +68,9 @@ const config = {
     ],
   ],
 
-  themeConfig: 
+  themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
-    
+
     ({
       announcementBar: {
         id: 'Pick your Operating System',
@@ -91,10 +99,17 @@ const config = {
             sidebarId: 'tutorialSidebar',
             position: 'left',
             label: 'Tutorial',
-            to: '/',
           },
-          {to: 'https://docs.demonwarriortech.com/Video%20Tutorials/Videos', label: 'Videos Tutorials', position: 'left'},
-          {to: 'https://buymeacoffee.com/demonwarriortech', label: 'Buy Me a Coffee', position: 'left'},
+          {
+            to: 'https://docs.demonwarriortech.com/Video%20Tutorials/Videos',
+            label: 'Videos Tutorials',
+            position: 'left',
+          },
+          {
+            to: 'https://buymeacoffee.com/demonwarriortech',
+            label: 'Buy Me a Coffee',
+            position: 'left',
+          },
         ],
       },
       footer: {
@@ -104,16 +119,16 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Documented-Tutorial',
-                to: '/category/Documented-Tutorials-',
+                label: 'Documented Tutorials',
+                to: '/category/documented-tutorials',
               },
               {
                 label: 'Examples',
-                to: '/category/Examples',
+                to: '/category/examples',
               },
               {
                 label: 'Jellyfin Extras',
-                to: '/category/Jellyfin-Extras',
+                to: '/category/jellyfin-extras',
               },
               {
                 label: 'Arr Self-Hosting',
@@ -148,9 +163,25 @@ const config = {
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
+        additionalLanguages: [
+          'dax',
+          'csharp',
+          'powerquery',
+          'powershell',
+          'yaml',
+          'nginx',
+          'editorconfig',
+          'typescript',
+          'javascript',
+          'systemd',
+          'ini',
+          'bash',
+          'apacheconf',
+          'docker',
+        ],
       },
     }),
-    plugins: [require.resolve('docusaurus-lunr-search')],
+  plugins: [require.resolve('docusaurus-lunr-search')],
 };
 
 export default config;

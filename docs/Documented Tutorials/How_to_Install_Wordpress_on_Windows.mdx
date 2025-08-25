@@ -1,0 +1,598 @@
+---
+title: Complete WordPress Installation Guide for Windows
+description: Comprehensive professional guide to installing WordPress on Windows with PHP, MariaDB, and Caddy web server, including security hardening, performance optimization, and production deployment
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 6
+tags: [wordpress, windows, php, mariadb, caddy, installation, tutorial, cms, web-development, production, security]
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
+
+## Overview
+
+This comprehensive guide covers the complete installation and configuration of WordPress on Windows using a modern, professional stack: PHP 8.x, MariaDB, and Caddy web server. This setup provides excellent performance, security, and maintainability for both development and production environments.
+
+### What You'll Build
+
+- **WordPress CMS**: Latest version with professional configuration
+- **PHP 8.x**: Modern PHP runtime with optimized settings
+- **MariaDB**: High-performance MySQL-compatible database
+- **Caddy Web Server**: Automatic HTTPS and reverse proxy
+- **NSSM Service Manager**: Professional Windows service management
+
+### Architecture Overview
+
+```
+Internet → Caddy (Port 80/443) → PHP-FPM (Port 9000) → WordPress → MariaDB (Port 3306)
+```
+
+### Key Benefits
+
+- **Professional Setup**: Enterprise-ready configuration
+- **Automatic HTTPS**: SSL certificates managed by Caddy
+- **High Performance**: Optimized PHP and database settings
+- **Security Hardened**: Best practices throughout
+- **Service Management**: Automatic startup and monitoring
+- **Scalable**: Ready for production workloads
+
+## Prerequisites
+
+Before beginning the installation, ensure your system meets all requirements:
+
+### System Requirements
+
+#### Minimum Requirements
+- **Operating System**: Windows 10 64-bit (version 1903) or Windows 11
+- **RAM**: 4GB system memory (8GB+ recommended)
+- **Storage**: 10GB available disk space (SSD recommended)
+- **Processor**: 64-bit processor (2+ cores recommended)
+
+#### Recommended Requirements
+- **Operating System**: Windows 11 or Windows 10 Pro (latest version)
+- **RAM**: 16GB+ system memory
+- **Storage**: SSD with 50GB+ available space
+- **Processor**: Multi-core 64-bit processor (4+ cores)
+- **Network**: Stable internet connection
+
+### Software Prerequisites
+
+- **Administrator Access**: Required for service installation
+- **PowerShell 5.1+**: For automation scripts
+- **Visual C++ Redistributable**: For PHP and MariaDB
+- **Domain Name**: For production deployment (optional for development)
+
+### Network Requirements
+
+- **Ports 80 and 443**: Available for web traffic
+- **Port 3306**: Available for database (can be changed)
+- **Port 9000**: Available for PHP-FPM
+- **Firewall**: Configured to allow necessary traffic
+
+## Component Downloads and Verification
+
+### Step 1: Download Required Components
+
+#### PHP 8.x (Latest Stable)
+
+```powershell
+# Download PHP 8.x
+$phpUrl = "https://windows.php.net/downloads/releases/php-8.3.0-nts-Win32-vs16-x64.zip"
+$phpOutput = "$env:TEMP\php-8.3.0-nts-Win32-vs16-x64.zip"
+Invoke-WebRequest -Uri $phpUrl -OutFile $phpOutput
+
+# Verify download
+Get-FileHash $phpOutput -Algorithm SHA256
+```
+
+**Manual Download**: [PHP for Windows](https://windows.php.net/download/)
+- Choose **Non Thread Safe (NTS)** version
+- Select **x64** architecture
+- Download **ZIP** package
+
+#### MariaDB (Latest Stable)
+
+```powershell
+# Download MariaDB
+$mariaUrl = "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
+$mariaOutput = "$env:TEMP\mariadb-10.11.6-winx64.msi"
+Invoke-WebRequest -Uri $mariaUrl -OutFile $mariaOutput
+```
+
+**Manual Download**: [MariaDB Downloads](https://mariadb.org/download/)
+- Choose **Stable** release
+- Select **Windows x64** MSI package
+
+#### WordPress (Latest Version)
+
+```powershell
+# Download WordPress
+$wpUrl = "https://wordpress.org/latest.zip"
+$wpOutput = "$env:TEMP\wordpress-latest.zip"
+Invoke-WebRequest -Uri $wpUrl -OutFile $wpOutput
+```
+
+**Manual Download**: [WordPress.org](https://wordpress.org/download/)
+
+#### NSSM (Service Manager)
+
+```powershell
+# Download NSSM
+$nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
+$nssmOutput = "$env:TEMP\nssm-2.24.zip"
+Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmOutput
+```
+
+**Manual Download**: [NSSM Official](https://nssm.cc/download)
+
+#### Caddy Web Server
+
+```powershell
+# Download Caddy
+$caddyUrl = "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
+$caddyOutput = "$env:TEMP\caddy_windows_amd64.zip"
+Invoke-WebRequest -Uri $caddyUrl -OutFile $caddyOutput
+```
+
+**Manual Download**: [Caddy Releases](https://github.com/caddyserver/caddy/releases)
+
+### Step 2: Verify Downloads
+
+```powershell
+# Verify all downloads exist
+$downloads = @(
+    "$env:TEMP\php-8.3.0-nts-Win32-vs16-x64.zip",
+    "$env:TEMP\mariadb-10.11.6-winx64.msi",
+    "$env:TEMP\wordpress-latest.zip",
+    "$env:TEMP\nssm-2.24.zip",
+    "$env:TEMP\caddy_windows_amd64.zip"
+)
+
+foreach ($file in $downloads) {
+    if (Test-Path $file) {
+        $size = (Get-Item $file).Length / 1MB
+        Write-Host "✅ $(Split-Path $file -Leaf) - $([math]::Round($size, 2)) MB"
+    } else {
+        Write-Host "❌ $(Split-Path $file -Leaf) - Missing"
+    }
+}
+```
+
+## Installation Process
+
+### Step 1: Create Directory Structure
+
+```powershell
+# Create main tools directory
+$toolsPath = "C:\Tools"
+New-Item -ItemType Directory -Path $toolsPath -Force
+
+# Create subdirectories
+$directories = @(
+    "$toolsPath\PHP",
+    "$toolsPath\NSSM", 
+    "$toolsPath\Caddy",
+    "$toolsPath\WordPress",
+    "C:\inetpub\wwwroot\wordpress"
+)
+
+foreach ($dir in $directories) {
+    New-Item -ItemType Directory -Path $dir -Force
+    Write-Host "Created: $dir"
+}
+```
+
+### Step 2: Install and Configure PHP
+
+#### Extract and Setup PHP
+
+```powershell
+# Extract PHP
+$phpZip = "$env:TEMP\php-8.3.0-nts-Win32-vs16-x64.zip"
+Expand-Archive -Path $phpZip -DestinationPath "C:\Tools\PHP" -Force
+
+# Copy php.ini template
+Copy-Item "C:\Tools\PHP\php.ini-production" "C:\Tools\PHP\php.ini"
+```
+
+#### Configure PHP Settings
+
+```powershell
+# Create optimized php.ini configuration
+$phpIniPath = "C:\Tools\PHP\php.ini"
+$phpConfig = @"
+; PHP Configuration for WordPress
+; Memory and Performance
+memory_limit = 512M
+max_execution_time = 300
+max_input_time = 300
+post_max_size = 64M
+upload_max_filesize = 64M
+max_file_uploads = 20
+
+; Error Reporting (adjust for production)
+display_errors = Off
+log_errors = On
+error_log = C:\Tools\PHP\logs\php_errors.log
+
+; Extensions
+extension_dir = "ext"
+extension=bz2
+extension=curl
+extension=fileinfo
+extension=gd
+extension=gettext
+extension=intl
+extension=mbstring
+extension=exif
+extension=mysqli
+extension=openssl
+extension=pdo_mysql
+extension=zip
+extension=opcache
+
+; OPcache Configuration
+opcache.enable=1
+opcache.enable_cli=1
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=8
+opcache.max_accelerated_files=10000
+opcache.revalidate_freq=2
+opcache.fast_shutdown=1
+
+; Session Configuration
+session.save_handler = files
+session.save_path = "C:\Tools\PHP\tmp"
+session.gc_maxlifetime = 1440
+
+; CGI Configuration
+cgi.force_redirect = 0
+cgi.fix_pathinfo = 1
+fastcgi.impersonate = 1
+"@
+
+# Apply configuration
+$phpConfig | Out-File -FilePath $phpIniPath -Encoding UTF8 -Append
+```
+
+#### Create PHP Directories
+
+```powershell
+# Create required directories
+$phpDirs = @(
+    "C:\Tools\PHP\logs",
+    "C:\Tools\PHP\tmp",
+    "C:\Tools\PHP\sessions"
+)
+
+foreach ($dir in $phpDirs) {
+    New-Item -ItemType Directory -Path $dir -Force
+}
+```
+
+#### Add PHP to System PATH
+
+```powershell
+# Add PHP to system PATH
+$currentPath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
+if ($currentPath -notlike "*C:\Tools\PHP*") {
+    $newPath = $currentPath + ";C:\Tools\PHP"
+    [Environment]::SetEnvironmentVariable("PATH", $newPath, [EnvironmentVariableTarget]::Machine)
+    Write-Host "✅ PHP added to system PATH"
+}
+
+# Verify PHP installation
+& "C:\Tools\PHP\php.exe" --version
+```
+
+### Step 3: Install and Configure MariaDB
+
+#### Install MariaDB
+
+```powershell
+# Install MariaDB silently
+$mariaInstaller = "$env:TEMP\mariadb-10.11.6-winx64.msi"
+$installArgs = @(
+    "/i", $mariaInstaller,
+    "/quiet",
+    "SERVICENAME=MariaDB",
+    "PASSWORD=SecureRootPassword123!",
+    "UTF8=1"
+)
+
+Start-Process -FilePath "msiexec.exe" -ArgumentList $installArgs -Wait -NoNewWindow
+Write-Host "✅ MariaDB installed"
+```
+
+#### Configure MariaDB
+
+```powershell
+# Wait for MariaDB service to start
+Start-Sleep -Seconds 10
+
+# Create WordPress database and user
+$mysqlCommands = @"
+CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'WordPressPassword123!';
+GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
+FLUSH PRIVILEGES;
+"@
+
+# Execute MySQL commands
+$mysqlCommands | & "C:\Program Files\MariaDB 10.11\bin\mysql.exe" -u root -p"SecureRootPassword123!"
+Write-Host "✅ WordPress database created"
+```
+
+#### Secure MariaDB Installation
+
+```powershell
+# Create secure configuration
+$mariaConfig = @"
+[mysqld]
+# Basic Settings
+bind-address = 127.0.0.1
+port = 3306
+datadir = C:/Program Files/MariaDB 10.11/data
+
+# Performance Settings
+innodb_buffer_pool_size = 1G
+innodb_log_file_size = 256M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+
+# Security Settings
+skip-name-resolve
+sql_mode = STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
+
+# Character Set
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# Logging
+log-error = C:/Program Files/MariaDB 10.11/data/error.log
+slow_query_log = 1
+slow_query_log_file = C:/Program Files/MariaDB 10.11/data/slow.log
+long_query_time = 2
+"@
+
+$mariaConfig | Out-File -FilePath "C:\Program Files\MariaDB 10.11\data\my.ini" -Encoding UTF8
+```
+
+### Step 4: Setup NSSM Service Manager
+
+#### Extract and Configure NSSM
+
+```powershell
+# Extract NSSM
+$nssmZip = "$env:TEMP\nssm-2.24.zip"
+Expand-Archive -Path $nssmZip -DestinationPath "$env:TEMP\nssm-temp" -Force
+
+# Copy appropriate version
+$nssmSource = "$env:TEMP\nssm-temp\nssm-2.24\win64\nssm.exe"
+Copy-Item $nssmSource "C:\Tools\NSSM\nssm.exe"
+
+# Add NSSM to PATH
+$currentPath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
+if ($currentPath -notlike "*C:\Tools\NSSM*") {
+    $newPath = $currentPath + ";C:\Tools\NSSM"
+    [Environment]::SetEnvironmentVariable("PATH", $newPath, [EnvironmentVariableTarget]::Machine)
+    Write-Host "✅ NSSM added to system PATH"
+}
+```
+
+#### Create PHP-FPM Service
+
+```powershell
+# Install PHP as a service
+& "C:\Tools\NSSM\nssm.exe" install PHP-FPM "C:\Tools\PHP\php-cgi.exe"
+& "C:\Tools\NSSM\nssm.exe" set PHP-FPM Parameters "-b 127.0.0.1:9000"
+& "C:\Tools\NSSM\nssm.exe" set PHP-FPM AppDirectory "C:\Tools\PHP"
+& "C:\Tools\NSSM\nssm.exe" set PHP-FPM DisplayName "PHP FastCGI Process Manager"
+& "C:\Tools\NSSM\nssm.exe" set PHP-FPM Description "PHP FastCGI Process Manager for WordPress"
+
+# Configure service recovery
+& "C:\Tools\NSSM\nssm.exe" set PHP-FPM AppExit Default Restart
+& "C:\Tools\NSSM\nssm.exe" set PHP-FPM AppRestartDelay 5000
+
+# Start PHP-FPM service
+& "C:\Tools\NSSM\nssm.exe" start PHP-FPM
+Write-Host "✅ PHP-FPM service created and started"
+```
+
+## Setup Instructions
+
+<Tabs>
+  <TabItem value="Setting Up PHP 7.X" label="Setting Up PHP 7.X" default>
+
+**Setting Up PHP 7.X:**
+
+1. Create a Directory in your C:\ for Tools IE. C:\Tools
+2. Create two subdirectories in Tools
+    2.1 NSSM
+    2.2 php 
+3. Extract php-7.xx insides to another directory
+4. Extract NSSM.exe from 
+
+    ```css
+    \nssm-2.24\win64
+    ``` 
+    
+    to 
+
+    ```css
+    C:\Tools\NSSM
+    ```
+
+ie. C:\Tools\php
+
+Add it to the enviroment variable paths
+1. Search Advanced System Settings
+ 
+ ![image](https://user-images.githubusercontent.com/35183970/213555428-c619d95f-58c6-4061-98a5-18b2e32bed7e.png) 
+
+2. Select Enviroment Variables
+
+![image](https://user-images.githubusercontent.com/35183970/213555578-278734bc-3658-40d8-ab41-215bbd49b9d8.png)
+
+3. Select System Variables Path by double clicking
+
+![image](https://user-images.githubusercontent.com/35183970/213555654-d7bc0204-cedc-4de2-853e-7bdc3fc2b645.png)
+
+4. Add a New Path and type 
+
+```css
+C:\Tools\php
+```
+5. Add another new path this time for NSSM 
+
+```css
+C:\Tools\NSSM
+```
+
+6. Select OK
+7. Select OK again
+8. Then Select OK to cloe the systemp properties box
+9. Close all Powershells and Terminal Windows So these settings Save
+
+Uncomment These Settings
+IE. Removing # from before each line
+You can Search in Your Text Editor by Clicking CTRL+ F
+
+```
+*PHP.ini Settings*
+
+    Navigate to the “increase memory_limit” line in the file and change the value from 128M to 512MB.
+    The next step is to uncomment the following lines by removing ‘;’ before the lines. For example the “;extionsion_dir=ext” should become “extionsion_dir = ext”.
+    Similarly uncomment the following lines by removing ‘;’ from the beginning of the line.
+
+extension=bz2
+extension=curl
+extension=ffi
+extension=fileinfo
+extension=gd2
+extension=gettext
+extension=gmp
+extension=intl
+extension=mbstring
+extension=exif
+extension=mysqli
+extension=odbc
+extension=openssl
+extension=pdo_mysql
+extension=pdo_odbc
+extension=pdo_sqlite
+```
+
+
+**Setting up PHP-CGI:**
+
+1. Open up an Administrative Powershell.
+2. type inside that powershell 
+
+```css
+NSSM install PHP
+```
+
+3. Add to Path 
+   
+   3.1 
+   ```css
+   C:\Tools\php\php-cgi.exe
+   ```
+   
+   Add to Startup Dirctory
+    
+    3.2 
+    ```css
+    C:\Tools\php
+    ```
+   
+   Add to Argument
+    
+    3.3 
+
+    ```css
+    -b 127.0.0.1:9000
+    ```
+
+4. Click Save
+5. Start the Service
+
+   ```css
+   nssm Start php
+   ```
+
+  </TabItem>
+  <TabItem value="MariaDB Setup" label="MariaDB Setup">
+
+**MariaDB Setup:**
+
+
+*RUN THE GUI MSI Installer*
+
+1.TUTORIAL (FOLLOW STEPS 1-4)
+       
+  [MariaDB Install Guide](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbWl1SGRXNEMtTUFldVh2eGEweURDWm9MOUVNQXxBQ3Jtc0tsZk5HTFhCUm13eVF0M2p5QXlIREh5cWVFT3FHcnVTZkhDZ0ZUT01ZOWhiWWl2U1Y3bmN4bW9PdTRSSjdFSFdQNmVDdE1VWUtaamh4RE5kdTJhZHRhbnBreThjZFZVOFdKTWpPNGEwSUdma2YtZXhMTQ&q=https%3A%2F%2Fmariadb.org%2Fdownload%2F%3Ft%3Dmariadb%26p%3Dmariadb%26r%3D10.11.1%26os%3Dwindows%26cpu%3Dx86_64%26pkg%3Dmsi%26m%3Dacorn&v=0A03C_NlMy0)
+
+2. TYPE MARIADB INSIDE YOUR SEARCH BAR
+
+![image](https://user-images.githubusercontent.com/35183970/213558042-716e6651-39f1-4516-aead-341be0182cf9.png)
+
+3. TYPE THE PASSWORD YOU CREATED in your installation
+4.THEN Edit To Your liking
+
+```css
+CREATE DATABASE wordpress;
+use wordpress;
+CREATE USER 'user'@'localhost' IDENTIFIED BY 'pass12345678?';
+GRANT ALL ON *.* TO 'user'@'localhost';
+flush privileges;
+```
+
+5. **If you cant remember your password for your MYSQL User* Use this command**
+
+```css
+DROP USER 'devilsdesigns'@'localhost';
+```
+
+**Then re-enter this below**
+
+```
+use wordpress;
+CREATE USER 'user'@'localhost' IDENTIFIED BY 'pass12345678?';
+GRANT ALL ON *.* TO 'user'@'localhost';
+flush privileges;
+```
+
+  </TabItem>
+  <TabItem value="Setting up Caddy" label="Setting up Caddy">
+
+**Setting up Caddy:**
+
+**Caddyfile Download**
+
+[Wordpress Caddyfile](https://github.com/DevilsDesigns/Youtube-Docs/blob/main/Caddy-Examples/Wordpress/Caddyfile)
+
+**Running Caddy inside the Caddy.exe Directory**
+
+1. 
+```css
+cd C:\Caddy\Directory
+```
+
+    ie. cd C:\Tools\Caddy
+
+2. Running Caddy Manually
+3. 
+```css
+./caddy run --config Caddy
+```
+
+4. **Accept both permissions if a windows Pops up**
+
+  </TabItem>
+</Tabs>
+
+<BuyMeACoffeeButton />
