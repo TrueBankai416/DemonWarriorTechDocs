@@ -159,7 +159,7 @@ dir "%TEMP%\caddy_windows_amd64.zip" 2>nul && echo ✅ Caddy downloaded || echo 
 @echo off
 echo Downloading all components...
 curl -L -o "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" "https://windows.php.net/downloads/releases/latest/php-8.3-nts-Win32-vs16-x64.zip"
-curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi"
+curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
 curl -L -o "%TEMP%\wordpress-latest.zip" "https://wordpress.org/latest.zip"
 curl -L -o "%TEMP%\nssm-latest.zip" "https://nssm.cc/release/nssm-2.24.zip"
 curl -L -o "%TEMP%\caddy_windows_amd64.zip" "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
@@ -267,7 +267,6 @@ echo ; CGI Configuration >> "C:\Tools\PHP\php.ini"
 echo cgi.force_redirect = 0 >> "C:\Tools\PHP\php.ini"
 echo cgi.fix_pathinfo = 1 >> "C:\Tools\PHP\php.ini"
 echo fastcgi.impersonate = 1 >> "C:\Tools\PHP\php.ini"
-)
 echo ✅ PHP configuration updated
 ```
 
