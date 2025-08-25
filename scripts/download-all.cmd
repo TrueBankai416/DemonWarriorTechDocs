@@ -46,32 +46,104 @@ echo.
 echo Files saved to: %TEMP%
 echo ================================================================
 
-REM Ask user if they want to proceed with installation
+REM Check what's already installed
 echo.
-set /p install="Would you like to proceed with installation now? (y/N): "
+echo Checking existing installations...
+
+REM Check PHP
+set PHP_INSTALLED=false
+php -v >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ PHP is already installed and in PATH
+    set PHP_INSTALLED=true
+) else (
+    if exist "C:\Tools\PHP\php.exe" (
+        echo ⚠️  PHP found at C:\Tools\PHP but not in PATH
+        set PHP_INSTALLED=true
+    ) else (
+        echo ❌ PHP not installed
+    )
+)
+
+REM Check MariaDB
+set MARIA_INSTALLED=false
+sc query MariaDB >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ MariaDB service found
+    set MARIA_INSTALLED=true
+) else (
+    REM Check if MariaDB is installed but service not created
+    if exist "C:\Program Files\MariaDB*" (
+        echo ⚠️  MariaDB installation found but service not configured
+        set MARIA_INSTALLED=true
+    ) else (
+        echo ❌ MariaDB not installed
+    )
+)
+
+REM Check WordPress
+set WP_INSTALLED=false
+if exist "C:\inetpub\wwwroot\wordpress\wp-config.php" (
+    echo ✅ WordPress installation found
+    set WP_INSTALLED=true
+) else if exist "C:\Tools\WordPress\wp-config.php" (
+    echo ✅ WordPress installation found
+    set WP_INSTALLED=true
+) else if exist "C:\inetpub\wwwroot\wordpress\index.php" (
+    echo ⚠️  WordPress files found but not configured
+    set WP_INSTALLED=true
+) else if exist "C:\Tools\WordPress\index.php" (
+    echo ⚠️  WordPress files found but not configured
+    set WP_INSTALLED=true
+) else (
+    echo ❌ WordPress not installed
+)
+
+REM Determine what needs to be installed
+set NEEDS_INSTALL=
+if "%PHP_INSTALLED%"=="false" set NEEDS_INSTALL=%NEEDS_INSTALL% PHP
+if "%MARIA_INSTALLED%"=="false" set NEEDS_INSTALL=%NEEDS_INSTALL% MariaDB
+if "%WP_INSTALLED%"=="false" set NEEDS_INSTALL=%NEEDS_INSTALL% WordPress
+
+echo.
+if "%NEEDS_INSTALL%"=="" (
+    echo 🎉 All components are already installed!
+    echo You may still want to install Caddy using the dedicated guide.
+    set install=n
+) else (
+    echo Components to install:%NEEDS_INSTALL%
+    set /p install="Would you like to install the missing components? (y/N): "
+)
 if /i "%install%"=="y" (
     echo.
     echo Starting installation process...
     echo.
     
-    REM Install PHP
-    echo Installing PHP...
-    curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd | cmd
-    if %ERRORLEVEL% EQU 0 (
-        echo ✅ PHP installation completed
+    REM Install only missing components
+    if "%PHP_INSTALLED%"=="false" (
+        echo Installing PHP...
+        curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd | cmd
+        if %ERRORLEVEL% EQU 0 (
+            echo ✅ PHP installation completed
+        ) else (
+            echo ❌ PHP installation failed
+        )
+        echo.
     ) else (
-        echo ❌ PHP installation failed
+        echo ⏭️  Skipping PHP installation (already installed)
     )
     
-    echo.
-    
-    REM Install MariaDB
-    echo Installing MariaDB...
-    curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd | cmd
-    if %ERRORLEVEL% EQU 0 (
-        echo ✅ MariaDB installation completed
+    if "%MARIA_INSTALLED%"=="false" (
+        echo Installing MariaDB...
+        curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd | cmd
+        if %ERRORLEVEL% EQU 0 (
+            echo ✅ MariaDB installation completed
+        ) else (
+            echo ❌ MariaDB installation failed
+        )
+        echo.
     ) else (
-        echo ❌ MariaDB installation failed
+        echo ⏭️  Skipping MariaDB installation (already installed)
     )
     
     echo.

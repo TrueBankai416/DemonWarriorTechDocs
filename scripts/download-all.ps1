@@ -57,32 +57,104 @@ Write-Host ""
 Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
 Write-Host "================================================================" -ForegroundColor Cyan
 
-# Ask user if they want to proceed with installation
+# Check what's already installed
 Write-Host ""
-$install = Read-Host "Would you like to proceed with installation now? (y/N)"
+Write-Host "Checking existing installations..." -ForegroundColor Yellow
+
+# Check PHP
+$phpInstalled = $false
+try {
+    $phpVersion = php -v 2>$null
+    if ($phpVersion -and $phpVersion -match "PHP (\d+\.\d+\.\d+)") {
+        Write-Host "✅ PHP $($matches[1]) is already installed" -ForegroundColor Green
+        $phpInstalled = $true
+    }
+} catch {
+    if (Test-Path "C:\Tools\PHP\php.exe") {
+        Write-Host "⚠️  PHP found at C:\Tools\PHP but not in PATH" -ForegroundColor Yellow
+        $phpInstalled = $true
+    } else {
+        Write-Host "❌ PHP not installed" -ForegroundColor Red
+    }
+}
+
+# Check MariaDB
+$mariaInstalled = $false
+try {
+    $mariaService = Get-Service -Name "MariaDB*" -ErrorAction SilentlyContinue
+    if ($mariaService) {
+        Write-Host "✅ MariaDB service found ($($mariaService.Name))" -ForegroundColor Green
+        $mariaInstalled = $true
+    } else {
+        # Check if MariaDB is installed but service not created
+        if (Test-Path "C:\Program Files\MariaDB*") {
+            Write-Host "⚠️  MariaDB installation found but service not configured" -ForegroundColor Yellow
+            $mariaInstalled = $true
+        } else {
+            Write-Host "❌ MariaDB not installed" -ForegroundColor Red
+        }
+    }
+} catch {
+    Write-Host "❌ MariaDB not installed" -ForegroundColor Red
+}
+
+# Check WordPress
+$wpInstalled = $false
+if (Test-Path "C:\inetpub\wwwroot\wordpress\wp-config.php" -or Test-Path "C:\Tools\WordPress\wp-config.php") {
+    Write-Host "✅ WordPress installation found" -ForegroundColor Green
+    $wpInstalled = $true
+} elseif (Test-Path "C:\inetpub\wwwroot\wordpress\index.php" -or Test-Path "C:\Tools\WordPress\index.php") {
+    Write-Host "⚠️  WordPress files found but not configured" -ForegroundColor Yellow
+    $wpInstalled = $true
+} else {
+    Write-Host "❌ WordPress not installed" -ForegroundColor Red
+}
+
+# Determine what needs to be installed
+$needsInstall = @()
+if (-not $phpInstalled) { $needsInstall += "PHP" }
+if (-not $mariaInstalled) { $needsInstall += "MariaDB" }
+if (-not $wpInstalled) { $needsInstall += "WordPress" }
+
+Write-Host ""
+if ($needsInstall.Count -eq 0) {
+    Write-Host "🎉 All components are already installed!" -ForegroundColor Green
+    Write-Host "You may still want to install Caddy using the dedicated guide." -ForegroundColor Yellow
+    $install = "n"
+} else {
+    Write-Host "Components to install: $($needsInstall -join ', ')" -ForegroundColor Yellow
+    $install = Read-Host "Would you like to install the missing components? (y/N)"
+}
 if ($install -match '^[Yy]') {
     Write-Host ""
     Write-Host "Starting installation process..." -ForegroundColor Green
     Write-Host ""
     
-    # Install PHP
-    Write-Host "Installing PHP..." -ForegroundColor Yellow
-    try {
-        Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd").Content
-        Write-Host "✅ PHP installation completed" -ForegroundColor Green
-    } catch {
-        Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
+    # Install only missing components
+    if (-not $phpInstalled) {
+        Write-Host "Installing PHP..." -ForegroundColor Yellow
+        try {
+            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd").Content
+            Write-Host "✅ PHP installation completed" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host ""
+    } else {
+        Write-Host "⏭️  Skipping PHP installation (already installed)" -ForegroundColor Cyan
     }
     
-    Write-Host ""
-    
-    # Install MariaDB
-    Write-Host "Installing MariaDB..." -ForegroundColor Yellow
-    try {
-        Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd").Content
-        Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
-    } catch {
-        Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
+    if (-not $mariaInstalled) {
+        Write-Host "Installing MariaDB..." -ForegroundColor Yellow
+        try {
+            Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd").Content
+            Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host ""
+    } else {
+        Write-Host "⏭️  Skipping MariaDB installation (already installed)" -ForegroundColor Cyan
     }
     
     Write-Host ""
