@@ -85,6 +85,32 @@ The CLI download commands below use built-in `curl` and `tar` commands available
 **For older Windows versions**, use the **Manual Download Alternative** links provided for each component.
 :::
 
+## 🚀 Quick Start - Remote Execution (Recommended)
+
+**Download all components with a single command:**
+
+**CMD Users:**
+```cmd
+curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/download-all.cmd | cmd
+```
+
+**PowerShell Users:**
+```powershell
+iex (iwr "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/download-all.ps1").Content
+```
+
+:::tip Why Remote Execution?
+- ✅ No copy-paste errors or syntax issues
+- ✅ Always uses the latest script versions
+- ✅ Automatically gets latest software versions
+- ✅ Single command downloads everything
+- ✅ Scripts are maintained in this repository
+:::
+
+## 📋 Manual Download Options
+
+If you prefer to see the individual commands or need to download components separately:
+
 #### PHP 8.x (Latest Stable)
 Download PHP 8.x (CLI - Always Latest)
 ```cmd
@@ -198,7 +224,30 @@ echo NSSM: %NSSM_VERSION%
 
 ## Installation Process
 
-### Step 1: Create Directory Structure
+## 🚀 Quick Start - Remote Installation (Recommended)
+
+**Install components with single commands:**
+
+**Install PHP:**
+```cmd
+curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd | cmd
+```
+
+**Install MariaDB:**
+```cmd
+curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd | cmd
+```
+
+:::tip Remote Installation Benefits
+- ✅ No complex copy-paste operations
+- ✅ Automated error handling
+- ✅ Consistent configuration
+- ✅ Always up-to-date scripts
+:::
+
+## 📋 Manual Installation Steps
+
+If you prefer to run commands manually or need to customize the installation:
 
 Create main tools directory
 
