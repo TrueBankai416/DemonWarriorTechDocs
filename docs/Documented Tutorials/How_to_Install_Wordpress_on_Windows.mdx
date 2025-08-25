@@ -76,14 +76,14 @@ Before beginning the installation, ensure your system meets all requirements:
 ### Step 1: Download Required Components
 
 #### PHP 8.x (Latest Stable)
-
+Download PHP 8.x
 ```powershell
-# Download PHP 8.x
 $phpUrl = "https://windows.php.net/downloads/releases/php-8.3.0-nts-Win32-vs16-x64.zip"
 $phpOutput = "$env:TEMP\php-8.3.0-nts-Win32-vs16-x64.zip"
 Invoke-WebRequest -Uri $phpUrl -OutFile $phpOutput
-
-# Verify download
+```
+Verify download
+```
 Get-FileHash $phpOutput -Algorithm SHA256
 ```
 
@@ -93,9 +93,9 @@ Get-FileHash $phpOutput -Algorithm SHA256
 - Download **ZIP** package
 
 #### MariaDB (Latest Stable)
+Download MariaDB
 
 ```powershell
-# Download MariaDB
 $mariaUrl = "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
 $mariaOutput = "$env:TEMP\mariadb-10.11.6-winx64.msi"
 Invoke-WebRequest -Uri $mariaUrl -OutFile $mariaOutput
@@ -107,8 +107,9 @@ Invoke-WebRequest -Uri $mariaUrl -OutFile $mariaOutput
 
 #### WordPress (Latest Version)
 
+Download WordPress
+
 ```powershell
-# Download WordPress
 $wpUrl = "https://wordpress.org/latest.zip"
 $wpOutput = "$env:TEMP\wordpress-latest.zip"
 Invoke-WebRequest -Uri $wpUrl -OutFile $wpOutput
@@ -118,8 +119,9 @@ Invoke-WebRequest -Uri $wpUrl -OutFile $wpOutput
 
 #### NSSM (Service Manager)
 
+Download NSSM
+
 ```powershell
-# Download NSSM
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmOutput = "$env:TEMP\nssm-2.24.zip"
 Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmOutput
@@ -129,8 +131,8 @@ Invoke-WebRequest -Uri $nssmUrl -OutFile $nssmOutput
 
 #### Caddy Web Server
 
+Download Caddy
 ```powershell
-# Download Caddy
 $caddyUrl = "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
 $caddyOutput = "$env:TEMP\caddy_windows_amd64.zip"
 Invoke-WebRequest -Uri $caddyUrl -OutFile $caddyOutput
@@ -140,8 +142,9 @@ Invoke-WebRequest -Uri $caddyUrl -OutFile $caddyOutput
 
 ### Step 2: Verify Downloads
 
+Verify all downloads exist
+
 ```powershell
-# Verify all downloads exist
 $downloads = @(
     "$env:TEMP\php-8.3.0-nts-Win32-vs16-x64.zip",
     "$env:TEMP\mariadb-10.11.6-winx64.msi",
@@ -164,12 +167,15 @@ foreach ($file in $downloads) {
 
 ### Step 1: Create Directory Structure
 
+Create main tools directory
+
 ```powershell
-# Create main tools directory
 $toolsPath = "C:\Tools"
 New-Item -ItemType Directory -Path $toolsPath -Force
+```
 
-# Create subdirectories
+Create subdirectories
+```powershell
 $directories = @(
     "$toolsPath\PHP",
     "$toolsPath\NSSM", 
@@ -188,19 +194,22 @@ foreach ($dir in $directories) {
 
 #### Extract and Setup PHP
 
+Extract PHP
+
 ```powershell
-# Extract PHP
 $phpZip = "$env:TEMP\php-8.3.0-nts-Win32-vs16-x64.zip"
 Expand-Archive -Path $phpZip -DestinationPath "C:\Tools\PHP" -Force
+```
 
-# Copy php.ini template
+Copy php.ini template
+```
 Copy-Item "C:\Tools\PHP\php.ini-production" "C:\Tools\PHP\php.ini"
 ```
 
 #### Configure PHP Settings
 
+Create optimized php.ini configuration
 ```powershell
-# Create optimized php.ini configuration
 $phpIniPath = "C:\Tools\PHP\php.ini"
 $phpConfig = @"
 ; PHP Configuration for WordPress
@@ -259,8 +268,9 @@ $phpConfig | Out-File -FilePath $phpIniPath -Encoding UTF8 -Append
 
 #### Create PHP Directories
 
+Create required directories
+
 ```powershell
-# Create required directories
 $phpDirs = @(
     "C:\Tools\PHP\logs",
     "C:\Tools\PHP\tmp",
@@ -274,8 +284,9 @@ foreach ($dir in $phpDirs) {
 
 #### Add PHP to System PATH
 
+Add PHP to system PATH
+
 ```powershell
-# Add PHP to system PATH
 $currentPath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
 if ($currentPath -notlike "*C:\Tools\PHP*") {
     $newPath = $currentPath + ";C:\Tools\PHP"
@@ -291,8 +302,9 @@ if ($currentPath -notlike "*C:\Tools\PHP*") {
 
 #### Install MariaDB
 
+Install MariaDB silently
+
 ```powershell
-# Install MariaDB silently
 $mariaInstaller = "$env:TEMP\mariadb-10.11.6-winx64.msi"
 $installArgs = @(
     "/i", $mariaInstaller,
@@ -308,49 +320,65 @@ Write-Host "✅ MariaDB installed"
 
 #### Configure MariaDB
 
-```powershell
-# Wait for MariaDB service to start
-Start-Sleep -Seconds 10
+Wait for MariaDB service to start
 
-# Create WordPress database and user
+```powershell
+Start-Sleep -Seconds 10
+```
+
+Create WordPress database and user
+
+```powershell
 $mysqlCommands = @"
 CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'WordPressPassword123!';
 GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
 FLUSH PRIVILEGES;
 "@
+```
 
-# Execute MySQL commands
+```
+Execute MySQL commands
 $mysqlCommands | & "C:\Program Files\MariaDB 10.11\bin\mysql.exe" -u root -p"SecureRootPassword123!"
 Write-Host "✅ WordPress database created"
 ```
 
 #### Secure MariaDB Installation
 
+Create secure configuration
+
 ```powershell
-# Create secure configuration
 $mariaConfig = @"
 [mysqld]
 # Basic Settings
 bind-address = 127.0.0.1
 port = 3306
 datadir = C:/Program Files/MariaDB 10.11/data
+```
 
+```powershell
 # Performance Settings
 innodb_buffer_pool_size = 1G
 innodb_log_file_size = 256M
 innodb_flush_log_at_trx_commit = 2
 innodb_flush_method = O_DIRECT
+```
 
-# Security Settings
+Security Settings
+```powershell
 skip-name-resolve
 sql_mode = STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO
+```
+Character Set
 
-# Character Set
+```
 character-set-server = utf8mb4
 collation-server = utf8mb4_unicode_ci
+```
 
-# Logging
+Logging
+
+```
 log-error = C:/Program Files/MariaDB 10.11/data/error.log
 slow_query_log = 1
 slow_query_log_file = C:/Program Files/MariaDB 10.11/data/slow.log
@@ -363,17 +391,21 @@ $mariaConfig | Out-File -FilePath "C:\Program Files\MariaDB 10.11\data\my.ini" -
 ### Step 4: Setup NSSM Service Manager
 
 #### Extract and Configure NSSM
+Extract NSSM
 
 ```powershell
-# Extract NSSM
 $nssmZip = "$env:TEMP\nssm-2.24.zip"
 Expand-Archive -Path $nssmZip -DestinationPath "$env:TEMP\nssm-temp" -Force
+```
+Copy appropriate version
 
-# Copy appropriate version
+```
 $nssmSource = "$env:TEMP\nssm-temp\nssm-2.24\win64\nssm.exe"
 Copy-Item $nssmSource "C:\Tools\NSSM\nssm.exe"
+```
 
-# Add NSSM to PATH
+Add NSSM to PATH
+```
 $currentPath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
 if ($currentPath -notlike "*C:\Tools\NSSM*") {
     $newPath = $currentPath + ";C:\Tools\NSSM"
@@ -594,5 +626,6 @@ cd C:\Caddy\Directory
 
   </TabItem>
 </Tabs>
+
 
 <BuyMeACoffeeButton />
