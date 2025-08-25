@@ -99,19 +99,30 @@ if "%PHP_INSTALLED%"=="false" (
 REM Download MariaDB only if needed
 if "%MARIA_INSTALLED%"=="false" (
     echo.
-    echo [2/?] Getting MariaDB LTS version...
+    echo [2/?] Getting latest MariaDB version...
     
     REM Check if already downloaded
     if exist "%TEMP%\mariadb-latest-winx64.msi" (
         echo ⚡ MariaDB already downloaded
     ) else (
-        set MARIA_VERSION=10.11.6
-        echo Using stable MariaDB LTS: %MARIA_VERSION%
-        curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
+        echo Fetching latest MariaDB version...
+        REM Get latest MariaDB version using PowerShell (CMD doesn't have good JSON parsing)
+        for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "try { $releases = Invoke-RestMethod 'https://api.github.com/repos/MariaDB/server/releases'; $latest = $releases ^| Where-Object { $_.prerelease -eq $false -and $_.tag_name -match '^\d+\.\d+\.\d+$' } ^| Select-Object -First 1; if ($latest) { Write-Output $latest.tag_name } else { Write-Output '11.4.3' } } catch { Write-Output '11.4.3' }"`) do set MARIA_VERSION=%%i
+        
+        echo Latest MariaDB version: %MARIA_VERSION%
+        echo Downloading from MariaDB archive...
+        curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://archive.mariadb.org/mariadb-%MARIA_VERSION%/winx64-packages/mariadb-%MARIA_VERSION%-winx64.msi"
         if %ERRORLEVEL% EQU 0 (
             echo ✅ Downloaded MariaDB %MARIA_VERSION%
         ) else (
-            echo ❌ MariaDB download failed
+            echo ⚠️  Archive download failed, trying fallback...
+            set MARIA_VERSION=11.4.3
+            curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://archive.mariadb.org/mariadb-11.4.3/winx64-packages/mariadb-11.4.3-winx64.msi"
+            if %ERRORLEVEL% EQU 0 (
+                echo ✅ Downloaded MariaDB %MARIA_VERSION% (fallback)
+            ) else (
+                echo ❌ MariaDB download failed
+            )
         )
     )
 )

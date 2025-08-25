@@ -102,21 +102,42 @@ if (-not $phpInstalled) {
 # Download MariaDB only if needed
 if (-not $mariaInstalled) {
     Write-Host ""
-    Write-Host "[2/?] Getting MariaDB LTS version..." -ForegroundColor Green
+    Write-Host "[2/?] Getting latest MariaDB version..." -ForegroundColor Green
     
     # Check if already downloaded
     if (Test-Path "$env:TEMP\mariadb-latest-winx64.msi") {
         Write-Host "⚡ MariaDB already downloaded" -ForegroundColor Cyan
     } else {
         try {
-            # Use known working MariaDB LTS version due to API complexity
-            $mariaVersion = "10.11.6"
-            $mariaUrl = "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
-            Write-Host "Using stable MariaDB LTS: $mariaVersion" -ForegroundColor White
-            Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
-            Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+            # Get latest MariaDB version from GitHub releases
+            Write-Host "Fetching latest MariaDB version..." -ForegroundColor Yellow
+            $releases = Invoke-RestMethod "https://api.github.com/repos/MariaDB/server/releases"
+            $latestRelease = $releases | Where-Object { $_.prerelease -eq $false -and $_.tag_name -match "^\d+\.\d+\.\d+$" } | Select-Object -First 1
+            
+            if ($latestRelease) {
+                $mariaVersion = $latestRelease.tag_name
+                Write-Host "Latest MariaDB version: $mariaVersion" -ForegroundColor White
+                
+                # Try direct download from MariaDB mirror
+                $mariaUrl = "https://archive.mariadb.org/mariadb-$mariaVersion/winx64-packages/mariadb-$mariaVersion-winx64.msi"
+                Write-Host "Downloading from: $mariaUrl" -ForegroundColor Gray
+                Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
+                Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+            } else {
+                throw "Could not determine latest MariaDB version"
+            }
         } catch {
-            Write-Host "❌ MariaDB download failed: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "⚠️  Dynamic download failed, trying fallback..." -ForegroundColor Yellow
+            try {
+                # Fallback to known working version
+                $mariaVersion = "11.4.3"
+                $mariaUrl = "https://archive.mariadb.org/mariadb-11.4.3/winx64-packages/mariadb-11.4.3-winx64.msi"
+                Write-Host "Using fallback MariaDB version: $mariaVersion" -ForegroundColor White
+                Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
+                Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+            } catch {
+                Write-Host "❌ MariaDB download failed: $($_.Exception.Message)" -ForegroundColor Red
+            }
         }
     }
 }
