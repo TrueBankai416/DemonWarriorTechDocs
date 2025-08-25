@@ -64,24 +64,24 @@ Before beginning the installation, ensure your system meets the following requir
 ### Step 2: Install Caddy
 
 1. **Create Tools Directory**:
-   # Create directory structure
+   Create directory structure
    ```powershell
    New-Item -ItemType Directory -Path "C:\Tools\Caddy" -Force
    ```
 
 2. **Extract and Install**:
-   # Move downloaded caddy.exe to Tools directory
+   Move downloaded caddy.exe to Tools directory
 ```powershell
    Move-Item "Downloads\caddy.exe" "C:\Tools\Caddy\caddy.exe"
 ```   
-   # Add to system PATH
+   Add to system PATH
 
 ```   $env:PATH += ";C:\Tools\Caddy"
    [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [EnvironmentVariableTarget]::Machine)
    ```
 
 3. **Verify Installation**:
-   # Check Caddy version
+   Check Caddy version
 
    ```powershell
    caddy version
@@ -92,13 +92,15 @@ Before beginning the installation, ensure your system meets the following requir
 ### Step 3: Basic Configuration
 
 1. **Create Caddyfile**:
-   ```powershell
-   # Navigate to Caddy directory
-   cd C:\Tools\Caddy
+   Navigate to Caddy directory
    
-   # Create basic Caddyfile
+```powershell
+   cd C:\Tools\Caddy
+```   
+   Create basic Caddyfile
+```   
    New-Item -ItemType File -Path "Caddyfile"
-   ```
+ ```
 
 2. **Basic Caddyfile Example**:
    ```caddyfile
@@ -116,12 +118,12 @@ Before beginning the installation, ensure your system meets the following requir
 ### Step 4: Running Caddy
 
 #### Manual Execution
-
+ Navigate to Caddy directory
 ```powershell
-# Navigate to Caddy directory
 cd C:\Tools\Caddy
-
-# Run Caddy with configuration
+```
+ Run Caddy with configuration
+```
 ./caddy run --config Caddyfile
 ```
 
@@ -133,14 +135,18 @@ cd C:\Tools\Caddy
 
 For production use, install Caddy as a Windows service:
 
+Install as Windows service
+
 ```powershell
-# Install as Windows service
 caddy run --config C:\Tools\Caddy\Caddyfile --service install
-
-# Start the service
+```
+ Start the service
+```powershell
 caddy start --service
+```
+ Check service status
 
-# Check service status
+```powershell
 caddy status --service
 ```
 
@@ -237,33 +243,45 @@ If you're using Cloudflare for DNS management:
 
 ### Windows Service Commands
 
-```powershell
 # Start Caddy service
+
+```powershell
 net start caddy
+```
 
-# Stop Caddy service
+ Stop Caddy service
+```
 net stop caddy
+```
+Restart Caddy service
 
-# Restart Caddy service
+```
 net stop caddy && net start caddy
+```
+ Check service status
 
-# Check service status
+```
 sc query caddy
 ```
 
 ### Configuration Management
 
+Test configuration before applying
 ```powershell
-# Test configuration before applying
 caddy validate --config C:\Tools\Caddy\Caddyfile
-
-# Format Caddyfile
+```
+ Format Caddyfile
+```
 caddy fmt --overwrite C:\Tools\Caddy\Caddyfile
-
-# Reload configuration
+```
+  Reload configuration
+```
 caddy reload --config C:\Tools\Caddy\Caddyfile
+```
 
-# View current configuration
+ View current configuration
+
+```
 caddy config --config C:\Tools\Caddy\Caddyfile
 ```
 
@@ -273,59 +291,74 @@ caddy config --config C:\Tools\Caddy\Caddyfile
 
 #### Issue 1: Service Won't Start
 
+Check Windows Event Logs
+
 ```powershell
-# Check Windows Event Logs
 Get-EventLog -LogName Application -Source Caddy -Newest 10
+```
 
 # Check service status
+```
 sc query caddy
+```
 
 # Common causes:
 # - Configuration syntax errors
 # - Permission issues
 # - Port conflicts
-```
 
 **Solution:**
+Validate configuration
 ```powershell
-# Validate configuration
 caddy validate --config C:\Tools\Caddy\Caddyfile
-
-# Check file permissions
+```
+ Check file permissions
+```
 Get-Acl C:\Tools\Caddy\Caddyfile
+```
 
 # Test manual execution
+Move to Caddy.exe Folder Directory
+
+```
 cd C:\Tools\Caddy
+```
+
+Run Caddy command inside Caddy folder
+```
 ./caddy run --config Caddyfile
 ```
 
 #### Issue 2: Firewall Blocking
+ Check Windows Firewall rules
 
 ```powershell
-# Check Windows Firewall rules
 Get-NetFirewallRule -DisplayName "*Caddy*"
+```
 
-# Add firewall rules if needed
+ Add firewall rules if needed
+
+```
 New-NetFirewallRule -DisplayName "Caddy HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
 New-NetFirewallRule -DisplayName "Caddy HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
 ```
 
 #### Issue 3: Certificate Issues
-
+ Check certificate status
 ```powershell
-# Check certificate status
 caddy list-certificates
+```
 
-# Clear certificate cache if needed
+ Clear certificate cache if needed
+```
 Remove-Item -Recurse -Force "$env:APPDATA\Caddy\certificates"
 ```
 
 ## Security Best Practices
 
 ### File Permissions
-
+ Secure Caddy directory
 ```powershell
-# Secure Caddy directory
 $acl = Get-Acl "C:\Tools\Caddy"
 $acl.SetAccessRuleProtection($true, $false)
 $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators","FullControl","Allow")
@@ -334,12 +367,14 @@ Set-Acl "C:\Tools\Caddy" $acl
 ```
 
 ### Firewall Configuration
+ Enable Windows Firewall
 
 ```powershell
-# Enable Windows Firewall
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+```
+ Configure specific rules
 
-# Configure specific rules
+```
 New-NetFirewallRule -DisplayName "Caddy HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
 New-NetFirewallRule -DisplayName "Caddy HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
 ```
