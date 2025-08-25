@@ -299,7 +299,7 @@ if ($install -match '^[Yy]') {
     Write-Host "================================================================" -ForegroundColor Cyan
     Write-Host "Installation completed!" -ForegroundColor Green
     Write-Host "Next: Install Caddy using the dedicated guide at:" -ForegroundColor Yellow
-    Write-Host "https://demonwarriortechdocs.pages.dev/docs/Documented%20Tutorials/Caddy/Windows/Installing_Caddy_on_Windows" -ForegroundColor White
+    Write-Host "https://demonwarriortechdocs.pages.dev/docs/Documented%%20Tutorials/Caddy/Windows/Installing_Caddy_on_Windows" -ForegroundColor White
     Write-Host "================================================================" -ForegroundColor Cyan
 } else {
     Write-Host ""
