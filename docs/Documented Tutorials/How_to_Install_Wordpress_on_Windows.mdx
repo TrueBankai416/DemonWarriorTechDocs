@@ -85,7 +85,6 @@ Before beginning the installation, ensure your system meets all requirements:
 - Save to your Downloads folder or temp directory
 **Direct Links** (these update automatically):
 - [Latest PHP 8.3.x](https://windows.php.net/downloads/releases/latest/php-8.3-nts-Win32-vs16-x64.zip)
-- [Latest PHP 8.4.x](https://windows.php.net/downloads/releases/latest/php-8.4-nts-Win32-vs16-x64.zip)
 
 #### MariaDB (Latest Stable)
 
@@ -94,8 +93,8 @@ Before beginning the installation, ensure your system meets all requirements:
 - Select **Windows x64** MSI package
 - Download the installer to your Downloads folder
 
-**Direct Links** (these update automatically):
-- [Latest MariaDB LTS](https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi)
+**Direct Links** (example - version may change):
+- [MariaDB 10.11 LTS](https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi)
 
 #### WordPress (Latest Version)
 
@@ -166,8 +165,12 @@ foreach ($dir in $directories) {
 Extract PHP
 
 ```powershell
-# Update this path to match your downloaded PHP file
-$phpZip = "C:\Temp\php-8.3.24-nts-Win32-vs16-x64.zip"  # Update with your actual file path
+# Find your downloaded PHP file (works with any PHP 8.x version)
+$phpZip = Get-ChildItem "C:\Temp\php-8.*-nts-Win32-vs16-x64.zip" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
+if (-not $phpZip) {
+    Write-Error "PHP zip file not found in C:\Temp. Please check the file location."
+    exit 1
+}
 Write-Host "Extracting PHP from: $(Split-Path $phpZip -Leaf)"
 Expand-Archive -Path $phpZip -DestinationPath "C:\Tools\PHP" -Force
 ```
@@ -276,8 +279,12 @@ if ($currentPath -notlike "*C:\Tools\PHP*") {
 Install MariaDB silently
 
 ```powershell
-# Update this path to match your downloaded MariaDB installer
-$mariaInstaller = "C:\Temp\mariadb-10.11.6-winx64.msi"  # Update with your actual file path
+# Find your downloaded MariaDB installer (works with any version)
+$mariaInstaller = Get-ChildItem "C:\Temp\mariadb-*-winx64.msi" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
+if (-not $mariaInstaller) {
+    Write-Error "MariaDB installer not found in C:\Temp. Please check the file location."
+    exit 1
+}
 Write-Host "Installing MariaDB from: $(Split-Path $mariaInstaller -Leaf)"
 
 $installArgs = @(
@@ -376,16 +383,24 @@ Write-Host "✅ MariaDB configuration updated at: $mariaConfigPath"
 Extract NSSM
 
 ```powershell
-# Update this path to match your downloaded NSSM file
-$nssmZip = "C:\Temp\nssm-2.24.zip"  # Update with your actual file path
+# Find your downloaded NSSM file (works with any version)
+$nssmZip = Get-ChildItem "C:\Temp\nssm-*.zip" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
+if (-not $nssmZip) {
+    Write-Error "NSSM zip file not found in C:\Temp. Please check the file location."
+    exit 1
+}
 Write-Host "Extracting NSSM from: $(Split-Path $nssmZip -Leaf)"
 Expand-Archive -Path $nssmZip -DestinationPath "C:\Temp\nssm-temp" -Force
 ```
 Copy appropriate version
 
 ```powershell
-# Copy NSSM executable (adjust version number if different)
-$nssmSource = "C:\Temp\nssm-temp\nssm-2.24\win64\nssm.exe"
+# Find NSSM executable (works with any version)
+$nssmSource = Get-ChildItem "C:\Temp\nssm-temp\nssm-*\win64\nssm.exe" | Select-Object -First 1 -ExpandProperty FullName
+if (-not $nssmSource) {
+    Write-Error "NSSM executable not found in extracted files."
+    exit 1
+}
 Copy-Item $nssmSource "C:\Tools\NSSM\nssm.exe"
 Write-Host "✅ NSSM copied to C:\Tools\NSSM\"
 ```
