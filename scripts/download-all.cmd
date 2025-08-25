@@ -107,17 +107,17 @@ if "%MARIA_INSTALLED%"=="false" (
     ) else (
         echo Fetching latest MariaDB version...
         REM Get latest MariaDB version using PowerShell (CMD doesn't have good JSON parsing)
-        for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "try { $releases = Invoke-RestMethod 'https://api.github.com/repos/MariaDB/server/releases'; $latest = $releases ^| Where-Object { $_.prerelease -eq $false -and $_.tag_name -match '^\d+\.\d+\.\d+$' } ^| Select-Object -First 1; if ($latest) { Write-Output $latest.tag_name } else { Write-Output '11.4.3' } } catch { Write-Output '11.4.3' }"`) do set MARIA_VERSION=%%i
+        for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "try { $releases = Invoke-RestMethod 'https://api.github.com/repos/MariaDB/server/releases'; $latest = $releases ^| Where-Object { $_.prerelease -eq $false -and $_.tag_name -match '^\d+\.\d+\.\d+$' } ^| Select-Object -First 1; if ($latest) { Write-Output $latest.tag_name } else { Write-Output '12.0.2' } } catch { Write-Output '12.0.2' }"`) do set MARIA_VERSION=%%i
         
         echo Latest MariaDB version: %MARIA_VERSION%
-        echo Downloading from MariaDB archive...
-        curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://archive.mariadb.org/mariadb-%MARIA_VERSION%/winx64-packages/mariadb-%MARIA_VERSION%-winx64.msi"
+        echo Downloading from MariaDB mirror...
+        curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://mirror.its.dal.ca/mariadb//mariadb-%MARIA_VERSION%/winx64-packages/mariadb-%MARIA_VERSION%-winx64.msi"
         if %ERRORLEVEL% EQU 0 (
             echo ✅ Downloaded MariaDB %MARIA_VERSION%
         ) else (
-            echo ⚠️  Archive download failed, trying fallback...
-            set MARIA_VERSION=11.4.3
-            curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://archive.mariadb.org/mariadb-11.4.3/winx64-packages/mariadb-11.4.3-winx64.msi"
+            echo ⚠️  Mirror download failed, trying fallback...
+            set MARIA_VERSION=12.0.2
+            curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://mirror.its.dal.ca/mariadb//mariadb-12.0.2/winx64-packages/mariadb-12.0.2-winx64.msi"
             if %ERRORLEVEL% EQU 0 (
                 echo ✅ Downloaded MariaDB %MARIA_VERSION% (fallback)
             ) else (

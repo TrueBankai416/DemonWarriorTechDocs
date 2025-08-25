@@ -119,7 +119,7 @@ if (-not $mariaInstalled) {
                 Write-Host "Latest MariaDB version: $mariaVersion" -ForegroundColor White
                 
                 # Try direct download from MariaDB mirror
-                $mariaUrl = "https://archive.mariadb.org/mariadb-$mariaVersion/winx64-packages/mariadb-$mariaVersion-winx64.msi"
+                $mariaUrl = "https://mirror.its.dal.ca/mariadb//mariadb-$mariaVersion/winx64-packages/mariadb-$mariaVersion-winx64.msi"
                 Write-Host "Downloading from: $mariaUrl" -ForegroundColor Gray
                 Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
                 Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
@@ -130,8 +130,8 @@ if (-not $mariaInstalled) {
             Write-Host "⚠️  Dynamic download failed, trying fallback..." -ForegroundColor Yellow
             try {
                 # Fallback to known working version
-                $mariaVersion = "11.4.3"
-                $mariaUrl = "https://archive.mariadb.org/mariadb-11.4.3/winx64-packages/mariadb-11.4.3-winx64.msi"
+                $mariaVersion = "12.0.2"
+                $mariaUrl = "https://mirror.its.dal.ca/mariadb//mariadb-12.0.2/winx64-packages/mariadb-12.0.2-winx64.msi"
                 Write-Host "Using fallback MariaDB version: $mariaVersion" -ForegroundColor White
                 Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
                 Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
