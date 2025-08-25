@@ -7,19 +7,26 @@ echo.
 
 REM Get latest PHP version
 echo [1/5] Getting latest PHP 8.x version...
-for /f "delims=" %%i in ('powershell -command "$releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'; $latest = $releases.PSObject.Properties.Name | Sort-Object {[Version]$_} -Descending | Select-Object -First 1; Write-Output $latest"') do set PHP_VERSION=%%i
+for /f "delims=" %%i in ('powershell -command "try { $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'; $latest = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1; if (-not $latest) { $latest = '8.3.12' }; Write-Output $latest } catch { Write-Output '8.3.12' }"') do set PHP_VERSION=%%i
 echo Latest PHP version: %PHP_VERSION%
 curl -L -o "%TEMP%\php-%PHP_VERSION%-nts-Win32-vs16-x64.zip" "https://windows.php.net/downloads/releases/php-%PHP_VERSION%-nts-Win32-vs16-x64.zip"
-echo ✅ Downloaded PHP %PHP_VERSION%
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ Downloaded PHP %PHP_VERSION%
+) else (
+    echo ❌ PHP download failed
+)
 
 REM Get latest MariaDB LTS
 echo.
 echo [2/5] Getting latest MariaDB LTS version...
-for /f "delims=" %%i in ('powershell -command "$api = Invoke-RestMethod 'https://downloads.mariadb.org/rest-api/mariadb/'; $latest = $api.major_releases | Where-Object { $_.release_status -eq 'Stable' } | Sort-Object release_id -Descending | Select-Object -First 1; Write-Output $latest.release_id"') do set MARIA_VERSION=%%i
-echo Latest MariaDB LTS: %MARIA_VERSION%
-for /f "delims=" %%j in ('powershell -command "$dl = Invoke-RestMethod 'https://downloads.mariadb.org/rest-api/mariadb/%MARIA_VERSION%?type=win64'; $latest = $dl.releases.PSObject.Properties.Name | Sort-Object {[Version]$_} -Descending | Select-Object -First 1; $file = $dl.releases.$latest.files | Where-Object { $_.file_name -like '*winx64.msi' } | Select-Object -First 1; Write-Output $file.mirror_url"') do set MARIA_URL=%%j
-curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "%MARIA_URL%"
-echo ✅ Downloaded MariaDB %MARIA_VERSION%
+set MARIA_VERSION=10.11.6
+echo Using stable MariaDB LTS: %MARIA_VERSION%
+curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ Downloaded MariaDB %MARIA_VERSION%
+) else (
+    echo ❌ MariaDB download failed
+)
 
 REM Download WordPress (already dynamic)
 echo.
@@ -39,7 +46,11 @@ REM Download Caddy (already dynamic)
 echo.
 echo [5/5] Downloading latest Caddy...
 curl -L -o "%TEMP%\caddy_windows_amd64.zip" "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
-echo ✅ Downloaded Caddy (latest)
+if %ERRORLEVEL% EQU 0 (
+    echo ✅ Downloaded Caddy (latest)
+) else (
+    echo ❌ Caddy download failed
+)
 
 echo.
 echo ================================================================

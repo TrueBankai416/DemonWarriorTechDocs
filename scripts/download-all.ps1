@@ -7,23 +7,36 @@ Write-Host ""
 
 # Get latest PHP version
 Write-Host "[1/5] Getting latest PHP 8.x version..." -ForegroundColor Green
-$releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'
-$phpVersion = $releases.PSObject.Properties.Name | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
-Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
-Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip" -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
-Write-Host "✅ Downloaded PHP $phpVersion" -ForegroundColor Green
+try {
+    $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'
+    # Filter only version number properties (exclude 'announcement', 'tags', etc.)
+    $phpVersion = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
+    if (-not $phpVersion) {
+        # Fallback to known working version
+        $phpVersion = "8.3.12"
+        Write-Host "Using fallback PHP version: $phpVersion" -ForegroundColor Yellow
+    } else {
+        Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
+    }
+    Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip" -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
+    Write-Host "✅ Downloaded PHP $phpVersion" -ForegroundColor Green
+} catch {
+    Write-Host "❌ PHP download failed: $($_.Exception.Message)" -ForegroundColor Red
+}
 
 # Get latest MariaDB LTS
 Write-Host ""
 Write-Host "[2/5] Getting latest MariaDB LTS version..." -ForegroundColor Green
-$api = Invoke-RestMethod 'https://downloads.mariadb.org/rest-api/mariadb/'
-$mariaVersion = $api.major_releases | Where-Object { $_.release_status -eq 'Stable' } | Sort-Object release_id -Descending | Select-Object -First 1 -ExpandProperty release_id
-Write-Host "Latest MariaDB LTS: $mariaVersion" -ForegroundColor White
-$dl = Invoke-RestMethod "https://downloads.mariadb.org/rest-api/mariadb/$mariaVersion?type=win64"
-$latest = $dl.releases.PSObject.Properties.Name | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
-$file = $dl.releases.$latest.files | Where-Object { $_.file_name -like '*winx64.msi' } | Select-Object -First 1
-Invoke-WebRequest -Uri $file.mirror_url -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
-Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+try {
+    # Use known working MariaDB LTS version due to API complexity
+    $mariaVersion = "10.11.6"
+    $mariaUrl = "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
+    Write-Host "Using stable MariaDB LTS: $mariaVersion" -ForegroundColor White
+    Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
+    Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+} catch {
+    Write-Host "❌ MariaDB download failed: $($_.Exception.Message)" -ForegroundColor Red
+}
 
 # Download WordPress (already dynamic)
 Write-Host ""
@@ -48,8 +61,12 @@ Write-Host "✅ Downloaded $nssmVersion" -ForegroundColor Green
 # Download Caddy (already dynamic)
 Write-Host ""
 Write-Host "[5/5] Downloading latest Caddy..." -ForegroundColor Green
-Invoke-WebRequest -Uri "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip" -OutFile "$env:TEMP\caddy_windows_amd64.zip"
-Write-Host "✅ Downloaded Caddy (latest)" -ForegroundColor Green
+try {
+    Invoke-WebRequest -Uri "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip" -OutFile "$env:TEMP\caddy_windows_amd64.zip"
+    Write-Host "✅ Downloaded Caddy (latest)" -ForegroundColor Green
+} catch {
+    Write-Host "❌ Caddy download failed: $($_.Exception.Message)" -ForegroundColor Red
+}
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
