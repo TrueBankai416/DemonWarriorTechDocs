@@ -99,11 +99,12 @@ echo Downloaded PHP to %TEMP%\php-latest-nts-Win32-vs16-x64.zip
 - Download the **latest PHP 8.x ZIP** package
 
 #### MariaDB (Latest Stable)
-Download MariaDB (CLI - Always Latest LTS)
+Download MariaDB (CLI - Stable Version)
 ```cmd
-REM Download latest MariaDB LTS automatically
-curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi"
+REM Download MariaDB LTS (using known stable version due to URL limitations)
+curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
 echo Downloaded MariaDB to %TEMP%\mariadb-latest-winx64.msi
+echo Note: This downloads MariaDB 10.11.6 LTS - check MariaDB website for newer versions
 ```
 
 **Manual Download Alternative**: [MariaDB Downloads](https://mariadb.org/download/)
@@ -197,11 +198,11 @@ Extract PHP
 ```cmd
 REM Extract PHP using built-in tar command
 echo Extracting PHP...
-tar -xf "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" -C "C:\Tools"
+%SystemRoot%\system32\tar.exe -xf "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" -C "C:\Tools"
 echo Moving PHP files to correct location...
 for /d %%i in ("C:\Tools\php-*-nts-Win32-vs16-x64") do (
-    move "%%i\*" "C:\Tools\PHP\"
-    rmdir "%%i"
+    xcopy "%%i\*" "C:\Tools\PHP\" /E /I /Y /Q
+    rmdir "%%i" /S /Q
 )
 echo PHP extracted to C:\Tools\PHP
 ```
@@ -266,6 +267,7 @@ echo ; CGI Configuration >> "C:\Tools\PHP\php.ini"
 echo cgi.force_redirect = 0 >> "C:\Tools\PHP\php.ini"
 echo cgi.fix_pathinfo = 1 >> "C:\Tools\PHP\php.ini"
 echo fastcgi.impersonate = 1 >> "C:\Tools\PHP\php.ini"
+)
 echo ✅ PHP configuration updated
 ```
 
@@ -381,7 +383,7 @@ Extract NSSM
 ```cmd
 REM Extract NSSM using built-in tar command
 echo Extracting NSSM...
-tar -xf "%TEMP%\nssm-latest.zip" -C "%TEMP%"
+%SystemRoot%\system32\tar.exe -xf "%TEMP%\nssm-latest.zip" -C "%TEMP%"
 echo NSSM extracted
 ```
 Copy appropriate version
