@@ -479,6 +479,7 @@ sudo systemctl disable caddy
 ### Common Issues
 
 #### Issue 1: Service Won't Start
+
 Check service status and logs
 
 ```
@@ -501,13 +502,16 @@ sudo journalctl -u caddy -n 20
 ```
 sudo caddy validate --config /etc/caddy/Caddyfile
 ```
-# Check file permissions
+ Check file permissions
+
 ```
 ls -la /etc/caddy/Caddyfile
 ```
+
 ```
 sudo chown root:caddy /etc/caddy/Caddyfile
 ```
+
 ```
 sudo chmod 644 /etc/caddy/Caddyfile
 ```
@@ -515,23 +519,29 @@ sudo chmod 644 /etc/caddy/Caddyfile
 #### Issue 2: Certificate Errors
 
  Check certificate status
+
 ```
 sudo caddy list-certificates
 ```
-# View certificate-related logs
+
+ View certificate-related logs
 ```
 sudo journalctl -u caddy | grep -i cert
 ```
 
 **Solution:**
  Ensure domain points to your server
+
 ```
 nslookup your-domain.com
 ```
-# Check if ports 80 and 443 are accessible
+
+Check if ports 80 and 443 are accessible
+
 ```
 sudo netstat -tlnp | grep :80
 ```
+
 ```
 sudo netstat -tlnp | grep :443
 ```
