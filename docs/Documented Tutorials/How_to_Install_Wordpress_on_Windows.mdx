@@ -76,60 +76,84 @@ Before beginning the installation, ensure your system meets all requirements:
 ### Step 1: Download Required Components
 
 #### PHP 8.x (Latest Stable)
+Download PHP 8.x (CLI - Always Latest)
+```cmd
+REM Download latest PHP 8.3.x automatically
+curl -L -o "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" "https://windows.php.net/downloads/releases/latest/php-8.3-nts-Win32-vs16-x64.zip"
+echo Downloaded PHP to %TEMP%\php-latest-nts-Win32-vs16-x64.zip
+```
 
-**Manual Download**: [PHP for Windows](https://windows.php.net/download/)
-- Go to the PHP downloads page
+**Manual Download Alternative**: [PHP for Windows](https://windows.php.net/download/)
 - Choose **Non Thread Safe (NTS)** version
 - Select **x64** architecture  
 - Download the **latest PHP 8.x ZIP** package
-- Save to your Downloads folder or temp directory
-**Direct Links** (these update automatically):
-- [Latest PHP 8.3.x](https://windows.php.net/downloads/releases/latest/php-8.3-nts-Win32-vs16-x64.zip)
 
 #### MariaDB (Latest Stable)
+Download MariaDB (CLI - Always Latest LTS)
+```cmd
+REM Download latest MariaDB LTS automatically
+curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi"
+echo Downloaded MariaDB to %TEMP%\mariadb-latest-winx64.msi
+```
 
-**Manual Download**: [MariaDB Downloads](https://mariadb.org/download/)
+**Manual Download Alternative**: [MariaDB Downloads](https://mariadb.org/download/)
 - Choose **Stable** release (latest LTS version)
 - Select **Windows x64** MSI package
-- Download the installer to your Downloads folder
-
-**Direct Links** (example - version may change):
-- [MariaDB 10.11 LTS](https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi)
 
 #### WordPress (Latest Version)
+Download WordPress (CLI - Always Latest)
+```cmd
+REM Download latest WordPress automatically
+curl -L -o "%TEMP%\wordpress-latest.zip" "https://wordpress.org/latest.zip"
+echo Downloaded WordPress to %TEMP%\wordpress-latest.zip
+```
 
-**Direct Download**: [WordPress Latest](https://wordpress.org/latest.zip)
-- This link always downloads the latest WordPress version
-- Save to your Downloads folder or temp directory
+**Manual Download Alternative**: [WordPress Latest](https://wordpress.org/latest.zip)
 
 #### NSSM (Service Manager)
+Download NSSM (CLI - Always Latest)
+```cmd
+REM Download latest NSSM automatically
+curl -L -o "%TEMP%\nssm-latest.zip" "https://nssm.cc/release/nssm-2.24.zip"
+echo Downloaded NSSM to %TEMP%\nssm-latest.zip
+```
 
-**Manual Download**: [NSSM Official](https://nssm.cc/download)
-- Download the latest NSSM version
-- Save the ZIP file to your Downloads folder
-
-**Direct Link**: [Latest NSSM](https://nssm.cc/release/nssm-2.24.zip)
+**Manual Download Alternative**: [NSSM Official](https://nssm.cc/download)
 
 #### Caddy Web Server
+Download Caddy (CLI - Always Latest)
+```cmd
+REM Download latest Caddy automatically
+curl -L -o "%TEMP%\caddy_windows_amd64.zip" "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
+echo Downloaded Caddy to %TEMP%\caddy_windows_amd64.zip
+```
 
-**Direct Download**: [Latest Caddy](https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip)
-- This link automatically downloads the latest Caddy version
-- Save to your Downloads folder or temp directory
+**Manual Download Alternative**: [Latest Caddy](https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip)
 
 ### Step 2: Verify Downloads
 
-After downloading all components manually, verify you have these files:
+Verify all downloads completed successfully:
 
-**Required Files:**
-- ✅ PHP 8.x ZIP file (php-8.x.x-nts-Win32-vs16-x64.zip)
-- ✅ MariaDB MSI installer (mariadb-x.x.x-winx64.msi)  
-- ✅ WordPress ZIP file (wordpress-latest.zip)
-- ✅ NSSM ZIP file (nssm-x.x.zip)
-- ✅ Caddy ZIP file (caddy_windows_amd64.zip)
+```cmd
+REM Check if all files were downloaded
+dir "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" 2>nul && echo ✅ PHP downloaded || echo ❌ PHP missing
+dir "%TEMP%\mariadb-latest-winx64.msi" 2>nul && echo ✅ MariaDB downloaded || echo ❌ MariaDB missing
+dir "%TEMP%\wordpress-latest.zip" 2>nul && echo ✅ WordPress downloaded || echo ❌ WordPress missing
+dir "%TEMP%\nssm-latest.zip" 2>nul && echo ✅ NSSM downloaded || echo ❌ NSSM missing
+dir "%TEMP%\caddy_windows_amd64.zip" 2>nul && echo ✅ Caddy downloaded || echo ❌ Caddy missing
+```
 
-**File Locations:**
-- Check your Downloads folder or wherever you saved the files
-- Move all files to a temporary location like `C:\Temp` for easier access during installation
+**All-in-One Download Script:**
+```cmd
+@echo off
+echo Downloading all components...
+curl -L -o "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" "https://windows.php.net/downloads/releases/latest/php-8.3-nts-Win32-vs16-x64.zip"
+curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi"
+curl -L -o "%TEMP%\wordpress-latest.zip" "https://wordpress.org/latest.zip"
+curl -L -o "%TEMP%\nssm-latest.zip" "https://nssm.cc/release/nssm-2.24.zip"
+curl -L -o "%TEMP%\caddy_windows_amd64.zip" "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
+echo All downloads completed!
+```
 
 ## Installation Process
 
@@ -137,25 +161,21 @@ After downloading all components manually, verify you have these files:
 
 Create main tools directory
 
-```powershell
-$toolsPath = "C:\Tools"
-New-Item -ItemType Directory -Path $toolsPath -Force
+```cmd
+REM Create main tools directory
+mkdir "C:\Tools" 2>nul
+echo Created C:\Tools
 ```
 
 Create subdirectories
-```powershell
-$directories = @(
-    "$toolsPath\PHP",
-    "$toolsPath\NSSM", 
-    "$toolsPath\Caddy",
-    "$toolsPath\WordPress",
-    "C:\inetpub\wwwroot\wordpress"
-)
-
-foreach ($dir in $directories) {
-    New-Item -ItemType Directory -Path $dir -Force
-    Write-Host "Created: $dir"
-}
+```cmd
+REM Create all required directories
+mkdir "C:\Tools\PHP" 2>nul
+mkdir "C:\Tools\NSSM" 2>nul
+mkdir "C:\Tools\Caddy" 2>nul
+mkdir "C:\Tools\WordPress" 2>nul
+mkdir "C:\inetpub\wwwroot\wordpress" 2>nul
+echo All directories created successfully
 ```
 
 ### Step 2: Install and Configure PHP
@@ -164,20 +184,18 @@ foreach ($dir in $directories) {
 
 Extract PHP
 
-```powershell
-# Find your downloaded PHP file (works with any PHP 8.x version)
-$phpZip = Get-ChildItem "C:\Temp\php-8.*-nts-Win32-vs16-x64.zip" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
-if (-not $phpZip) {
-    Write-Error "PHP zip file not found in C:\Temp. Please check the file location."
-    exit 1
-}
-Write-Host "Extracting PHP from: $(Split-Path $phpZip -Leaf)"
-Expand-Archive -Path $phpZip -DestinationPath "C:\Tools\PHP" -Force
+```cmd
+REM Extract PHP using built-in tar command
+echo Extracting PHP...
+tar -xf "%TEMP%\php-latest-nts-Win32-vs16-x64.zip" -C "C:\Tools\PHP" --strip-components=0
+echo PHP extracted to C:\Tools\PHP
 ```
 
 Copy php.ini template
-```
-Copy-Item "C:\Tools\PHP\php.ini-production" "C:\Tools\PHP\php.ini"
+```cmd
+REM Copy php.ini template
+copy "C:\Tools\PHP\php.ini-production" "C:\Tools\PHP\php.ini"
+echo PHP configuration template copied
 ```
 
 #### Configure PHP Settings
@@ -244,32 +262,25 @@ $phpConfig | Out-File -FilePath $phpIniPath -Encoding UTF8 -Append
 
 Create required directories
 
-```powershell
-$phpDirs = @(
-    "C:\Tools\PHP\logs",
-    "C:\Tools\PHP\tmp",
-    "C:\Tools\PHP\sessions"
-)
-
-foreach ($dir in $phpDirs) {
-    New-Item -ItemType Directory -Path $dir -Force
-}
+```cmd
+REM Create PHP directories
+mkdir "C:\Tools\PHP\logs" 2>nul
+mkdir "C:\Tools\PHP\tmp" 2>nul
+mkdir "C:\Tools\PHP\sessions" 2>nul
+echo PHP directories created
 ```
 
 #### Add PHP to System PATH
 
 Add PHP to system PATH
 
-```powershell
-$currentPath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
-if ($currentPath -notlike "*C:\Tools\PHP*") {
-    $newPath = $currentPath + ";C:\Tools\PHP"
-    [Environment]::SetEnvironmentVariable("PATH", $newPath, [EnvironmentVariableTarget]::Machine)
-    Write-Host "✅ PHP added to system PATH"
-}
+```cmd
+REM Add PHP to system PATH
+setx PATH "%PATH%;C:\Tools\PHP" /M
+echo ✅ PHP added to system PATH
 
-# Verify PHP installation
-& "C:\Tools\PHP\php.exe" --version
+REM Verify PHP installation (restart CMD after PATH change)
+echo Please restart Command Prompt and run: php --version
 ```
 
 ### Step 3: Install and Configure MariaDB
@@ -278,52 +289,34 @@ if ($currentPath -notlike "*C:\Tools\PHP*") {
 
 Install MariaDB silently
 
-```powershell
-# Find your downloaded MariaDB installer (works with any version)
-$mariaInstaller = Get-ChildItem "C:\Temp\mariadb-*-winx64.msi" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
-if (-not $mariaInstaller) {
-    Write-Error "MariaDB installer not found in C:\Temp. Please check the file location."
-    exit 1
-}
-Write-Host "Installing MariaDB from: $(Split-Path $mariaInstaller -Leaf)"
+```cmd
+REM Install MariaDB silently
+echo Installing MariaDB...
+msiexec /i "%TEMP%\mariadb-latest-winx64.msi" /quiet SERVICENAME=MariaDB PASSWORD=SecureRootPassword123! UTF8=1
+echo ✅ MariaDB installed
 
-$installArgs = @(
-    "/i", $mariaInstaller,
-    "/quiet",
-    "SERVICENAME=MariaDB",
-    "PASSWORD=SecureRootPassword123!",
-    "UTF8=1"
-)
-
-Start-Process -FilePath "msiexec.exe" -ArgumentList $installArgs -Wait -NoNewWindow
-Write-Host "✅ MariaDB installed"
+REM Wait for service to start
+timeout /t 10 /nobreak
 ```
 
 #### Configure MariaDB
 
-Wait for MariaDB service to start
-
-```powershell
-Start-Sleep -Seconds 10
-```
-
 Create WordPress database and user
 
-```powershell
-$mysqlCommands = @"
-CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'WordPressPassword123!';
-GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost';
-FLUSH PRIVILEGES;
-"@
-```
+```cmd
+REM Create database setup script
+echo CREATE DATABASE wordpress CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; > "%TEMP%\setup_db.sql"
+echo CREATE USER 'wordpress'@'localhost' IDENTIFIED BY 'WordPressPassword123!'; >> "%TEMP%\setup_db.sql"
+echo GRANT ALL PRIVILEGES ON wordpress.* TO 'wordpress'@'localhost'; >> "%TEMP%\setup_db.sql"
+echo FLUSH PRIVILEGES; >> "%TEMP%\setup_db.sql"
 
-```
-Execute MySQL commands (Dynamic path detection)
-$mariaDBPath = Get-ChildItem "C:\Program Files\MariaDB*" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
-$mysqlExe = "$mariaDBPath\bin\mysql.exe"
-$mysqlCommands | & $mysqlExe -u root -p"SecureRootPassword123!"
-Write-Host "✅ WordPress database created"
+REM Execute database setup (find MariaDB installation dynamically)
+for /d %%i in ("C:\Program Files\MariaDB*") do set "MARIADB_PATH=%%i"
+"%MARIADB_PATH%\bin\mysql.exe" -u root -p"SecureRootPassword123!" < "%TEMP%\setup_db.sql"
+echo ✅ WordPress database created
+
+REM Clean up
+del "%TEMP%\setup_db.sql"
 ```
 
 #### Secure MariaDB Installation
@@ -373,56 +366,49 @@ Write-Host "✅ MariaDB configuration updated at: $mariaConfigPath"
 #### Extract and Configure NSSM
 Extract NSSM
 
-```powershell
-# Find your downloaded NSSM file (works with any version)
-$nssmZip = Get-ChildItem "C:\Temp\nssm-*.zip" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
-if (-not $nssmZip) {
-    Write-Error "NSSM zip file not found in C:\Temp. Please check the file location."
-    exit 1
-}
-Write-Host "Extracting NSSM from: $(Split-Path $nssmZip -Leaf)"
-Expand-Archive -Path $nssmZip -DestinationPath "C:\Temp\nssm-temp" -Force
+```cmd
+REM Extract NSSM using built-in tar command
+echo Extracting NSSM...
+tar -xf "%TEMP%\nssm-latest.zip" -C "%TEMP%"
+echo NSSM extracted
 ```
 Copy appropriate version
 
-```powershell
-# Find NSSM executable (works with any version)
-$nssmSource = Get-ChildItem "C:\Temp\nssm-temp\nssm-*\win64\nssm.exe" | Select-Object -First 1 -ExpandProperty FullName
-if (-not $nssmSource) {
-    Write-Error "NSSM executable not found in extracted files."
-    exit 1
-}
-Copy-Item $nssmSource "C:\Tools\NSSM\nssm.exe"
-Write-Host "✅ NSSM copied to C:\Tools\NSSM\"
+```cmd
+REM Find and copy NSSM executable (works with any version)
+for /d %%i in ("%TEMP%\nssm-*") do (
+    if exist "%%i\win64\nssm.exe" (
+        copy "%%i\win64\nssm.exe" "C:\Tools\NSSM\nssm.exe"
+        echo ✅ NSSM copied to C:\Tools\NSSM\
+    )
+)
 ```
 
 Add NSSM to PATH
-```
-$currentPath = [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine)
-if ($currentPath -notlike "*C:\Tools\NSSM*") {
-    $newPath = $currentPath + ";C:\Tools\NSSM"
-    [Environment]::SetEnvironmentVariable("PATH", $newPath, [EnvironmentVariableTarget]::Machine)
-    Write-Host "✅ NSSM added to system PATH"
-}
+```cmd
+REM Add NSSM to system PATH
+setx PATH "%PATH%;C:\Tools\NSSM" /M
+echo ✅ NSSM added to system PATH
 ```
 
 #### Create PHP-FPM Service
 
-```powershell
-# Install PHP as a service
-& "C:\Tools\NSSM\nssm.exe" install PHP-FPM "C:\Tools\PHP\php-cgi.exe"
-& "C:\Tools\NSSM\nssm.exe" set PHP-FPM Parameters "-b 127.0.0.1:9000"
-& "C:\Tools\NSSM\nssm.exe" set PHP-FPM AppDirectory "C:\Tools\PHP"
-& "C:\Tools\NSSM\nssm.exe" set PHP-FPM DisplayName "PHP FastCGI Process Manager"
-& "C:\Tools\NSSM\nssm.exe" set PHP-FPM Description "PHP FastCGI Process Manager for WordPress"
+```cmd
+REM Install PHP as a service using NSSM
+echo Creating PHP-FPM service...
+"C:\Tools\NSSM\nssm.exe" install PHP-FPM "C:\Tools\PHP\php-cgi.exe"
+"C:\Tools\NSSM\nssm.exe" set PHP-FPM Parameters "-b 127.0.0.1:9000"
+"C:\Tools\NSSM\nssm.exe" set PHP-FPM AppDirectory "C:\Tools\PHP"
+"C:\Tools\NSSM\nssm.exe" set PHP-FPM DisplayName "PHP FastCGI Process Manager"
+"C:\Tools\NSSM\nssm.exe" set PHP-FPM Description "PHP FastCGI Process Manager for WordPress"
 
-# Configure service recovery
-& "C:\Tools\NSSM\nssm.exe" set PHP-FPM AppExit Default Restart
-& "C:\Tools\NSSM\nssm.exe" set PHP-FPM AppRestartDelay 5000
+REM Configure service recovery
+"C:\Tools\NSSM\nssm.exe" set PHP-FPM AppExit Default Restart
+"C:\Tools\NSSM\nssm.exe" set PHP-FPM AppRestartDelay 5000
 
-# Start PHP-FPM service
-& "C:\Tools\NSSM\nssm.exe" start PHP-FPM
-Write-Host "✅ PHP-FPM service created and started"
+REM Start PHP-FPM service
+"C:\Tools\NSSM\nssm.exe" start PHP-FPM
+echo ✅ PHP-FPM service created and started
 ```
 
 ## Setup Instructions
