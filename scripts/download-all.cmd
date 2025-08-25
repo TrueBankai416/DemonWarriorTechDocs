@@ -30,27 +30,9 @@ if %ERRORLEVEL% EQU 0 (
 
 REM Download WordPress (already dynamic)
 echo.
-echo [3/5] Downloading latest WordPress...
+echo [3/3] Downloading latest WordPress...
 curl -L -o "%TEMP%\wordpress-latest.zip" "https://wordpress.org/latest.zip"
 echo ✅ Downloaded WordPress (latest)
-
-REM Get latest NSSM version
-echo.
-echo [4/5] Getting latest NSSM version...
-for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$page = Invoke-WebRequest \"https://nssm.cc/download\" -UseBasicParsing; $link = ($page.Links ^| Where-Object { $_.href -match \"nssm-\d+\.\d+\.zip$\" } ^| Select-Object -First 1).href; if ($link) { $version = ($link -split \"/\")[-1] -replace \"\.zip$\", \"\"; Write-Output $version } else { Write-Output \"nssm-2.24\" }"`) do set NSSM_VERSION=%%i
-echo Latest NSSM version: %NSSM_VERSION%
-curl -L -o "%TEMP%\%NSSM_VERSION%.zip" "https://nssm.cc/release/%NSSM_VERSION%.zip"
-echo ✅ Downloaded %NSSM_VERSION%
-
-REM Download Caddy (already dynamic)
-echo.
-echo [5/5] Downloading latest Caddy...
-curl -L -o "%TEMP%\caddy_windows_amd64.zip" "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
-if %ERRORLEVEL% EQU 0 (
-    echo ✅ Downloaded Caddy (latest)
-) else (
-    echo ❌ Caddy download failed
-)
 
 echo.
 echo ================================================================
@@ -60,9 +42,48 @@ echo Downloaded versions:
 echo - PHP: %PHP_VERSION%
 echo - MariaDB: %MARIA_VERSION%
 echo - WordPress: Latest
-echo - NSSM: %NSSM_VERSION%
-echo - Caddy: Latest
 echo.
 echo Files saved to: %TEMP%
-echo Next: Run the installation scripts or follow the manual installation guide.
 echo ================================================================
+
+REM Ask user if they want to proceed with installation
+echo.
+set /p install="Would you like to proceed with installation now? (y/N): "
+if /i "%install%"=="y" (
+    echo.
+    echo Starting installation process...
+    echo.
+    
+    REM Install PHP
+    echo Installing PHP...
+    curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd | cmd
+    if %ERRORLEVEL% EQU 0 (
+        echo ✅ PHP installation completed
+    ) else (
+        echo ❌ PHP installation failed
+    )
+    
+    echo.
+    
+    REM Install MariaDB
+    echo Installing MariaDB...
+    curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd | cmd
+    if %ERRORLEVEL% EQU 0 (
+        echo ✅ MariaDB installation completed
+    ) else (
+        echo ❌ MariaDB installation failed
+    )
+    
+    echo.
+    echo ================================================================
+    echo Installation completed!
+    echo Next: Install Caddy using the dedicated guide at:
+    echo https://demonwarriortechdocs.pages.dev/docs/Documented%%20Tutorials/Caddy/Windows/Installing_Caddy_on_Windows
+    echo ================================================================
+) else (
+    echo.
+    echo Installation skipped. You can install manually using:
+    echo - PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd ^| cmd
+    echo - MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd ^| cmd
+    echo - Caddy: Follow the guide at the link above
+)

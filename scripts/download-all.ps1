@@ -40,34 +40,10 @@ try {
 
 # Download WordPress (already dynamic)
 Write-Host ""
-Write-Host "[3/5] Downloading latest WordPress..." -ForegroundColor Green
+Write-Host "[3/3] Downloading latest WordPress..." -ForegroundColor Green
 Invoke-WebRequest -Uri "https://wordpress.org/latest.zip" -OutFile "$env:TEMP\wordpress-latest.zip"
 Write-Host "✅ Downloaded WordPress (latest)" -ForegroundColor Green
 
-# Get latest NSSM version
-Write-Host ""
-Write-Host "[4/5] Getting latest NSSM version..." -ForegroundColor Green
-$page = Invoke-WebRequest 'https://nssm.cc/download' -UseBasicParsing
-$link = ($page.Links | Where-Object { $_.href -match 'nssm-\d+\.\d+\.zip$' } | Select-Object -First 1).href
-if ($link) {
-    $nssmVersion = ($link -split '/')[-1] -replace '\.zip$', ''
-} else {
-    $nssmVersion = 'nssm-2.24'
-}
-Write-Host "Latest NSSM version: $nssmVersion" -ForegroundColor White
-Invoke-WebRequest -Uri "https://nssm.cc/release/$nssmVersion.zip" -OutFile "$env:TEMP\$nssmVersion.zip"
-Write-Host "✅ Downloaded $nssmVersion" -ForegroundColor Green
-
-# Download Caddy (already dynamic)
-Write-Host ""
-Write-Host "[5/5] Downloading latest Caddy..." -ForegroundColor Green
-try {
-    # Use -MaximumRedirection to handle GitHub redirects properly
-    Invoke-WebRequest -Uri "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip" -OutFile "$env:TEMP\caddy_windows_amd64.zip" -MaximumRedirection 5
-    Write-Host "✅ Downloaded Caddy (latest)" -ForegroundColor Green
-} catch {
-    Write-Host "❌ Caddy download failed: $($_.Exception.Message)" -ForegroundColor Red
-}
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
@@ -77,9 +53,48 @@ Write-Host "Downloaded versions:" -ForegroundColor Yellow
 Write-Host "- PHP: $phpVersion" -ForegroundColor White
 Write-Host "- MariaDB: $mariaVersion" -ForegroundColor White
 Write-Host "- WordPress: Latest" -ForegroundColor White
-Write-Host "- NSSM: $nssmVersion" -ForegroundColor White
-Write-Host "- Caddy: Latest" -ForegroundColor White
 Write-Host ""
 Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
-Write-Host "Next: Run the installation scripts or follow the manual installation guide." -ForegroundColor Yellow
 Write-Host "================================================================" -ForegroundColor Cyan
+
+# Ask user if they want to proceed with installation
+Write-Host ""
+$install = Read-Host "Would you like to proceed with installation now? (y/N)"
+if ($install -match '^[Yy]') {
+    Write-Host ""
+    Write-Host "Starting installation process..." -ForegroundColor Green
+    Write-Host ""
+    
+    # Install PHP
+    Write-Host "Installing PHP..." -ForegroundColor Yellow
+    try {
+        Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd").Content
+        Write-Host "✅ PHP installation completed" -ForegroundColor Green
+    } catch {
+        Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
+    }
+    
+    Write-Host ""
+    
+    # Install MariaDB
+    Write-Host "Installing MariaDB..." -ForegroundColor Yellow
+    try {
+        Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd").Content
+        Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
+    } catch {
+        Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
+    }
+    
+    Write-Host ""
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host "Installation completed!" -ForegroundColor Green
+    Write-Host "Next: Install Caddy using the dedicated guide at:" -ForegroundColor Yellow
+    Write-Host "https://demonwarriortechdocs.pages.dev/docs/Documented%20Tutorials/Caddy/Windows/Installing_Caddy_on_Windows" -ForegroundColor White
+    Write-Host "================================================================" -ForegroundColor Cyan
+} else {
+    Write-Host ""
+    Write-Host "Installation skipped. You can install manually using:" -ForegroundColor Yellow
+    Write-Host "- PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-php.cmd | cmd" -ForegroundColor White
+    Write-Host "- MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/install-mariadb.cmd | cmd" -ForegroundColor White
+    Write-Host "- Caddy: Follow the guide at the link above" -ForegroundColor White
+}

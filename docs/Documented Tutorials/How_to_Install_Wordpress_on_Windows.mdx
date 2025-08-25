@@ -153,28 +153,17 @@ echo Downloaded WordPress to %TEMP%\wordpress-latest.zip
 
 **Manual Download Alternative**: [WordPress Latest](https://wordpress.org/latest.zip)
 
-#### NSSM (Service Manager)
-Download NSSM (CLI - Always Latest)
-```cmd
-REM Get latest NSSM version dynamically by scraping download page
-echo Getting latest NSSM version...
-for /f "delims=" %%i in ('powershell -command "$page = Invoke-WebRequest 'https://nssm.cc/download' -UseBasicParsing; $link = ($page.Links | Where-Object { $_.href -match 'nssm-\d+\.\d+\.zip$' } | Select-Object -First 1).href; if ($link) { $version = ($link -split '/')[-1] -replace '\.zip$', ''; Write-Output $version } else { Write-Output 'nssm-2.24' }"') do set NSSM_VERSION=%%i
-echo Latest NSSM version: %NSSM_VERSION%
-curl -L -o "%TEMP%\%NSSM_VERSION%.zip" "https://nssm.cc/release/%NSSM_VERSION%.zip"
-echo Downloaded %NSSM_VERSION% to %TEMP%\%NSSM_VERSION%.zip
-```
+#### Caddy (Web Server)
 
-**Manual Download Alternative**: [NSSM Official](https://nssm.cc/download)
+For Caddy installation, please follow our dedicated guide:
 
-#### Caddy Web Server
-Download Caddy (CLI - Always Latest)
-```cmd
-REM Download latest Caddy automatically
-curl -L -o "%TEMP%\caddy_windows_amd64.zip" "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
-echo Downloaded Caddy to %TEMP%\caddy_windows_amd64.zip
-```
+📖 **[Installing Caddy on Windows](../Caddy/Windows/Installing_Caddy_on_Windows.mdx)**
 
-**Manual Download Alternative**: [Latest Caddy](https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip)
+This guide covers:
+- Downloading the latest Caddy version
+- Installation and configuration
+- Setting up as a Windows service
+- WordPress-specific configuration
 
 ### Step 2: Verify Downloads
 
@@ -185,14 +174,12 @@ REM Check if all files were downloaded (using pattern matching for dynamic versi
 dir "%TEMP%\php-*-nts-Win32-vs16-x64.zip" 2>nul && echo ✅ PHP downloaded || echo ❌ PHP missing
 dir "%TEMP%\mariadb-latest-winx64.msi" 2>nul && echo ✅ MariaDB downloaded || echo ❌ MariaDB missing
 dir "%TEMP%\wordpress-latest.zip" 2>nul && echo ✅ WordPress downloaded || echo ❌ WordPress missing
-dir "%TEMP%\nssm-*.zip" 2>nul && echo ✅ NSSM downloaded || echo ❌ NSSM missing
-dir "%TEMP%\caddy_windows_amd64.zip" 2>nul && echo ✅ Caddy downloaded || echo ❌ Caddy missing
 ```
 
-**All-in-One Download Script (Fully Dynamic):**
+**All-in-One Download Script (Core Components):**
 ```cmd
 @echo off
-echo Downloading all components with latest versions...
+echo Downloading WordPress core components with latest versions...
 
 REM Get latest PHP version
 echo Getting latest PHP 8.x version...
@@ -208,18 +195,14 @@ curl -L -o "%TEMP%\mariadb-latest-winx64.msi" "%MARIA_URL%"
 REM Download WordPress (already dynamic)
 curl -L -o "%TEMP%\wordpress-latest.zip" "https://wordpress.org/latest.zip"
 
-REM Get latest NSSM version
-echo Getting latest NSSM version...
-for /f "delims=" %%i in ('powershell -command "$page = Invoke-WebRequest 'https://nssm.cc/download' -UseBasicParsing; $link = ($page.Links | Where-Object { $_.href -match 'nssm-\d+\.\d+\.zip$' } | Select-Object -First 1).href; if ($link) { $version = ($link -split '/')[-1] -replace '\.zip$', ''; Write-Output $version } else { Write-Output 'nssm-2.24' }"') do set NSSM_VERSION=%%i
-curl -L -o "%TEMP%\%NSSM_VERSION%.zip" "https://nssm.cc/release/%NSSM_VERSION%.zip"
-
-REM Download Caddy (already dynamic)
-curl -L -o "%TEMP%\caddy_windows_amd64.zip" "https://github.com/caddyserver/caddy/releases/latest/download/caddy_windows_amd64.zip"
-
-echo All downloads completed with latest versions!
+echo Core components downloaded with latest versions!
 echo PHP: %PHP_VERSION%
 echo MariaDB: %MARIA_VERSION%
-echo NSSM: %NSSM_VERSION%
+echo WordPress: Latest
+
+echo.
+echo Next: Install Caddy using our dedicated guide at:
+echo https://demonwarriortechdocs.pages.dev/docs/Documented%20Tutorials/Caddy/Windows/Installing_Caddy_on_Windows
 ```
 
 ## Installation Process
