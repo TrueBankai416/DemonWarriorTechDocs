@@ -78,21 +78,26 @@ Before beginning the installation, ensure your system meets all requirements:
 #### PHP 8.x (Latest Stable)
 Download PHP 8.x (Dynamic - Always Latest)
 ```powershell
-# Get the latest PHP 8.x version dynamically
-$phpReleasePage = Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/archives/" -UseBasicParsing
-$latestPhp8 = ($phpReleasePage.Links | Where-Object { $_.href -match "php-8\.\d+\.\d+-nts-Win32-vs16-x64\.zip$" } | Sort-Object href -Descending | Select-Object -First 1).href
-$phpUrl = "https://windows.php.net/downloads/releases/archives/$latestPhp8"
-$phpVersion = ($latestPhp8 -split "-")[1]
-$phpOutput = "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
-Write-Host "Downloading PHP version: $phpVersion"
+# Get the latest PHP 8.x version using JSON API
+$phpApiUrl = "https://www.php.net/releases/?json&version=8"
+$phpReleases = Invoke-RestMethod -Uri $phpApiUrl -UseBasicParsing
+$latestVersion = $phpReleases.PSObject.Properties.Name | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
+$phpUrl = "https://windows.php.net/downloads/releases/php-$latestVersion-nts-Win32-vs16-x64.zip"
+$phpOutput = "$env:TEMP\php-$latestVersion-nts-Win32-vs16-x64.zip"
+Write-Host "Downloading PHP version: $latestVersion"
 Invoke-WebRequest -Uri $phpUrl -OutFile $phpOutput
 ```
 
-**Alternative - Direct Latest Release:**
+**Alternative - Web Scraping Approach:**
 ```powershell
-# For the absolute latest stable release (may include newer major versions)
-$phpUrl = "https://windows.php.net/downloads/releases/latest/php-nts-Win32-vs16-x64.zip"
-$phpOutput = "$env:TEMP\php-latest-nts-Win32-vs16-x64.zip"
+# Fallback method using web scraping with proper version sorting
+$phpReleasePage = Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/" -UseBasicParsing
+$phpLinks = $phpReleasePage.Links | Where-Object { $_.href -match "php-8\.\d+\.\d+-nts-Win32-vs16-x64\.zip$" }
+$latestPhp8 = ($phpLinks | Sort-Object { [Version](($_.href -split "-")[1]) } -Descending | Select-Object -First 1).href
+$phpUrl = "https://windows.php.net/downloads/releases/$latestPhp8"
+$phpVersion = ($latestPhp8 -split "-")[1]
+$phpOutput = "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
+Write-Host "Downloading PHP version: $phpVersion"
 Invoke-WebRequest -Uri $phpUrl -OutFile $phpOutput
 ```
 Verify download
@@ -109,22 +114,31 @@ Get-FileHash $phpOutput -Algorithm SHA256
 Download MariaDB (Dynamic - Always Latest LTS)
 
 ```powershell
-# Get the latest MariaDB LTS version dynamically
+# Get the latest MariaDB LTS version and download URL
 $mariaApiUrl = "https://downloads.mariadb.org/rest-api/mariadb/"
 $mariaReleases = Invoke-RestMethod -Uri $mariaApiUrl -UseBasicParsing
 $latestLTS = $mariaReleases.major_releases | Where-Object { $_.release_status -eq "Stable" } | Sort-Object release_id -Descending | Select-Object -First 1
 $latestVersion = $latestLTS.release_id
-$mariaUrl = "https://downloads.mariadb.org/rest-api/mariadb/$latestVersion/mariadb-$latestVersion-winx64.msi"
+
+# Get the actual download URL for Windows x64 MSI
+$mariaDownloadApi = "https://downloads.mariadb.org/rest-api/mariadb/$latestVersion?type=win64"
+$downloadInfo = Invoke-RestMethod -Uri $mariaDownloadApi -UseBasicParsing
+$mariaUrl = $downloadInfo.files | Where-Object { $_.file_name -like "*winx64.msi" } | Select-Object -First 1 -ExpandProperty mirror_url
 $mariaOutput = "$env:TEMP\mariadb-$latestVersion-winx64.msi"
 Write-Host "Downloading MariaDB version: $latestVersion"
 Invoke-WebRequest -Uri $mariaUrl -OutFile $mariaOutput
 ```
 
-**Alternative - Simplified Approach:**
+**Alternative - Direct Download Pattern:**
 ```powershell
-# Using MariaDB's latest stable download endpoint
-$mariaUrl = "https://downloads.mariadb.org/f/mariadb-10.11/winx64-packages/mariadb-winx64.msi"
-$mariaOutput = "$env:TEMP\mariadb-latest-winx64.msi"
+# Using MariaDB's predictable download URL pattern
+$mariaApiUrl = "https://downloads.mariadb.org/rest-api/mariadb/"
+$mariaReleases = Invoke-RestMethod -Uri $mariaApiUrl -UseBasicParsing
+$latestLTS = $mariaReleases.major_releases | Where-Object { $_.release_status -eq "Stable" } | Sort-Object release_id -Descending | Select-Object -First 1
+$latestVersion = $latestLTS.release_id
+$mariaUrl = "https://downloads.mariadb.org/f/mariadb-$latestVersion/winx64-packages/mariadb-$latestVersion-winx64.msi"
+$mariaOutput = "$env:TEMP\mariadb-$latestVersion-winx64.msi"
+Write-Host "Downloading MariaDB version: $latestVersion"
 Invoke-WebRequest -Uri $mariaUrl -OutFile $mariaOutput
 ```
 
@@ -190,12 +204,12 @@ Invoke-WebRequest -Uri $caddyUrl -OutFile $caddyOutput
 Verify all downloads exist (Dynamic file detection)
 
 ```powershell
-# Get actual downloaded filenames dynamically
+# Get actual downloaded filenames dynamically (most recent files first)
 $downloads = @()
-$downloads += Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-$downloads += Get-ChildItem "$env:TEMP\mariadb-*-winx64.msi" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+$downloads += Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
+$downloads += Get-ChildItem "$env:TEMP\mariadb-*-winx64.msi" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 $downloads += "$env:TEMP\wordpress-latest.zip"
-$downloads += Get-ChildItem "$env:TEMP\nssm-*.zip" -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+$downloads += Get-ChildItem "$env:TEMP\nssm-*.zip" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 $downloads += "$env:TEMP\caddy_windows_amd64.zip"
 
 # Filter out null/empty entries
@@ -249,8 +263,8 @@ foreach ($dir in $directories) {
 Extract PHP (Dynamic file detection)
 
 ```powershell
-# Find the downloaded PHP zip file dynamically
-$phpZip = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" | Select-Object -First 1 -ExpandProperty FullName
+# Find the downloaded PHP zip file dynamically (most recent first)
+$phpZip = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 if (-not $phpZip) {
     Write-Error "PHP zip file not found in $env:TEMP"
     exit 1
@@ -363,8 +377,8 @@ if ($currentPath -notlike "*C:\Tools\PHP*") {
 Install MariaDB silently (Dynamic file detection)
 
 ```powershell
-# Find the downloaded MariaDB installer dynamically
-$mariaInstaller = Get-ChildItem "$env:TEMP\mariadb-*-winx64.msi" | Select-Object -First 1 -ExpandProperty FullName
+# Find the downloaded MariaDB installer dynamically (most recent first)
+$mariaInstaller = Get-ChildItem "$env:TEMP\mariadb-*-winx64.msi" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 if (-not $mariaInstaller) {
     Write-Error "MariaDB installer not found in $env:TEMP"
     exit 1
@@ -459,8 +473,8 @@ $mariaConfig | Out-File -FilePath "C:\Program Files\MariaDB 10.11\data\my.ini" -
 Extract NSSM (Dynamic file detection)
 
 ```powershell
-# Find the downloaded NSSM zip file dynamically
-$nssmZip = Get-ChildItem "$env:TEMP\nssm-*.zip" | Select-Object -First 1 -ExpandProperty FullName
+# Find the downloaded NSSM zip file dynamically (most recent first)
+$nssmZip = Get-ChildItem "$env:TEMP\nssm-*.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 if (-not $nssmZip) {
     Write-Error "NSSM zip file not found in $env:TEMP"
     exit 1
@@ -471,8 +485,8 @@ Expand-Archive -Path $nssmZip -DestinationPath "$env:TEMP\nssm-temp" -Force
 Copy appropriate version (Dynamic version detection)
 
 ```powershell
-# Find the NSSM executable dynamically
-$nssmSource = Get-ChildItem "$env:TEMP\nssm-temp\nssm-*\win64\nssm.exe" | Select-Object -First 1 -ExpandProperty FullName
+# Find the NSSM executable dynamically (most recent first)
+$nssmSource = Get-ChildItem "$env:TEMP\nssm-temp\nssm-*\win64\nssm.exe" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
 if (-not $nssmSource) {
     Write-Error "NSSM executable not found in extracted files"
     exit 1
