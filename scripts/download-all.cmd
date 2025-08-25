@@ -7,7 +7,7 @@ echo.
 
 REM Get latest PHP version
 echo [1/5] Getting latest PHP 8.x version...
-for /f "delims=" %%i in ('powershell -command "try { $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'; $latest = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1; if (-not $latest) { $latest = '8.3.24' }; Write-Output $latest } catch { Write-Output '8.3.24' }"') do set PHP_VERSION=%%i
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "try { $releases = Invoke-RestMethod \"https://www.php.net/releases/?json^&version=8\"; $latest = $releases.PSObject.Properties.Name ^| Where-Object { $_ -match \"^\d+\.\d+\.\d+$\" } ^| Sort-Object {[Version]$_} -Descending ^| Select-Object -First 1; if (-not $latest) { $latest = \"8.3.24\" }; Write-Output $latest } catch { Write-Output \"8.3.24\" }"`) do set PHP_VERSION=%%i
 echo Latest PHP version: %PHP_VERSION%
 curl -L -o "%TEMP%\php-%PHP_VERSION%-nts-Win32-vs16-x64.zip" "https://windows.php.net/downloads/releases/php-%PHP_VERSION%-nts-Win32-vs16-x64.zip"
 if %ERRORLEVEL% EQU 0 (
@@ -37,7 +37,7 @@ echo ✅ Downloaded WordPress (latest)
 REM Get latest NSSM version
 echo.
 echo [4/5] Getting latest NSSM version...
-for /f "delims=" %%i in ('powershell -command "$page = Invoke-WebRequest 'https://nssm.cc/download' -UseBasicParsing; $link = ($page.Links | Where-Object { $_.href -match 'nssm-\d+\.\d+\.zip$' } | Select-Object -First 1).href; if ($link) { $version = ($link -split '/')[-1] -replace '\.zip$', ''; Write-Output $version } else { Write-Output 'nssm-2.24' }"') do set NSSM_VERSION=%%i
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "$page = Invoke-WebRequest \"https://nssm.cc/download\" -UseBasicParsing; $link = ($page.Links ^| Where-Object { $_.href -match \"nssm-\d+\.\d+\.zip$\" } ^| Select-Object -First 1).href; if ($link) { $version = ($link -split \"/\")[-1] -replace \"\.zip$\", \"\"; Write-Output $version } else { Write-Output \"nssm-2.24\" }"`) do set NSSM_VERSION=%%i
 echo Latest NSSM version: %NSSM_VERSION%
 curl -L -o "%TEMP%\%NSSM_VERSION%.zip" "https://nssm.cc/release/%NSSM_VERSION%.zip"
 echo ✅ Downloaded %NSSM_VERSION%
