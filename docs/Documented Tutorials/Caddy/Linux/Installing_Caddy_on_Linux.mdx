@@ -57,14 +57,16 @@ Before beginning the installation, ensure your system meets the following requir
 
 First, identify your system architecture and distribution:
 
+ Check OS distribution and version
 ```bash
-# Check OS distribution and version
 lsb_release -a
-
-# Check system architecture
+```
+ Check system architecture
+```bash
 uname -m
-
-# Check available memory
+```
+ Check available memory
+```
 free -h
 ```
 
@@ -94,11 +96,12 @@ Codename:       noble
    - For DuckDNS: `github.com/caddy-dns/duckdns`
 
 3. **Download the Custom Build**:
+    Navigate to downloads directory
    ```bash
-   # Navigate to downloads directory
    cd ~/Downloads
-   
-   # Download using wget (replace URL with your custom build URL)
+   ```
+    Download using wget (replace URL with your custom build URL)
+   ```
    wget "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com%2Fcaddy-dns%2Fcloudflare&p=github.com%2Fcaddy-dns%2Fduckdns" -O caddy
    ```
 
@@ -110,20 +113,22 @@ Codename:       noble
    ```
 
 2. **Verify the binary**:
+Check if the binary works
    ```bash
-   # Check if the binary works
    ./caddy version
-   
-   # Verify plugins are included
+   ```
+    Verify plugins are included
+   ```
    ./caddy list-modules | grep dns
    ```
 
 3. **Install to system location**:
+   Copy to system binary directory
    ```bash
-   # Copy to system binary directory
    sudo cp caddy /usr/bin/caddy
-   
-   # Verify system installation
+   ```
+   Verify system installation
+   ```
    caddy version
    ```
 
@@ -264,17 +269,20 @@ Create a systemd service file for proper service management and automatic startu
 
 Before configuring domains and DNS, identify your network setup:
 
+Install network utilities
 ```bash
-# Install network utilities
 sudo apt update && sudo apt install -y net-tools curl
-
-# Find your internal IP address
+```
+ Find your internal IP address
+```bash
 ip addr show | grep 'inet ' | grep -v '127.0.0.1'
-
+```
 # Alternative method
+```bash
 hostname -I
-
-# Find your public IP address
+```
+Find your public IP address
+```bash
 curl -4 ifconfig.me
 ```
 
@@ -288,19 +296,25 @@ Public IP: 203.0.113.1
 
 Ensure the necessary ports are open:
 
+
+ For Ubuntu/Debian with UFW
 ```bash
-# For Ubuntu/Debian with UFW
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw reload
-
-# For CentOS/RHEL with firewalld
+```
+ For CentOS/RHEL with firewalld
+```
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --permanent --add-service=https
 sudo firewall-cmd --reload
-
-# Verify firewall status
-sudo ufw status  # Ubuntu/Debian
+```
+ Verify firewall status
+```
+sudo ufw status  
+```
+Ubuntu/Debian
+```
 sudo firewall-cmd --list-all  # CentOS/RHEL
 ```
 
@@ -327,21 +341,25 @@ DuckDNS provides free dynamic DNS services, perfect for home servers with changi
 
 ### Step 11: Install DuckDNS Client
 
+ Install required packages
 ```bash
-# Install required packages
 sudo apt install -y curl cron
-
+```
 # Create DuckDNS directory
+```
 sudo mkdir -p /opt/duckdns
 cd /opt/duckdns
-
+```
 # Download the update script
+```
 sudo curl -o duck.sh "https://www.duckdns.org/update?domains=YOURSUBDOMAIN&token=YOURTOKEN&ip="
-
+```
 # Make it executable
+```
 sudo chmod +x duck.sh
-
+```
 # Test the script
+```
 sudo ./duck.sh
 ```
 
@@ -350,12 +368,14 @@ sudo ./duck.sh
 ![image](https://i.imgur.com/f2fdIbx.png)
 
 ### Step 12: Setup Automatic Updates
+ Edit crontab for automatic updates
 
 ```bash
-# Edit crontab for automatic updates
 sudo crontab -e
+```
+ Add this line to update every 5 minutes
 
-# Add this line to update every 5 minutes
+```
 */5 * * * * /opt/duckdns/duck.sh >/dev/null 2>&1
 ```
 
@@ -412,26 +432,32 @@ sudo crontab -e
 
 ### Linux Service Commands
 
-```bash
-# Check service status
+ Check service status
+```
 sudo systemctl status caddy
-
+```
 # Start the service
+```
 sudo systemctl start caddy
-
+```
 # Stop the service
+```
 sudo systemctl stop caddy
-
+```
 # Restart the service
+```
 sudo systemctl restart caddy
-
+```
 # Reload configuration without stopping
+```
 sudo systemctl reload caddy
-
-# Enable auto-start on boot
+```
+ Enable auto-start on boot
+```
 sudo systemctl enable caddy
-
-# Disable auto-start on boot
+```
+ Disable auto-start on boot
+```
 sudo systemctl disable caddy
 ```
 
@@ -443,57 +469,72 @@ sudo systemctl disable caddy
 
 ```bash
 # Check service status and logs
+```
 sudo systemctl status caddy
-sudo journalctl -u caddy -n 20
+```
 
+```
+sudo journalctl -u caddy -n 20
+```
 # Common causes:
 # - Configuration syntax errors
 # - Permission issues
 # - Port conflicts
-```
 
 **Solution:**
-```bash
-# Validate configuration
-sudo caddy validate --config /etc/caddy/Caddyfile
 
+ Validate configuration
+```
+sudo caddy validate --config /etc/caddy/Caddyfile
+```
 # Check file permissions
+```
 ls -la /etc/caddy/Caddyfile
+```
+```
 sudo chown root:caddy /etc/caddy/Caddyfile
+```
+```
 sudo chmod 644 /etc/caddy/Caddyfile
 ```
 
 #### Issue 2: Certificate Errors
 
-```bash
-# Check certificate status
+ Check certificate status
+```
 sudo caddy list-certificates
-
+```
 # View certificate-related logs
+```
 sudo journalctl -u caddy | grep -i cert
 ```
 
 **Solution:**
-```bash
-# Ensure domain points to your server
+ Ensure domain points to your server
+```
 nslookup your-domain.com
-
+```
 # Check if ports 80 and 443 are accessible
+```
 sudo netstat -tlnp | grep :80
+```
+```
 sudo netstat -tlnp | grep :443
 ```
 
 #### Issue 3: Permission Denied Errors
 
-```bash
-# Check Caddy user permissions
+ Check Caddy user permissions
+```
 sudo -u caddy ls -la /var/lib/caddy
 ```
 
 **Solution:**
-```bash
-# Fix ownership and permissions
+ Fix ownership and permissions
+```
 sudo chown -R caddy:caddy /var/lib/caddy
+```
+```
 sudo chmod 755 /var/lib/caddy
 ```
 
@@ -501,11 +542,13 @@ sudo chmod 755 /var/lib/caddy
 
 For detailed troubleshooting, run Caddy in debug mode:
 
-```bash
-# Stop the service
+Stop the service
+```
 sudo systemctl stop caddy
+```
 
-# Run in debug mode
+Run in debug mode
+```
 sudo -u caddy /usr/bin/caddy run --config /etc/caddy/Caddyfile --adapter caddyfile --debug
 ```
 
@@ -513,24 +556,32 @@ sudo -u caddy /usr/bin/caddy run --config /etc/caddy/Caddyfile --adapter caddyfi
 
 ### File Permissions
 
-```bash
-# Secure configuration files
+Secure configuration files
+```
 sudo chmod 644 /etc/caddy/Caddyfile
+```
+```
 sudo chown root:caddy /etc/caddy/Caddyfile
-
+```
 # Secure data directory
+```
 sudo chmod 755 /var/lib/caddy
+```
+```
 sudo chown caddy:caddy /var/lib/caddy
-
-# Secure binary
+```
+Secure binary
+```
 sudo chmod 755 /usr/bin/caddy
+```
+```
 sudo chown root:root /usr/bin/caddy
 ```
 
 ### Firewall Configuration
 
-```bash
-# Enable UFW and configure rules
+ Enable UFW and configure rules
+```
 sudo ufw enable
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
@@ -541,19 +592,22 @@ sudo ufw allow 443/tcp
 
 ### Regular Updates
 
-```bash
-# Update system packages
-sudo apt update && sudo apt upgrade -y
 
-# For manual installation, check for updates regularly
+Update system packages
+```
+sudo apt update && sudo apt upgrade -y
+```
+For manual installation, check for updates regularly
+```
 caddy version
 ```
 
 ## Performance Optimization
 
 ### System Limits
-
+```
 Add to `/etc/security/limits.conf`:
+```
 ```
 caddy soft nofile 65536
 caddy hard nofile 65536
@@ -571,14 +625,16 @@ The service file already includes optimizations:
 
 ### Configuration Backup
 
-```bash
-# Create backup directory
+Create backup directory
+```
 sudo mkdir -p /opt/caddy-backup
-
-# Backup configuration
+```
+Backup configuration
+```
 sudo cp /etc/caddy/Caddyfile /opt/caddy-backup/Caddyfile.$(date +%Y%m%d)
-
-# Backup certificates (if needed)
+````
+Backup certificates (if needed)
+```
 sudo tar -czf /opt/caddy-backup/caddy-data-$(date +%Y%m%d).tar.gz /var/lib/caddy
 ```
 
@@ -590,13 +646,16 @@ Create `/opt/caddy-backup/backup.sh`:
 BACKUP_DIR="/opt/caddy-backup"
 DATE=$(date +%Y%m%d_%H%M%S)
 
-# Backup configuration
+Backup configuration
+```
 cp /etc/caddy/Caddyfile "$BACKUP_DIR/Caddyfile.$DATE"
-
-# Backup data directory
+```
+Backup data directory
+```
 tar -czf "$BACKUP_DIR/caddy-data-$DATE.tar.gz" /var/lib/caddy
-
-# Keep only last 7 days of backups
+```
+Keep only last 7 days of backups
+```
 find "$BACKUP_DIR" -name "*.tar.gz" -mtime +7 -delete
 find "$BACKUP_DIR" -name "Caddyfile.*" -mtime +7 -delete
 ```
