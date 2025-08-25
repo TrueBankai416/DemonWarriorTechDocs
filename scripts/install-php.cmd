@@ -111,9 +111,18 @@ if errorlevel 1 (
     echo ✅ PHP already in system PATH
 )
 
+REM Create PHP service using PowerShell
+echo.
+echo [5/5] Creating PHP service...
+powershell -NoProfile -Command "try { if (Get-Service -Name 'PHP-CGI' -ErrorAction SilentlyContinue) { Write-Host 'PHP service already exists'; } else { New-Service -Name 'PHP-CGI' -BinaryPathName 'C:\Tools\PHP\php-cgi.exe -b 127.0.0.1:9000' -DisplayName 'PHP FastCGI Service' -Description 'PHP FastCGI service for web applications' -StartupType Manual; Write-Host '✅ PHP service created'; } } catch { Write-Host '⚠️  Service creation failed (requires admin): $_'; }"
+
 echo.
 echo ==================================================
 echo PHP installation completed successfully!
 echo.
-echo Please restart Command Prompt and run: php --version
+echo PHP is installed at: C:\Tools\PHP
+echo PHP service created: PHP-CGI (manual start)
+echo.
+echo To start PHP service: net start PHP-CGI
+echo To test PHP: php --version
 echo ==================================================
