@@ -239,7 +239,7 @@ CADDY_LOG_LEVEL=INFO
 
 1. **Click "Install service"** in the NSSM GUI
 2. **Verify installation**:
-   # Check if service was created
+    Check if service was created
    ```powershell
    Get-Service -Name Caddy
    ```
@@ -249,7 +249,7 @@ CADDY_LOG_LEVEL=INFO
    ```powershell
    nssm start Caddy
    ```
-   # Alternative using Windows Service Manager
+    Alternative using Windows Service Manager
    ```   
    Start-Service -Name Caddy
    ```
@@ -259,7 +259,7 @@ CADDY_LOG_LEVEL=INFO
    ```powershell
    nssm status Caddy
    ```
-   # Detailed service information
+    Detailed service information
    ```
    Get-Service -Name Caddy | Format-List *
    ```
@@ -323,14 +323,14 @@ Get-WmiObject -Class Win32_Service -Filter "Name='Caddy'"
 nssm edit Caddy
 ```
 
-# Get service configuration
+ Get service configuration
 ```
 nssm get Caddy Application
 nssm get Caddy Parameters
 nssm get Caddy AppDirectory
 ```
 
-# Set service parameters
+ Set service parameters
 ```
 nssm set Caddy Application "C:\Tools\Caddy\caddy.exe"
 nssm set Caddy Parameters "run --config Caddyfile"
@@ -440,7 +440,7 @@ netstat -an | findstr ":80"
 netstat -an | findstr ":443"
 ```
 
-# Test Caddy directly
+ Test Caddy directly
 ```
 cd C:\Tools\Caddy
 ```
@@ -463,7 +463,7 @@ caddy run --config Caddyfile
    ```powershell
    netstat -ano | findstr ":80"
    ```
-   # Stop IIS if it's running
+    Stop IIS if it's running
    ```
    Stop-Service -Name W3SVC -Force
    Set-Service -Name W3SVC -StartupType Disabled
@@ -490,7 +490,7 @@ Get-Content "C:\Tools\Caddy\logs\caddy-error.log" -Wait
 
 For detailed troubleshooting, run Caddy manually with debug output:
 
-# Stop the service first
+ Stop the service first
 
 ```powershell
 nssm stop Caddy
@@ -510,7 +510,7 @@ caddy run --config Caddyfile --debug
 
 For enhanced security, create a dedicated service account:
 
-# Create a new local user for Caddy service
+ Create a new local user for Caddy service
 ```powershell
 $password = ConvertTo-SecureString "YourSecurePassword123!" -AsPlainText -Force
 New-LocalUser -Name "CaddyService" -Password $password -Description "Caddy Web Server Service Account"
@@ -530,7 +530,7 @@ nssm stop Caddy
 ```
 nssm set Caddy ObjectName ".\CaddyService" "YourSecurePassword123!"
 ```
-# Start the service
+ Start the service
 ```
 nssm start Caddy
 ```
@@ -725,7 +725,7 @@ To run multiple Caddy instances for different purposes:
 ```
 nssm install CaddyAPI
 ```
-# Configure for API server
+ Configure for API server
 ```
 nssm set CaddyAPI Application "C:\Tools\Caddy\caddy.exe"
 nssm set CaddyAPI Parameters "run --config CaddyfileAPI --adapter caddyfile"
