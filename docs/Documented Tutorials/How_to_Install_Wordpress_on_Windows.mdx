@@ -123,9 +123,10 @@ $latestVersion = $latestLTS.release_id
 # Get the actual download URL for Windows x64 MSI
 $mariaDownloadApi = "https://downloads.mariadb.org/rest-api/mariadb/$latestVersion?type=win64"
 $downloadInfo = Invoke-RestMethod -Uri $mariaDownloadApi -UseBasicParsing
-$mariaUrl = $downloadInfo.files | Where-Object { $_.file_name -like "*winx64.msi" } | Select-Object -First 1 -ExpandProperty mirror_url
-$mariaOutput = "$env:TEMP\mariadb-$latestVersion-winx64.msi"
-Write-Host "Downloading MariaDB version: $latestVersion"
+$latestRelease = $downloadInfo.releases.PSObject.Properties.Name | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
+$mariaUrl = ($downloadInfo.releases.$latestRelease.files | Where-Object { $_.file_name -like "*winx64.msi" } | Select-Object -First 1).mirror_url
+$mariaOutput = "$env:TEMP\mariadb-$latestRelease-winx64.msi"
+Write-Host "Downloading MariaDB version: $latestRelease"
 Invoke-WebRequest -Uri $mariaUrl -OutFile $mariaOutput
 ```
 
@@ -417,8 +418,10 @@ FLUSH PRIVILEGES;
 ```
 
 ```
-Execute MySQL commands
-$mysqlCommands | & "C:\Program Files\MariaDB 10.11\bin\mysql.exe" -u root -p"SecureRootPassword123!"
+Execute MySQL commands (Dynamic path detection)
+$mariaDBPath = Get-ChildItem "C:\Program Files\MariaDB*" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
+$mysqlExe = "$mariaDBPath\bin\mysql.exe"
+$mysqlCommands | & $mysqlExe -u root -p"SecureRootPassword123!"
 Write-Host "✅ WordPress database created"
 ```
 
@@ -427,12 +430,16 @@ Write-Host "✅ WordPress database created"
 Create secure configuration
 
 ```powershell
+# Get MariaDB installation path dynamically
+$mariaDBPath = Get-ChildItem "C:\Program Files\MariaDB*" | Sort-Object Name -Descending | Select-Object -First 1 -ExpandProperty FullName
+$mariaDataPath = "$mariaDBPath\data"
+
 $mariaConfig = @"
 [mysqld]
 # Basic Settings
 bind-address = 127.0.0.1
 port = 3306
-datadir = C:/Program Files/MariaDB 10.11/data
+datadir = $($mariaDataPath -replace '\\', '/')
 ```
 
 ```powershell
@@ -458,13 +465,15 @@ collation-server = utf8mb4_unicode_ci
 Logging
 
 ```
-log-error = C:/Program Files/MariaDB 10.11/data/error.log
+log-error = $($mariaDataPath -replace '\\', '/')/error.log
 slow_query_log = 1
-slow_query_log_file = C:/Program Files/MariaDB 10.11/data/slow.log
+slow_query_log_file = $($mariaDataPath -replace '\\', '/')/slow.log
 long_query_time = 2
 "@
 
-$mariaConfig | Out-File -FilePath "C:\Program Files\MariaDB 10.11\data\my.ini" -Encoding UTF8
+$mariaConfigPath = "$mariaDataPath\my.ini"
+$mariaConfig | Out-File -FilePath $mariaConfigPath -Encoding UTF8
+Write-Host "✅ MariaDB configuration updated at: $mariaConfigPath"
 ```
 
 ### Step 4: Setup NSSM Service Manager
