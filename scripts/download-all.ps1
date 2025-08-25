@@ -168,60 +168,6 @@ if ($needsInstall.Count -eq 0) {
     $install = Read-Host "Would you like to install the missing components? (y/N)"
 }
 
-Write-Host "Downloading all components with latest versions..." -ForegroundColor Yellow
-Write-Host ""
-
-# Get latest PHP version
-Write-Host "[1/4] Getting latest PHP 8.x version..." -ForegroundColor Green
-try {
-    $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'
-    # Filter only version number properties (exclude 'announcement', 'tags', etc.)
-    $phpVersion = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
-    if (-not $phpVersion) {
-        # Fallback to known working version
-        $phpVersion = "8.3.24"
-        Write-Host "Using fallback PHP version: $phpVersion" -ForegroundColor Yellow
-    } else {
-        Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
-    }
-    Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip" -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
-    Write-Host "✅ Downloaded PHP $phpVersion" -ForegroundColor Green
-} catch {
-    Write-Host "❌ PHP download failed: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-# Get latest MariaDB LTS
-Write-Host ""
-Write-Host "[2/4] Getting latest MariaDB LTS version..." -ForegroundColor Green
-try {
-    # Use known working MariaDB LTS version due to API complexity
-    $mariaVersion = "10.11.6"
-    $mariaUrl = "https://downloads.mariadb.org/interstitial/mariadb-10.11.6/winx64-packages/mariadb-10.11.6-winx64.msi"
-    Write-Host "Using stable MariaDB LTS: $mariaVersion" -ForegroundColor White
-    Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
-    Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
-} catch {
-    Write-Host "❌ MariaDB download failed: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-# Download WordPress (already dynamic)
-Write-Host ""
-Write-Host "[3/4] Downloading latest WordPress..." -ForegroundColor Green
-Invoke-WebRequest -Uri "https://wordpress.org/latest.zip" -OutFile "$env:TEMP\wordpress-latest.zip"
-Write-Host "✅ Downloaded WordPress (latest)" -ForegroundColor Green
-
-
-Write-Host ""
-Write-Host "================================================================" -ForegroundColor Cyan
-Write-Host "All downloads completed successfully!" -ForegroundColor Green
-Write-Host ""
-Write-Host "Downloaded versions:" -ForegroundColor Yellow
-Write-Host "- PHP: $phpVersion" -ForegroundColor White
-Write-Host "- MariaDB: $mariaVersion" -ForegroundColor White
-Write-Host "- WordPress: Latest" -ForegroundColor White
-Write-Host ""
-Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
-Write-Host "================================================================" -ForegroundColor Cyan
 
 if ($install -match '^[Yy]') {
     Write-Host ""
