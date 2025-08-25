@@ -65,8 +65,8 @@ Before beginning the installation, ensure your system meets the following requir
    - For 32-bit Windows: Use `nssm.exe` from the `win32` folder
 
 3. **Copy NSSM to system location**:
+   Copy to Windows system directory (requires admin)
    ```powershell
-   # Copy to Windows system directory (requires admin)
    Copy-Item "C:\Tools\NSSM\win64\nssm.exe" "C:\Windows\System32\"
    ```
 
@@ -87,25 +87,29 @@ Add both Caddy and NSSM to your system PATH for easy command-line access.
    - Add your NSSM directory (e.g., `C:\Tools\NSSM\win64`)
 
 #### Method 2: Using PowerShell (Command Line)
+# Add Caddy to PATH (replace with your actual path)
 
 ```powershell
-# Add Caddy to PATH (replace with your actual path)
 $env:PATH += ";C:\Tools\Caddy"
-
+```
 # Add NSSM to PATH (replace with your actual path)
+```
 $env:PATH += ";C:\Tools\NSSM\win64"
-
+```
 # Make changes permanent (requires admin)
+```
 [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [EnvironmentVariableTarget]::Machine)
 ```
 
 #### Verify Installation
+# Test NSSM installation
 
 ```powershell
-# Test NSSM installation
 nssm version
 
 # Test Caddy installation
+
+```
 caddy version
 ```
 
@@ -116,14 +120,18 @@ Before creating the service, ensure your Caddy configuration is ready.
 #### Verify Caddy Setup
 
 1. **Test Caddy configuration**:
+   Navigate to your Caddy directory
+   
    ```powershell
-   # Navigate to your Caddy directory
    cd C:\Tools\Caddy
-
-   # Validate Caddyfile syntax
-   caddy validate --config Caddyfile
-
-   # Test Caddy startup (stop with Ctrl+C)
+   ```
+   Validate Caddyfile syntax
+   
+   ```
+caddy validate --config Caddyfile
+   ```
+   Test Caddy startup (stop with Ctrl+C)
+   ```
    caddy run --config Caddyfile
    ```
 
@@ -146,8 +154,9 @@ Before creating the service, ensure your Caddy configuration is ready.
 
 #### Install the Service
 
+Create the Caddy service
+
 ```powershell
-# Create the Caddy service
 nssm install Caddy
 ```
 
@@ -231,26 +240,28 @@ CADDY_LOG_LEVEL=INFO
 
 1. **Click "Install service"** in the NSSM GUI
 2. **Verify installation**:
-   ```powershell
    # Check if service was created
+   ```powershell
    Get-Service -Name Caddy
    ```
 
 3. **Start the service**:
+   Start Caddy service
    ```powershell
-   # Start Caddy service
    nssm start Caddy
-
+   ```
    # Alternative using Windows Service Manager
+   ```   
    Start-Service -Name Caddy
    ```
 
 4. **Verify service status**:
+    Check service status
    ```powershell
-   # Check service status
    nssm status Caddy
-
+   ```
    # Detailed service information
+   ```
    Get-Service -Name Caddy | Format-List *
    ```
 
@@ -259,55 +270,69 @@ CADDY_LOG_LEVEL=INFO
 ### Essential Service Commands
 
 #### NSSM Commands
+ Start the service
 
 ```powershell
-# Start the service
 nssm start Caddy
-
-# Stop the service
+```
+ Stop the service
+```
 nssm stop Caddy
-
-# Restart the service
+```
+ Restart the service
+```
 nssm restart Caddy
+```
 
-# Check service status
+ Check service status
+```
 nssm status Caddy
+```
 
-# Remove the service (stops first if running)
+ Remove the service (stops first if running)
+```
 nssm remove Caddy confirm
 ```
 
 #### Windows Service Commands
-
+ Start service
 ```powershell
-# Start service
 Start-Service -Name Caddy
-
-# Stop service
+```
+ Stop service
+```
 Stop-Service -Name Caddy
+```
 
-# Restart service
+ Restart service
+```
 Restart-Service -Name Caddy
+```
 
-# Get service status
+ Get service status
+```
 Get-Service -Name Caddy
-
-# Get detailed service information
+```
+ Get detailed service information
+```
 Get-WmiObject -Class Win32_Service -Filter "Name='Caddy'"
 ```
 
 #### Service Configuration Management
-
+ Edit service configuration
 ```powershell
-# Edit service configuration
 nssm edit Caddy
+```
 
 # Get service configuration
+```
 nssm get Caddy Application
 nssm get Caddy Parameters
 nssm get Caddy AppDirectory
+```
 
 # Set service parameters
+```
 nssm set Caddy Application "C:\Tools\Caddy\caddy.exe"
 nssm set Caddy Parameters "run --config Caddyfile"
 nssm set Caddy AppDirectory "C:\Tools\Caddy"
@@ -316,15 +341,17 @@ nssm set Caddy AppDirectory "C:\Tools\Caddy"
 ### Monitoring and Logging
 
 #### View Service Logs
-
+ View recent output logs
 ```powershell
-# View recent output logs
 Get-Content "C:\Tools\Caddy\logs\caddy-output.log" -Tail 50
-
-# Monitor logs in real-time
+```
+ Monitor logs in real-time
+```
 Get-Content "C:\Tools\Caddy\logs\caddy-output.log" -Wait
+```
 
-# View error logs
+ View error logs
+```
 Get-Content "C:\Tools\Caddy\logs\caddy-error.log" -Tail 20
 ```
 
@@ -336,9 +363,8 @@ Get-Content "C:\Tools\Caddy\logs\caddy-error.log" -Tail 20
 4. **Search for**: Events related to "Caddy" service
 
 #### Service Status Monitoring
-
+ Create a monitoring script
 ```powershell
-# Create a monitoring script
 $serviceName = "Caddy"
 $service = Get-Service -Name $serviceName
 
@@ -362,68 +388,84 @@ if ($service.Status -eq "Running") {
 - Caddy doesn't respond to requests
 
 **Diagnostic Commands:**
+Check service status
 ```powershell
-# Check service status
 nssm status Caddy
-
-# View service configuration
+```
+ View service configuration
+```
 nssm get Caddy Application
+```
+```
 nssm get Caddy Parameters
+```
 
-# Check Windows Event Logs
+ Check Windows Event Logs
+```
 Get-EventLog -LogName System -Source "Service Control Manager" -Newest 10 | Where-Object {$_.Message -like "*Caddy*"}
 ```
 
 **Common Solutions:**
 
 1. **Verify file paths**:
+Check if Caddy executable exists
    ```powershell
-   # Check if Caddy executable exists
    Test-Path "C:\Tools\Caddy\caddy.exe"
-   
-   # Check if Caddyfile exists
+   ```   
+    Check if Caddyfile exists
+   ```
    Test-Path "C:\Tools\Caddy\Caddyfile"
    ```
 
 2. **Validate Caddy configuration**:
    ```powershell
    cd C:\Tools\Caddy
+   ```
+
+   ```
    caddy validate --config Caddyfile
    ```
 
 3. **Check permissions**:
+    Ensure NSSM service has access to Caddy directory
    ```powershell
-   # Ensure NSSM service has access to Caddy directory
    icacls "C:\Tools\Caddy" /grant "NETWORK SERVICE:(OI)(CI)F"
    ```
 
 #### Issue 2: Service Starts but Caddy Doesn't Work
 
 **Diagnostic Steps:**
+ Check if Caddy is listening on ports
 ```powershell
-# Check if Caddy is listening on ports
 netstat -an | findstr ":80"
 netstat -an | findstr ":443"
+```
 
 # Test Caddy directly
+```
 cd C:\Tools\Caddy
+```
+```
 caddy run --config Caddyfile
 ```
 
 **Solutions:**
+
 1. **Firewall configuration**:
+
+    Allow Caddy through Windows Firewall
    ```powershell
-   # Allow Caddy through Windows Firewall
    New-NetFirewallRule -DisplayName "Caddy HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
    New-NetFirewallRule -DisplayName "Caddy HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
    ```
 
 2. **Port conflicts**:
+    Check what's using port 80
    ```powershell
-   # Check what's using port 80
    netstat -ano | findstr ":80"
-   
+   ```
    # Stop IIS if it's running
+   ```
    Stop-Service -Name W3SVC -Force
    Set-Service -Name W3SVC -StartupType Disabled
    ```
@@ -431,8 +473,8 @@ caddy run --config Caddyfile
 #### Issue 3: Service Crashes or Restarts Frequently
 
 **Configure Failure Recovery:**
+ Set service recovery options
 ```powershell
-# Set service recovery options
 nssm set Caddy AppExit Default Restart
 nssm set Caddy AppRestartDelay 5000
 nssm set Caddy AppStdout "C:\Tools\Caddy\logs\caddy-output.log"
@@ -440,8 +482,8 @@ nssm set Caddy AppStderr "C:\Tools\Caddy\logs\caddy-error.log"
 ```
 
 **Monitor for issues:**
+ Watch error logs
 ```powershell
-# Watch error logs
 Get-Content "C:\Tools\Caddy\logs\caddy-error.log" -Wait
 ```
 
@@ -449,11 +491,14 @@ Get-Content "C:\Tools\Caddy\logs\caddy-error.log" -Wait
 
 For detailed troubleshooting, run Caddy manually with debug output:
 
-```powershell
 # Stop the service first
-nssm stop Caddy
 
-# Run Caddy manually with debug logging
+```powershell
+nssm stop Caddy
+```
+
+ Run Caddy manually with debug logging
+```
 cd C:\Tools\Caddy
 caddy run --config Caddyfile --debug
 ```
@@ -466,49 +511,54 @@ caddy run --config Caddyfile --debug
 
 For enhanced security, create a dedicated service account:
 
-```powershell
 # Create a new local user for Caddy service
+```powershell
 $password = ConvertTo-SecureString "YourSecurePassword123!" -AsPlainText -Force
 New-LocalUser -Name "CaddyService" -Password $password -Description "Caddy Web Server Service Account"
-
-# Add to necessary groups
+```
+ Add to necessary groups
+```
 Add-LocalGroupMember -Group "Log on as a service" -Member "CaddyService"
 ```
 
 #### Configure Service to Use Dedicated Account
 
+Stop the service
 ```powershell
-# Stop the service
 nssm stop Caddy
-
-# Configure service account
+```
+ Configure service account
+```
 nssm set Caddy ObjectName ".\CaddyService" "YourSecurePassword123!"
-
+```
 # Start the service
+```
 nssm start Caddy
 ```
 
 ### File System Permissions
 
+ Set secure permissions on Caddy directory
 ```powershell
-# Set secure permissions on Caddy directory
 icacls "C:\Tools\Caddy" /inheritance:d
 icacls "C:\Tools\Caddy" /grant:r "CaddyService:(OI)(CI)RX"
 icacls "C:\Tools\Caddy" /grant:r "Administrators:(OI)(CI)F"
 icacls "C:\Tools\Caddy" /remove "Users"
-
-# Secure log directory
+```
+ Secure log directory
+```
 icacls "C:\Tools\Caddy\logs" /grant:r "CaddyService:(OI)(CI)M"
 ```
 
 ### Windows Firewall Configuration
-
+ 
+Create specific firewall rules for Caddy
 ```powershell
-# Create specific firewall rules for Caddy
 New-NetFirewallRule -DisplayName "Caddy HTTP Inbound" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow -Program "C:\Tools\Caddy\caddy.exe"
 New-NetFirewallRule -DisplayName "Caddy HTTPS Inbound" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow -Program "C:\Tools\Caddy\caddy.exe"
-
-# Block other applications from using these ports
+```
+ Block other applications from using these ports
+```
 New-NetFirewallRule -DisplayName "Block HTTP Others" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Block
 New-NetFirewallRule -DisplayName "Block HTTPS Others" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Block
 ```
@@ -517,13 +567,17 @@ New-NetFirewallRule -DisplayName "Block HTTPS Others" -Direction Inbound -Protoc
 
 ### Service Configuration Tuning
 
+ Configure service for better performance
+
 ```powershell
-# Configure service for better performance
 nssm set Caddy AppPriority NORMAL_PRIORITY_CLASS
 nssm set Caddy AppNoConsole 1
 nssm set Caddy AppAffinity All
+```
 
-# Set restart delays
+ Set restart delays
+
+```
 nssm set Caddy AppThrottle 1500
 nssm set Caddy AppRestartDelay 5000
 ```
@@ -532,8 +586,8 @@ nssm set Caddy AppRestartDelay 5000
 
 Create a PowerShell script to monitor resource usage:
 
+ Save as C:\Tools\Caddy\scripts\monitor-caddy.ps1
 ```powershell
-# Save as C:\Tools\Caddy\scripts\monitor-caddy.ps1
 $processName = "caddy"
 $process = Get-Process -Name $processName -ErrorAction SilentlyContinue
 
@@ -553,8 +607,9 @@ if ($process) {
 
 ### Log Rotation and Management
 
+ Configure log rotation
+
 ```powershell
-# Configure log rotation
 nssm set Caddy AppRotateFiles 1
 nssm set Caddy AppRotateOnline 1
 nssm set Caddy AppRotateSeconds 86400  # Daily rotation
@@ -567,8 +622,9 @@ nssm set Caddy AppRotateBytes 10485760  # 10MB max size
 
 Create a health check script:
 
+ Save as C:\Tools\Caddy\scripts\health-check.ps1
+
 ```powershell
-# Save as C:\Tools\Caddy\scripts\health-check.ps1
 param(
     [string]$ServiceName = "Caddy",
     [string]$TestUrl = "http://localhost",
@@ -665,12 +721,13 @@ Register-ScheduledTask -TaskName "Caddy Daily Backup" -Action $action -Trigger $
 ### Multiple Caddy Instances
 
 To run multiple Caddy instances for different purposes:
+ Install second instance
 
-```powershell
-# Install second instance
+```
 nssm install CaddyAPI
-
+```
 # Configure for API server
+```
 nssm set CaddyAPI Application "C:\Tools\Caddy\caddy.exe"
 nssm set CaddyAPI Parameters "run --config CaddyfileAPI --adapter caddyfile"
 nssm set CaddyAPI AppDirectory "C:\Tools\Caddy"
@@ -681,12 +738,13 @@ nssm set CaddyAPI DisplayName "Caddy API Server"
 
 #### Windows Performance Toolkit Integration
 
+Monitor Caddy performance with Windows Performance Toolkit
 ```powershell
-# Monitor Caddy performance with Windows Performance Toolkit
 wpr -start GeneralProfile -filemode
+```
+ Run your tests...
 
-# Run your tests...
-
+```
 wpr -stop C:\Tools\Caddy\logs\caddy-performance.etl
 ```
 
