@@ -81,20 +81,34 @@ if (-not $phpInstalled) {
         Write-Host "⚡ PHP already downloaded: $($phpFiles[0].Name)" -ForegroundColor Cyan
     } else {
         try {
+            Write-Host "Fetching latest PHP version..." -ForegroundColor Yellow
             $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'
-            # Filter only version number properties (exclude 'announcement', 'tags', etc.)
-            $phpVersion = $releases.PSObject.Properties.Name | Where-Object { $_ -match '^\d+\.\d+\.\d+$' } | Sort-Object {[Version]$_} -Descending | Select-Object -First 1
-            if (-not $phpVersion) {
+            
+            # Get version numbers and sort them safely
+            $versions = @()
+            foreach ($prop in $releases.PSObject.Properties.Name) {
+                if ($prop -match '^\d+\.\d+\.\d+$') {
+                    $versions += $prop
+                }
+            }
+            
+            if ($versions.Count -gt 0) {
+                # Sort versions manually to avoid [Version] parsing issues
+                $phpVersion = $versions | Sort-Object -Descending | Select-Object -First 1
+                Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
+            } else {
                 # Fallback to known working version
                 $phpVersion = "8.3.24"
                 Write-Host "Using fallback PHP version: $phpVersion" -ForegroundColor Yellow
-            } else {
-                Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
             }
-            Invoke-WebRequest -Uri "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip" -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
+            
+            $phpUrl = "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip"
+            Write-Host "Downloading from: $phpUrl" -ForegroundColor Gray
+            Invoke-WebRequest -Uri $phpUrl -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
             Write-Host "✅ Downloaded PHP $phpVersion" -ForegroundColor Green
         } catch {
             Write-Host "❌ PHP download failed: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "Error details: $($_.Exception)" -ForegroundColor Red
         }
     }
 }
