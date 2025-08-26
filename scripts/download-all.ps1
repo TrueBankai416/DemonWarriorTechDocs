@@ -245,9 +245,15 @@ if ($install -match '^[Yy]') {
                 Write-Host "✅ PHP-CGI service created" -ForegroundColor Green
                 try {
                     Start-Service -Name "PHP-CGI"
-                    Write-Host "✅ PHP-CGI service started" -ForegroundColor Green
+                    $serviceStatus = Get-Service -Name "PHP-CGI"
+                    if ($serviceStatus.Status -eq "Running") {
+                        Write-Host "✅ PHP-CGI service started successfully" -ForegroundColor Green
+                    } else {
+                        Write-Host "❌ PHP-CGI service failed to start (Status: $($serviceStatus.Status))" -ForegroundColor Red
+                    }
                 } catch {
-                    Write-Host "⚠️  PHP service created but failed to start: $($_.Exception.Message)" -ForegroundColor Yellow
+                    Write-Host "❌ PHP service created but failed to start: $($_.Exception.Message)" -ForegroundColor Red
+                    Write-Host "⚠️  Check if php-cgi.exe exists at C:\Tools\PHP\php-cgi.exe" -ForegroundColor Yellow
                 }
             } else {
                 Write-Host "✅ PHP-CGI service already exists" -ForegroundColor Green
@@ -294,6 +300,47 @@ if ($install -match '^[Yy]') {
             $result = & cmd /c "`"$mariaScript`""
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
+                
+                # Configure MariaDB database for WordPress
+                Write-Host ""
+                Write-Host "Configuring MariaDB for WordPress..." -ForegroundColor Yellow
+                Write-Host "Please provide database credentials:" -ForegroundColor Cyan
+                
+                $dbUser = Read-Host "Enter database username (default: wpuser)"
+                if ([string]::IsNullOrWhiteSpace($dbUser)) { $dbUser = "wpuser" }
+                
+                $dbPass = Read-Host "Enter database password (default: wp123456!)" -AsSecureString
+                $dbPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($dbPass))
+                if ([string]::IsNullOrWhiteSpace($dbPassPlain)) { $dbPassPlain = "wp123456!" }
+                
+                try {
+                    # Create database and user
+                    $sqlCommands = @"
+CREATE DATABASE IF NOT EXISTS wordpress;
+USE wordpress;
+CREATE USER IF NOT EXISTS '$dbUser'@'localhost' IDENTIFIED BY '$dbPassPlain';
+GRANT ALL PRIVILEGES ON wordpress.* TO '$dbUser'@'localhost';
+FLUSH PRIVILEGES;
+"@
+                    
+                    Write-Host "Creating WordPress database and user..." -ForegroundColor Yellow
+                    $sqlCommands | & "C:\Program Files\MariaDB 12.0\bin\mysql.exe" -u root
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Host "✅ MariaDB configured successfully" -ForegroundColor Green
+                        Write-Host "Database: wordpress" -ForegroundColor White
+                        Write-Host "Username: $dbUser" -ForegroundColor White
+                        Write-Host "Password: $dbPassPlain" -ForegroundColor White
+                    } else {
+                        Write-Host "⚠️  MariaDB configuration may have failed" -ForegroundColor Yellow
+                        Write-Host "You can configure manually using these commands:" -ForegroundColor Cyan
+                        Write-Host $sqlCommands -ForegroundColor Gray
+                    }
+                } catch {
+                    Write-Host "⚠️  MariaDB configuration failed: $($_.Exception.Message)" -ForegroundColor Yellow
+                    Write-Host "You can configure manually using these SQL commands:" -ForegroundColor Cyan
+                    Write-Host $sqlCommands -ForegroundColor Gray
+                }
             } else {
                 Write-Host "❌ MariaDB installation failed" -ForegroundColor Red
             }
