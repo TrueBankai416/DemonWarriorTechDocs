@@ -1,7 +1,7 @@
 # WordPress Installation - Download All Components (PowerShell Version)
 Write-Host "WordPress Installation - Download All Components (PowerShell Version)" -ForegroundColor Cyan
 Write-Host "================================================================" -ForegroundColor Cyan
-Read-Host "press enter to continue"
+Read-Host "press enter to continue Line 4"
 # Check what's already installed BEFORE downloading
 Write-Host "Checking existing installations..." -ForegroundColor Yellow
 
