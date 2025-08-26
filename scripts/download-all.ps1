@@ -77,7 +77,6 @@ $needsDownload = @()
 if (-not $phpInstalled) { $needsDownload += "PHP" }
 if (-not $mariaInstalled) { $needsDownload += "MariaDB" }
 if (-not $wpInstalled) { $needsDownload += "WordPress" }
-
 Write-Host ""
 if ($needsDownload.Count -eq 0) {
     Write-Host "🎉 All components are already installed!" -ForegroundColor Green
@@ -88,6 +87,7 @@ if ($needsDownload.Count -eq 0) {
     Write-Host "Starting selective download process..." -ForegroundColor Yellow
     Write-Host ""
 }
+Read-Host "press enter to continue Line 91"
 # Download PHP only if needed
 if (-not $phpInstalled) {
     Write-Host "[1/?] Getting latest PHP 8.x version..." -ForegroundColor Green
