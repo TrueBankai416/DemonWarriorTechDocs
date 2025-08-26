@@ -1,7 +1,7 @@
 # WordPress Installation - Download All Components (PowerShell Version)
 Write-Host "WordPress Installation - Download All Components (PowerShell Version)" -ForegroundColor Cyan
 Write-Host "================================================================" -ForegroundColor Cyan
-
+Read-Host "press enter to continue"
 # Check what's already installed BEFORE downloading
 Write-Host "Checking existing installations..." -ForegroundColor Yellow
 
@@ -41,7 +41,7 @@ try {
 } catch {
     Write-Host "❌ MariaDB not installed" -ForegroundColor Red
 }
-
+Read-Host "press enter to continue"
 # Check WordPress - Better detection method
 $wpInstalled = $false
 $wpLocations = @(
@@ -72,7 +72,7 @@ foreach ($location in $wpLocations) {
 if (-not $wpFound) {
     Write-Host "❌ WordPress not installed" -ForegroundColor Red
 }
-
+Read-Host "press enter to continue"
 # Determine what needs to be downloaded
 $needsDownload = @()
 if (-not $phpInstalled) { $needsDownload += "PHP" }
