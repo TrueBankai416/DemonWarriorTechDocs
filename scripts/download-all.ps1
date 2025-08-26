@@ -305,7 +305,6 @@ php-cgi.exe -b 127.0.0.1:9000
         }
         Write-Host ""
     }
-    Read-Host "Press Enter to continue with component detection"
     # Install only missing components
     if (-not $phpInstalled) {
         Write-Host "Installing PHP..." -ForegroundColor Yellow
@@ -315,6 +314,22 @@ php-cgi.exe -b 127.0.0.1:9000
             $result = & cmd /c "`"$phpScript`""
             if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ PHP installation completed" -ForegroundColor Green
+                
+                # Add PHP to PATH using PowerShell (with admin privileges)
+                try {
+                    $currentPath = [Environment]::GetEnvironmentVariable("PATH", "Machine")
+                    if ($currentPath -notlike "*C:\Tools\PHP*") {
+                        Write-Host "Adding PHP to system PATH..." -ForegroundColor Yellow
+                        $newPath = $currentPath + ";C:\Tools\PHP"
+                        [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+                        Write-Host "✅ PHP added to system PATH" -ForegroundColor Green
+                    } else {
+                        Write-Host "✅ PHP already in system PATH" -ForegroundColor Green
+                    }
+                } catch {
+                    Write-Host "⚠️  Could not add PHP to system PATH (requires admin): $($_.Exception.Message)" -ForegroundColor Yellow
+                    Write-Host "You can add it manually: C:\Tools\PHP" -ForegroundColor Gray
+                }
             } else {
                 Write-Host "❌ PHP installation failed" -ForegroundColor Red
             }
