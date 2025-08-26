@@ -1,6 +1,9 @@
 # WordPress Installation Scripts
 
 This directory contains automated scripts for installing WordPress with PHP, MariaDB, and supporting components on Windows.
+:::danger
+STILL IN TESTING PHASE
+:::
 
 ## 🚀 Quick Start
 
