@@ -1,0 +1,399 @@
+# WordPress Installation - Download All Components (PowerShell Version)
+Write-Host "WordPress Installation - Download All Components (PowerShell Version)" -ForegroundColor Cyan
+Write-Host "================================================================" -ForegroundColor Cyan
+# Check what's already installed BEFORE downloading
+Write-Host "Checking existing installations..." -ForegroundColor Yellow
+
+# Check PHP
+$phpInstalled = $false
+try {
+    $phpVersion = php -v 2>$null
+    if ($phpVersion -and $phpVersion -match "PHP (\d+\.\d+\.\d+)") {
+        Write-Host "✅ PHP $($matches[1]) is already installed" -ForegroundColor Green
+        $phpInstalled = $true
+    }
+} catch {
+    if (Test-Path "C:\Tools\PHP\php.exe") {
+        Write-Host "⚠️  PHP found at C:\Tools\PHP but not in PATH" -ForegroundColor Yellow
+        $phpInstalled = $true
+    } else {
+        Write-Host "❌ PHP not installed" -ForegroundColor Red
+    }
+}
+
+# Check MariaDB
+$mariaInstalled = $false
+try {
+    $mariaService = Get-Service -Name "MariaDB*" -ErrorAction SilentlyContinue
+    if ($mariaService) {
+        Write-Host "✅ MariaDB service found ($($mariaService.Name))" -ForegroundColor Green
+        $mariaInstalled = $true
+    } else {
+        # Check if MariaDB is installed but service not created
+        if (Test-Path "C:\Program Files\MariaDB*") {
+            Write-Host "⚠️  MariaDB installation found but service not configured" -ForegroundColor Yellow
+            $mariaInstalled = $true
+        } else {
+            Write-Host "❌ MariaDB not installed" -ForegroundColor Red
+        }
+    }
+} catch {
+    Write-Host "❌ MariaDB not installed" -ForegroundColor Red
+}
+# Check WordPress - Better detection method
+$wpInstalled = $false
+$wpLocations = @(
+    "C:\inetpub\wwwroot\wordpress",
+    "C:\Tools\WordPress",
+    "C:\xampp\htdocs\wordpress",
+    "C:\wamp\www\wordpress"
+)
+
+$wpFound = $false
+foreach ($location in $wpLocations) {
+    if (Test-Path "$location\wp-includes\version.php") {
+        Write-Host "✅ WordPress installation found at $location" -ForegroundColor Green
+        $wpInstalled = $true
+        $wpFound = $true
+        break
+    } elseif (Test-Path "$location\index.php") {
+        $indexContent = Get-Content "$location\index.php" -Raw -ErrorAction SilentlyContinue
+        if ($indexContent -and $indexContent.Contains("wp-blog-header.php")) {
+            Write-Host "✅ WordPress installation found at $location" -ForegroundColor Green
+            $wpInstalled = $true
+            $wpFound = $true
+            break
+        }
+    }
+}
+
+if (-not $wpFound) {
+    Write-Host "❌ WordPress not installed" -ForegroundColor Red
+}
+# Determine what needs to be downloaded
+$needsDownload = @()
+if (-not $phpInstalled) { $needsDownload += "PHP" }
+if (-not $mariaInstalled) { $needsDownload += "MariaDB" }
+if (-not $wpInstalled) { $needsDownload += "WordPress" }
+Write-Host ""
+if ($needsDownload.Count -eq 0) {
+    Write-Host "🎉 All components are already installed!" -ForegroundColor Green
+    Write-Host "No downloads needed. You may still want to install Caddy using the dedicated guide." -ForegroundColor Yellow
+    return
+} else {
+    Write-Host "Components to download: $($needsDownload -join ', ')" -ForegroundColor Yellow
+    Write-Host "Starting selective download process..." -ForegroundColor Yellow
+    Write-Host ""
+}
+
+# Download PHP only if needed
+if (-not $phpInstalled) {
+    Write-Host "[1/?] Getting latest PHP 8.x version..." -ForegroundColor Green
+    
+    # Check if already downloaded
+    $phpFiles = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue
+    if ($phpFiles) {
+        Write-Host "⚡ PHP already downloaded: $($phpFiles[0].Name)" -ForegroundColor Cyan
+    } else {
+        try {
+            Write-Host "Fetching latest PHP version..." -ForegroundColor Yellow
+            $releases = Invoke-RestMethod 'https://www.php.net/releases/?json&version=8'
+            
+            # Get version numbers and sort them safely
+            $versions = @()
+            foreach ($prop in $releases.PSObject.Properties.Name) {
+                if ($prop -match '^\d+\.\d+\.\d+$') {
+                    $versions += $prop
+                }
+            }
+            
+            if ($versions.Count -gt 0) {
+                # Sort versions manually to avoid [Version] parsing issues
+                $phpVersion = $versions | Sort-Object -Descending | Select-Object -First 1
+                Write-Host "Latest PHP version: $phpVersion" -ForegroundColor White
+            } else {
+                # Fallback to known working version
+                $phpVersion = "8.3.24"
+                Write-Host "Using fallback PHP version: $phpVersion" -ForegroundColor Yellow
+            }
+            
+            $phpUrl = "https://windows.php.net/downloads/releases/php-$phpVersion-nts-Win32-vs16-x64.zip"
+            Write-Host "Downloading from: $phpUrl" -ForegroundColor Gray
+            Invoke-WebRequest -Uri $phpUrl -OutFile "$env:TEMP\php-$phpVersion-nts-Win32-vs16-x64.zip"
+            Write-Host "✅ Downloaded PHP $phpVersion" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ PHP download failed: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "Error details: $($_.Exception)" -ForegroundColor Red
+        }
+    }
+}
+# Download MariaDB only if needed
+if (-not $mariaInstalled) {
+    Write-Host ""
+    Write-Host "[2/?] Getting latest MariaDB version..." -ForegroundColor Green
+    
+    # Check if already downloaded
+    if (Test-Path "$env:TEMP\mariadb-latest-winx64.msi") {
+        Write-Host "⚡ MariaDB already downloaded" -ForegroundColor Cyan
+    } else {
+        try {
+            # Get latest MariaDB version from GitHub releases
+            Write-Host "Fetching latest MariaDB version..." -ForegroundColor Yellow
+            $releases = Invoke-RestMethod "https://api.github.com/repos/MariaDB/server/releases"
+            $latestRelease = $releases | Where-Object { $_.prerelease -eq $false -and $_.tag_name -match "^\d+\.\d+\.\d+$" } | Select-Object -First 1
+            
+            if ($latestRelease) {
+                $mariaVersion = $latestRelease.tag_name
+                Write-Host "Latest MariaDB version: $mariaVersion" -ForegroundColor White
+                
+                # Try direct download from MariaDB mirror
+                $mariaUrl = "https://mirror.its.dal.ca/mariadb//mariadb-$mariaVersion/winx64-packages/mariadb-$mariaVersion-winx64.msi"
+                Write-Host "Downloading from: $mariaUrl" -ForegroundColor Gray
+                Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
+                Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+            } else {
+                throw "Could not determine latest MariaDB version"
+            }
+        } catch {
+            Write-Host "⚠️  Dynamic download failed, trying fallback..." -ForegroundColor Yellow
+            try {
+                # Fallback to known working version
+                $mariaVersion = "12.0.2"
+                $mariaUrl = "https://mirror.its.dal.ca/mariadb//mariadb-12.0.2/winx64-packages/mariadb-12.0.2-winx64.msi"
+                Write-Host "Using fallback MariaDB version: $mariaVersion" -ForegroundColor White
+                Invoke-WebRequest -Uri $mariaUrl -OutFile "$env:TEMP\mariadb-latest-winx64.msi"
+                Write-Host "✅ Downloaded MariaDB $mariaVersion" -ForegroundColor Green
+            } catch {
+                Write-Host "❌ MariaDB download failed: $($_.Exception.Message)" -ForegroundColor Red
+            }
+        }
+    }
+}
+# Download WordPress only if needed
+if (-not $wpInstalled) {
+    Write-Host ""
+    Write-Host "[3/?] Downloading latest WordPress..." -ForegroundColor Green
+    
+    # Check if already downloaded
+    if (Test-Path "$env:TEMP\wordpress-latest.zip") {
+        Write-Host "⚡ WordPress already downloaded" -ForegroundColor Cyan
+    } else {
+        try {
+            Invoke-WebRequest -Uri "https://wordpress.org/latest.zip" -OutFile "$env:TEMP\wordpress-latest.zip"
+            Write-Host "✅ Downloaded WordPress (latest)" -ForegroundColor Green
+        } catch {
+            Write-Host "❌ WordPress download failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+    }
+}
+
+
+Write-Host ""
+Write-Host "================================================================" -ForegroundColor Cyan
+Write-Host "All downloads completed successfully!" -ForegroundColor Green
+Write-Host ""
+Write-Host "Downloaded versions:" -ForegroundColor Yellow
+
+# Extract PHP version from downloaded file
+$phpFile = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($phpFile) {
+    $phpVersionFromFile = $phpFile.Name -replace "php-(\d+\.\d+\.\d+)-nts-Win32-vs16-x64\.zip", '$1'
+    Write-Host "- PHP: $phpVersionFromFile" -ForegroundColor White
+} else {
+    Write-Host "- PHP: Not downloaded" -ForegroundColor Gray
+}
+# Extract MariaDB version from downloaded file or variable
+$mariaFile = Get-ChildItem "$env:TEMP\mariadb-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($mariaFile -and $mariaVersion) {
+    Write-Host "- MariaDB: $mariaVersion" -ForegroundColor White
+} elseif ($mariaFile) {
+    Write-Host "- MariaDB: Downloaded" -ForegroundColor White
+} else {
+    Write-Host "- MariaDB: Not downloaded" -ForegroundColor Gray
+}
+# WordPress version
+$wpFile = Get-ChildItem "$env:TEMP\wordpress-latest.zip" -ErrorAction SilentlyContinue
+if ($wpFile) {
+    Write-Host "- WordPress: Latest" -ForegroundColor White
+} else {
+    Write-Host "- WordPress: Not downloaded" -ForegroundColor Gray
+}
+
+Write-Host ""
+Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
+Write-Host "================================================================" -ForegroundColor Cyan
+# Ask user if they want to proceed with installation
+$needsInstall = @()
+if (-not $phpInstalled) { $needsInstall += "PHP" }
+if (-not $mariaInstalled) { $needsInstall += "MariaDB" }
+if (-not $wpInstalled) { $needsInstall += "WordPress" }
+
+Write-Host ""
+if ($needsInstall.Count -eq 0) {
+    Write-Host "🎉 All components are already installed!" -ForegroundColor Green
+    Write-Host "You may still want to install Caddy using the dedicated guide." -ForegroundColor Yellow
+    $install = "n"
+} else {
+    Write-Host "Components to install: $($needsInstall -join ', ')" -ForegroundColor Yellow
+    $install = Read-Host "Would you like to install the missing components? (y/N)"
+}
+
+
+if ($install -match '^[Yy]') {
+    Write-Host ""
+    Write-Host "Starting installation process..." -ForegroundColor Green
+    Write-Host ""
+
+    # Check and create PHP-CGI service if needed
+    if ($phpInstalled) {
+        Write-Host "Checking PHP-CGI service..." -ForegroundColor Yellow
+        try {
+            $phpService = Get-Service -Name "PHP-CGI" -ErrorAction SilentlyContinue
+            if (-not $phpService) {
+                Write-Host "Creating PHP-CGI service..." -ForegroundColor Yellow
+                
+                # First, let's test if php-cgi.exe works
+                if (-not (Test-Path "C:\Tools\PHP\php-cgi.exe")) {
+                    Write-Host "❌ php-cgi.exe not found at C:\Tools\PHP\php-cgi.exe" -ForegroundColor Red
+                    Write-Host "⚠️  PHP service creation skipped" -ForegroundColor Yellow
+                } else {
+                    # Create a wrapper script for the service
+                    $wrapperScript = @"
+@echo off
+cd /d "C:\Tools\PHP"
+php-cgi.exe -b 127.0.0.1:9000
+"@
+                    $wrapperPath = "C:\Tools\PHP\php-cgi-service.cmd"
+                    $wrapperScript | Out-File -FilePath $wrapperPath -Encoding ASCII
+                    
+                    try {
+                        New-Service -Name "PHP-CGI" -BinaryPathName "cmd.exe /c `"$wrapperPath`"" -DisplayName "PHP FastCGI Service" -Description "PHP FastCGI service for web applications" -StartupType Manual
+                        Write-Host "✅ PHP-CGI service created" -ForegroundColor Green
+                        
+                        # Test starting the service
+                        Write-Host "Testing PHP-CGI service startup..." -ForegroundColor Yellow
+                        try {
+                            Start-Service -Name "PHP-CGI" -ErrorAction Stop
+                            Start-Sleep -Seconds 3
+                            $serviceStatus = Get-Service -Name "PHP-CGI"
+                            if ($serviceStatus.Status -eq "Running") {
+                                Write-Host "✅ PHP-CGI service started successfully" -ForegroundColor Green
+                            } else {
+                                Write-Host "❌ PHP-CGI service failed to start (Status: $($serviceStatus.Status))" -ForegroundColor Red
+                                Write-Host "⚠️  You can try starting it manually: net start PHP-CGI" -ForegroundColor Yellow
+                            }
+                        } catch {
+                            Write-Host "❌ PHP service created but failed to start: $($_.Exception.Message)" -ForegroundColor Red
+                            Write-Host "⚠️  This is common - you can start it manually: net start PHP-CGI" -ForegroundColor Yellow
+                        }
+                    } catch {
+                        Write-Host "❌ Failed to create PHP service: $($_.Exception.Message)" -ForegroundColor Red
+                    }
+                }
+            } else {
+                Write-Host "✅ PHP-CGI service already exists" -ForegroundColor Green
+                Set-Service -Name "PHP-CGI" -StartupType Automatic
+                try {
+                    Start-Service -Name "PHP-CGI" -ErrorAction SilentlyContinue
+                    Write-Host "✅ PHP-CGI service running" -ForegroundColor Green
+                } catch {
+                    Write-Host "⚠️  PHP service exists but may already be running" -ForegroundColor Yellow
+                }
+            }
+        } catch {
+            Write-Host "❌ PHP service operation failed (requires admin): $($_.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host ""
+    }
+    # Install only missing components
+    if (-not $phpInstalled) {
+        Write-Host "Installing PHP..." -ForegroundColor Yellow
+        try {
+            $phpScript = Join-Path $env:TEMP "install-php.cmd"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-php.cmd" -OutFile $phpScript
+            $result = & cmd /c "`"$phpScript`""
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ PHP installation completed" -ForegroundColor Green
+                
+                # Add PHP to PATH using PowerShell (with admin privileges)
+                try {
+                    $currentPath = [Environment]::GetEnvironmentVariable("PATH", "Machine")
+                    if ($currentPath -notlike "*C:\Tools\PHP*") {
+                        Write-Host "Adding PHP to system PATH..." -ForegroundColor Yellow
+                        $newPath = $currentPath + ";C:\Tools\PHP"
+                        [Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
+                        Write-Host "✅ PHP added to system PATH" -ForegroundColor Green
+                    } else {
+                        Write-Host "✅ PHP already in system PATH" -ForegroundColor Green
+                    }
+                } catch {
+                    Write-Host "⚠️  Could not add PHP to system PATH (requires admin): $($_.Exception.Message)" -ForegroundColor Yellow
+                    Write-Host "You can add it manually: C:\Tools\PHP" -ForegroundColor Gray
+                }
+            } else {
+                Write-Host "❌ PHP installation failed" -ForegroundColor Red
+            }
+            Remove-Item $phpScript -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host ""
+    } else {
+        Write-Host "⏭️  Skipping PHP installation (already installed)" -ForegroundColor Cyan
+    }
+    
+    if (-not $mariaInstalled) {
+        Write-Host "Installing MariaDB..." -ForegroundColor Yellow
+        try {
+            $mariaScript = Join-Path $env:TEMP "install-mariadb.cmd"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-mariadb.cmd" -OutFile $mariaScript
+            $result = & cmd /c "`"$mariaScript`""
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ MariaDB installation completed" -ForegroundColor Green
+                Write-Host "✅ Database configuration handled by installation script" -ForegroundColor Green
+            } else {
+                Write-Host "❌ MariaDB installation failed" -ForegroundColor Red
+            }
+            Remove-Item $mariaScript -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host ""
+    } else {
+        Write-Host "⏭️  Skipping MariaDB installation (already installed)" -ForegroundColor Cyan
+    }
+    
+    if (-not $wpInstalled) {
+        Write-Host "Installing WordPress..." -ForegroundColor Yellow
+        try {
+            $wpScript = Join-Path $env:TEMP "install-wordpress.cmd"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/refs/heads/mentat-2%233/scripts/install-wordpress.cmd" -OutFile $wpScript
+            $result = & cmd /c "`"$wpScript`""
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "✅ WordPress installation completed" -ForegroundColor Green
+            } else {
+                Write-Host "❌ WordPress installation failed" -ForegroundColor Red
+            }
+            Remove-Item $wpScript -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "❌ WordPress installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        Write-Host ""
+    } else {
+        Write-Host "⏭️  Skipping WordPress installation (already installed)" -ForegroundColor Cyan
+    }
+    
+    Write-Host ""
+    Write-Host "================================================================" -ForegroundColor Cyan
+    Write-Host "Installation completed!" -ForegroundColor Green
+    Write-Host "Next: Install Caddy using the dedicated guide at:" -ForegroundColor Yellow
+    Write-Host "https://demonwarriortechdocs.pages.dev/docs/Documented%%20Tutorials/Caddy/Windows/Installing_Caddy_on_Windows" -ForegroundColor White
+    Write-Host "================================================================" -ForegroundColor Cyan
+} else {
+    Write-Host ""
+    Write-Host "Installation skipped. You can install manually using:" -ForegroundColor Yellow
+    Write-Host "- PHP: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.cmd | cmd" -ForegroundColor White
+    Write-Host "- MariaDB: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.cmd | cmd" -ForegroundColor White
+    Write-Host "- WordPress: curl -s https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-wordpress.cmd | cmd" -ForegroundColor White
+    Write-Host "- Caddy: Follow the guide at the link above" -ForegroundColor White
+}
