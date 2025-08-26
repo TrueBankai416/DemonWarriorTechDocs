@@ -44,10 +44,10 @@ try {
 
 # Check WordPress
 $wpInstalled = $false
-if ((Test-Path "C:\inetpub\wwwroot\wordpress\wp-config.php") -or (Test-Path "C:\Tools\WordPress\wp-config.php")) {
+if (Test-Path "C:\inetpub\wwwroot\wordpress\wp-config.php" -or Test-Path "C:\Tools\WordPress\wp-config.php") {
     Write-Host "✅ WordPress installation found" -ForegroundColor Green
     $wpInstalled = $true
-} elseif ((Test-Path "C:\inetpub\wwwroot\wordpress\index.php") -or (Test-Path "C:\Tools\WordPress\index.php")) {
+} elseif (Test-Path "C:\inetpub\wwwroot\wordpress\index.php" -or Test-Path "C:\Tools\WordPress\index.php") {
     Write-Host "⚠️  WordPress files found but not configured" -ForegroundColor Yellow
     $wpInstalled = $true
 } else {
