@@ -239,8 +239,8 @@ if ($install -match '^[Yy]') {
     if (-not $mariaInstalled) {
         Write-Host "Installing MariaDB..." -ForegroundColor Yellow
         try {
-            $mariaScript = "$env:TEMP\install-mariadb.ps1"
             Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.ps1" -OutFile $mariaScript -UseBasicParsing
+            $mariaScript = "$env:TEMP\install-mariadb.ps1"
             & $mariaScript
             Remove-Item $mariaScript -ErrorAction SilentlyContinue
         } catch {
