@@ -41,7 +41,7 @@ try {
 } catch {
     Write-Host "❌ MariaDB not installed" -ForegroundColor Red
 }
-Read-Host "press enter to continue"
+Read-Host "press enter to continue Line 44"
 # Check WordPress - Better detection method
 $wpInstalled = $false
 $wpLocations = @(
@@ -68,11 +68,11 @@ foreach ($location in $wpLocations) {
         }
     }
 }
-
+Read-Host "press enter to continue Line 71"
 if (-not $wpFound) {
     Write-Host "❌ WordPress not installed" -ForegroundColor Red
 }
-Read-Host "press enter to continue"
+Read-Host "press enter to continue Line 75"
 # Determine what needs to be downloaded
 $needsDownload = @()
 if (-not $phpInstalled) { $needsDownload += "PHP" }
