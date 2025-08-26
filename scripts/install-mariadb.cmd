@@ -12,7 +12,7 @@ if not exist "%TEMP%\mariadb-latest-winx64.msi" (
     exit /b 1
 )
 
-msiexec /i "%TEMP%\mariadb-latest-winx64.msi" /quiet /wait SERVICENAME=MariaDB PASSWORD=SecureRootPassword123! UTF8=1
+msiexec /i "%TEMP%\mariadb-latest-winx64.msi" /quiet /norestart SERVICENAME=MariaDB PASSWORD="SecureRootPassword123!" UTF8=1
 if %ERRORLEVEL% NEQ 0 (
     echo ❌ MariaDB installation failed (exit code: %ERRORLEVEL%)
     exit /b 1
