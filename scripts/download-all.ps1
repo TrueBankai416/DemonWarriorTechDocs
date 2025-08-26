@@ -89,11 +89,11 @@ if ($needsDownload.Count -eq 0) {
     Write-Host "Starting selective download process..." -ForegroundColor Yellow
     Write-Host ""
 }
-
+Read-Host "press enter to continue Line 92"
 # Download PHP only if needed
 if (-not $phpInstalled) {
     Write-Host "[1/?] Getting latest PHP 8.x version..." -ForegroundColor Green
-    
+ Read-Host "press enter to continue Line 96"   
     # Check if already downloaded
     $phpFiles = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue
     if ($phpFiles) {
@@ -131,7 +131,7 @@ if (-not $phpInstalled) {
         }
     }
 }
-
+Read-Host "press enter to continue Line 134"
 # Download MariaDB only if needed
 if (-not $mariaInstalled) {
     Write-Host ""
@@ -174,7 +174,7 @@ if (-not $mariaInstalled) {
         }
     }
 }
-
+Read-Host "press enter to continue Line 177"
 # Download WordPress only if needed
 if (-not $wpInstalled) {
     Write-Host ""
@@ -199,7 +199,7 @@ Write-Host "================================================================" -F
 Write-Host "All downloads completed successfully!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Downloaded versions:" -ForegroundColor Yellow
-
+Read-Host "press enter to continue Line 202"
 # Extract PHP version from downloaded file
 $phpFile = Get-ChildItem "$env:TEMP\php-*-nts-Win32-vs16-x64.zip" -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($phpFile) {
@@ -208,7 +208,7 @@ if ($phpFile) {
 } else {
     Write-Host "- PHP: Not downloaded" -ForegroundColor Gray
 }
-
+Read-Host "press enter to continue Line 211"
 # Extract MariaDB version from downloaded file or variable
 $mariaFile = Get-ChildItem "$env:TEMP\mariadb-*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($mariaFile -and $mariaVersion) {
@@ -218,7 +218,7 @@ if ($mariaFile -and $mariaVersion) {
 } else {
     Write-Host "- MariaDB: Not downloaded" -ForegroundColor Gray
 }
-
+Read-Host "press enter to continue Line 221"
 # WordPress version
 $wpFile = Get-ChildItem "$env:TEMP\wordpress-latest.zip" -ErrorAction SilentlyContinue
 if ($wpFile) {
@@ -230,7 +230,7 @@ if ($wpFile) {
 Write-Host ""
 Write-Host "Files saved to: $env:TEMP" -ForegroundColor Yellow
 Write-Host "================================================================" -ForegroundColor Cyan
-
+Read-Host "press enter to continue Line 233"
 # Ask user if they want to proceed with installation
 $needsInstall = @()
 if (-not $phpInstalled) { $needsInstall += "PHP" }
