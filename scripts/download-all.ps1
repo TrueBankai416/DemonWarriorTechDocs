@@ -72,24 +72,22 @@ Read-Host "press enter to continue Line 71"
 if (-not $wpFound) {
     Write-Host "❌ WordPress not installed" -ForegroundColor Red
 }
-Read-Host "press enter to continue Line 75"
 # Determine what needs to be downloaded
 $needsDownload = @()
 if (-not $phpInstalled) { $needsDownload += "PHP" }
 if (-not $mariaInstalled) { $needsDownload += "MariaDB" }
 if (-not $wpInstalled) { $needsDownload += "WordPress" }
-Read-Host "press enter to continue Line 81"
+
 Write-Host ""
 if ($needsDownload.Count -eq 0) {
     Write-Host "🎉 All components are already installed!" -ForegroundColor Green
     Write-Host "No downloads needed. You may still want to install Caddy using the dedicated guide." -ForegroundColor Yellow
- Read-Host "press enter to continue Line 87"   
+    exit 0
 } else {
     Write-Host "Components to download: $($needsDownload -join ', ')" -ForegroundColor Yellow
     Write-Host "Starting selective download process..." -ForegroundColor Yellow
     Write-Host ""
 }
-Read-Host "press enter to continue Line 92"
 # Download PHP only if needed
 if (-not $phpInstalled) {
     Write-Host "[1/?] Getting latest PHP 8.x version..." -ForegroundColor Green
