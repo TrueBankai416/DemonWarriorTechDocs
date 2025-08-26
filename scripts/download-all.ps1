@@ -82,7 +82,7 @@ Write-Host ""
 if ($needsDownload.Count -eq 0) {
     Write-Host "🎉 All components are already installed!" -ForegroundColor Green
     Write-Host "No downloads needed. You may still want to install Caddy using the dedicated guide." -ForegroundColor Yellow
-    exit 0
+    return
 } else {
     Write-Host "Components to download: $($needsDownload -join ', ')" -ForegroundColor Yellow
     Write-Host "Starting selective download process..." -ForegroundColor Yellow
