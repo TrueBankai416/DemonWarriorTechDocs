@@ -243,7 +243,7 @@ if ($install -match '^[Yy]') {
     Write-Host ""
     Write-Host "Starting installation process..." -ForegroundColor Green
     Write-Host ""
-    Read-Host "Press Enter to continue with component detection"
+
     # Check and create PHP-CGI service if needed
     if ($phpInstalled) {
         Write-Host "Checking PHP-CGI service..." -ForegroundColor Yellow
