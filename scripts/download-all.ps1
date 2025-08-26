@@ -4,7 +4,6 @@ Write-Host "================================================================" -F
 
 # Check what's already installed BEFORE downloading
 Write-Host "Checking existing installations..." -ForegroundColor Yellow
-Read-Host "Press Enter to continue with component detection"
 
 # Check PHP
 $phpInstalled = $false
@@ -233,7 +232,6 @@ if ($needsInstall.Count -eq 0) {
 if ($install -match '^[Yy]') {
     Write-Host ""
     Write-Host "Starting installation process..." -ForegroundColor Green
-    Read-Host "Press Enter to continue with installations"
     Write-Host ""
     
     # Install only missing components
