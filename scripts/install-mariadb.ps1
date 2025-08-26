@@ -81,13 +81,15 @@ foreach ($mariaPath in $mariaDBPaths) {
     $mysqlPath = Join-Path $mariaPath.FullName "bin\mysql.exe"
     if (Test-Path $mysqlPath) {
         try {
-            $process = Start-Process -FilePath $mysqlPath -ArgumentList @("-u", "root", "-p$rootPassword") -RedirectStandardInput $sqlFile -Wait -PassThru -NoNewWindow
-            if ($process.ExitCode -eq 0) {
+            # Execute SQL commands directly using PowerShell redirection
+            $sqlContent = Get-Content $sqlFile -Raw
+            $sqlContent | & $mysqlPath -u root "-p$rootPassword" 2>$null
+            if ($LASTEXITCODE -eq 0) {
                 Write-Host "✅ WordPress database created" -ForegroundColor Green
                 $dbCreated = $true
                 break
             } else {
-                Write-Host "❌ Failed to create WordPress database (exit code: $($process.ExitCode))" -ForegroundColor Red
+                Write-Host "❌ Failed to create WordPress database (exit code: $LASTEXITCODE)" -ForegroundColor Red
             }
         } catch {
             Write-Host "❌ Failed to create WordPress database: $($_.Exception.Message)" -ForegroundColor Red
