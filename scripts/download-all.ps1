@@ -42,15 +42,34 @@ try {
     Write-Host "❌ MariaDB not installed" -ForegroundColor Red
 }
 
-# Check WordPress
+# Check WordPress - Better detection method
 $wpInstalled = $false
-if (Test-Path "C:\inetpub\wwwroot\wordpress\wp-config.php" -or Test-Path "C:\Tools\WordPress\wp-config.php") {
-    Write-Host "✅ WordPress installation found" -ForegroundColor Green
-    $wpInstalled = $true
-} elseif (Test-Path "C:\inetpub\wwwroot\wordpress\index.php" -or Test-Path "C:\Tools\WordPress\index.php") {
-    Write-Host "⚠️  WordPress files found but not configured" -ForegroundColor Yellow
-    $wpInstalled = $true
-} else {
+$wpLocations = @(
+    "C:\inetpub\wwwroot\wordpress",
+    "C:\Tools\WordPress",
+    "C:\xampp\htdocs\wordpress",
+    "C:\wamp\www\wordpress"
+)
+
+$wpFound = $false
+foreach ($location in $wpLocations) {
+    if (Test-Path "$location\wp-includes\version.php") {
+        Write-Host "✅ WordPress installation found at $location" -ForegroundColor Green
+        $wpInstalled = $true
+        $wpFound = $true
+        break
+    } elseif (Test-Path "$location\index.php") {
+        $indexContent = Get-Content "$location\index.php" -Raw -ErrorAction SilentlyContinue
+        if ($indexContent -and $indexContent.Contains("wp-blog-header.php")) {
+            Write-Host "✅ WordPress installation found at $location" -ForegroundColor Green
+            $wpInstalled = $true
+            $wpFound = $true
+            break
+        }
+    }
+}
+
+if (-not $wpFound) {
     Write-Host "❌ WordPress not installed" -ForegroundColor Red
 }
 
@@ -241,19 +260,44 @@ if ($install -match '^[Yy]') {
             $phpService = Get-Service -Name "PHP-CGI" -ErrorAction SilentlyContinue
             if (-not $phpService) {
                 Write-Host "Creating PHP-CGI service..." -ForegroundColor Yellow
-                New-Service -Name "PHP-CGI" -BinaryPathName "C:\Tools\PHP\php-cgi.exe -b 127.0.0.1:9000" -DisplayName "PHP FastCGI Service" -Description "PHP FastCGI service for web applications" -StartupType Automatic
-                Write-Host "✅ PHP-CGI service created" -ForegroundColor Green
-                try {
-                    Start-Service -Name "PHP-CGI"
-                    $serviceStatus = Get-Service -Name "PHP-CGI"
-                    if ($serviceStatus.Status -eq "Running") {
-                        Write-Host "✅ PHP-CGI service started successfully" -ForegroundColor Green
-                    } else {
-                        Write-Host "❌ PHP-CGI service failed to start (Status: $($serviceStatus.Status))" -ForegroundColor Red
+                
+                # First, let's test if php-cgi.exe works
+                if (-not (Test-Path "C:\Tools\PHP\php-cgi.exe")) {
+                    Write-Host "❌ php-cgi.exe not found at C:\Tools\PHP\php-cgi.exe" -ForegroundColor Red
+                    Write-Host "⚠️  PHP service creation skipped" -ForegroundColor Yellow
+                } else {
+                    # Create a wrapper script for the service
+                    $wrapperScript = @"
+@echo off
+cd /d "C:\Tools\PHP"
+php-cgi.exe -b 127.0.0.1:9000
+"@
+                    $wrapperPath = "C:\Tools\PHP\php-cgi-service.cmd"
+                    $wrapperScript | Out-File -FilePath $wrapperPath -Encoding ASCII
+                    
+                    try {
+                        New-Service -Name "PHP-CGI" -BinaryPathName "cmd.exe /c `"$wrapperPath`"" -DisplayName "PHP FastCGI Service" -Description "PHP FastCGI service for web applications" -StartupType Manual
+                        Write-Host "✅ PHP-CGI service created" -ForegroundColor Green
+                        
+                        # Test starting the service
+                        Write-Host "Testing PHP-CGI service startup..." -ForegroundColor Yellow
+                        try {
+                            Start-Service -Name "PHP-CGI" -ErrorAction Stop
+                            Start-Sleep -Seconds 3
+                            $serviceStatus = Get-Service -Name "PHP-CGI"
+                            if ($serviceStatus.Status -eq "Running") {
+                                Write-Host "✅ PHP-CGI service started successfully" -ForegroundColor Green
+                            } else {
+                                Write-Host "❌ PHP-CGI service failed to start (Status: $($serviceStatus.Status))" -ForegroundColor Red
+                                Write-Host "⚠️  You can try starting it manually: net start PHP-CGI" -ForegroundColor Yellow
+                            }
+                        } catch {
+                            Write-Host "❌ PHP service created but failed to start: $($_.Exception.Message)" -ForegroundColor Red
+                            Write-Host "⚠️  This is common - you can start it manually: net start PHP-CGI" -ForegroundColor Yellow
+                        }
+                    } catch {
+                        Write-Host "❌ Failed to create PHP service: $($_.Exception.Message)" -ForegroundColor Red
                     }
-                } catch {
-                    Write-Host "❌ PHP service created but failed to start: $($_.Exception.Message)" -ForegroundColor Red
-                    Write-Host "⚠️  Check if php-cgi.exe exists at C:\Tools\PHP\php-cgi.exe" -ForegroundColor Yellow
                 }
             } else {
                 Write-Host "✅ PHP-CGI service already exists" -ForegroundColor Green
