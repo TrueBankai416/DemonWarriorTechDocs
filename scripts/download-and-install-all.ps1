@@ -223,7 +223,14 @@ if ($install -match '^[Yy]') {
     # Install only missing components
     if (-not $phpInstalled) {
         Write-Host "Installing PHP..." -ForegroundColor Yellow
-        & "$PSScriptRoot\install-php.ps1"
+        try {
+            $phpScript = "$env:TEMP\install-php.ps1"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-php.ps1" -OutFile $phpScript -UseBasicParsing
+            & $phpScript
+            Remove-Item $phpScript -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "❌ PHP installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
         Write-Host ""
     } else {
         Write-Host "⏭️  Skipping PHP installation (already installed)" -ForegroundColor Cyan
@@ -231,7 +238,14 @@ if ($install -match '^[Yy]') {
     
     if (-not $mariaInstalled) {
         Write-Host "Installing MariaDB..." -ForegroundColor Yellow
-        & "$PSScriptRoot\install-mariadb.ps1"
+        try {
+            $mariaScript = "$env:TEMP\install-mariadb.ps1"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-mariadb.ps1" -OutFile $mariaScript -UseBasicParsing
+            & $mariaScript
+            Remove-Item $mariaScript -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "❌ MariaDB installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
         Write-Host ""
     } else {
         Write-Host "⏭️  Skipping MariaDB installation (already installed)" -ForegroundColor Cyan
@@ -239,7 +253,14 @@ if ($install -match '^[Yy]') {
     
     if (-not $wpInstalled) {
         Write-Host "Installing WordPress..." -ForegroundColor Yellow
-        & "$PSScriptRoot\install-wordpress.ps1"
+        try {
+            $wpScript = "$env:TEMP\install-wordpress.ps1"
+            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/mentat-2%233/scripts/install-wordpress.ps1" -OutFile $wpScript -UseBasicParsing
+            & $wpScript
+            Remove-Item $wpScript -ErrorAction SilentlyContinue
+        } catch {
+            Write-Host "❌ WordPress installation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
         Write-Host ""
     } else {
         Write-Host "⏭️  Skipping WordPress installation (already installed)" -ForegroundColor Cyan
