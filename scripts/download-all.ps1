@@ -69,7 +69,6 @@ if ($needsDownload.Count -eq 0) {
 } else {
     Write-Host "Components to download: $($needsDownload -join ', ')" -ForegroundColor Yellow
     Write-Host "Starting selective download process..." -ForegroundColor Yellow
-    Read-Host "Press Enter to continue with downloads"
     Write-Host ""
 }
 

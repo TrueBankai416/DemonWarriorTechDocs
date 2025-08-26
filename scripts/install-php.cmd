@@ -68,15 +68,20 @@ echo ; Extensions >> "C:\Tools\PHP\php.ini"
 echo extension_dir = "ext" >> "C:\Tools\PHP\php.ini"
 echo extension=bz2 >> "C:\Tools\PHP\php.ini"
 echo extension=curl >> "C:\Tools\PHP\php.ini"
+echo extension=ffi >> "C:\Tools\PHP\php.ini"
 echo extension=fileinfo >> "C:\Tools\PHP\php.ini"
-echo extension=gd >> "C:\Tools\PHP\php.ini"
+echo extension=gd2 >> "C:\Tools\PHP\php.ini"
 echo extension=gettext >> "C:\Tools\PHP\php.ini"
+echo extension=gmp >> "C:\Tools\PHP\php.ini"
 echo extension=intl >> "C:\Tools\PHP\php.ini"
 echo extension=mbstring >> "C:\Tools\PHP\php.ini"
 echo extension=exif >> "C:\Tools\PHP\php.ini"
 echo extension=mysqli >> "C:\Tools\PHP\php.ini"
+echo extension=odbc >> "C:\Tools\PHP\php.ini"
 echo extension=openssl >> "C:\Tools\PHP\php.ini"
 echo extension=pdo_mysql >> "C:\Tools\PHP\php.ini"
+echo extension=pdo_odbc >> "C:\Tools\PHP\php.ini"
+echo extension=pdo_sqlite >> "C:\Tools\PHP\php.ini"
 echo extension=zip >> "C:\Tools\PHP\php.ini"
 echo extension=opcache >> "C:\Tools\PHP\php.ini"
 echo. >> "C:\Tools\PHP\php.ini"
@@ -114,15 +119,16 @@ if errorlevel 1 (
 REM Create PHP service using PowerShell
 echo.
 echo [5/5] Creating PHP service...
-powershell -NoProfile -Command "try { if (Get-Service -Name 'PHP-CGI' -ErrorAction SilentlyContinue) { Write-Host 'PHP service already exists'; } else { New-Service -Name 'PHP-CGI' -BinaryPathName 'C:\Tools\PHP\php-cgi.exe -b 127.0.0.1:9000' -DisplayName 'PHP FastCGI Service' -Description 'PHP FastCGI service for web applications' -StartupType Manual; Write-Host '✅ PHP service created'; } } catch { Write-Host '⚠️  Service creation failed (requires admin): $_'; }"
+powershell -NoProfile -Command "try { if (Get-Service -Name 'PHP-CGI' -ErrorAction SilentlyContinue) { Write-Host 'PHP service already exists'; Set-Service -Name 'PHP-CGI' -StartupType Automatic; Write-Host '✅ PHP service set to start automatically'; } else { New-Service -Name 'PHP-CGI' -BinaryPathName 'C:\Tools\PHP\php-cgi.exe -b 127.0.0.1:9000' -DisplayName 'PHP FastCGI Service' -Description 'PHP FastCGI service for web applications' -StartupType Automatic; Write-Host '✅ PHP service created with automatic startup'; } } catch { Write-Host '⚠️  Service creation failed (requires admin): $_'; }"
 
 echo.
 echo ==================================================
 echo PHP installation completed successfully!
 echo.
 echo PHP is installed at: C:\Tools\PHP
-echo PHP service created: PHP-CGI (manual start)
+echo PHP service created: PHP-CGI (automatic startup)
 echo.
-echo To start PHP service: net start PHP-CGI
+echo PHP service will start automatically at boot
+echo To start PHP service now: net start PHP-CGI
 echo To test PHP: php --version
 echo ==================================================
