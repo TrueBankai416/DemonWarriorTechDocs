@@ -2,6 +2,12 @@
 echo WordPress Installation - Install MariaDB (CMD Version)
 echo =====================================================
 
+REM Generate random root password for security
+echo Generating secure root password...
+for /f "delims=" %%i in ('powershell -command "[System.Web.Security.Membership]::GeneratePassword(16, 4)"') do set ROOT_PASSWORD=%%i
+echo Root password generated: %ROOT_PASSWORD%
+echo.
+
 echo Installing MariaDB from downloaded files...
 echo.
 
@@ -12,7 +18,7 @@ if not exist "%TEMP%\mariadb-latest-winx64.msi" (
     exit /b 1
 )
 
-msiexec /i "%TEMP%\mariadb-latest-winx64.msi" /quiet /norestart SERVICENAME=MariaDB PASSWORD="SecureRootPassword123!" UTF8=1
+msiexec /i "%TEMP%\mariadb-latest-winx64.msi" /quiet /norestart SERVICENAME=MariaDB PASSWORD="%ROOT_PASSWORD%" UTF8=1
 if %ERRORLEVEL% NEQ 0 (
     echo ❌ MariaDB installation failed (exit code: %ERRORLEVEL%)
     exit /b 1
@@ -43,7 +49,7 @@ echo FLUSH PRIVILEGES; >> "%TEMP%\setup_db.sql"
 REM Execute database setup (find MariaDB installation dynamically)
 set DB_CREATED=false
 for /d %%i in ("C:\Program Files\MariaDB*") do (
-    "%%i\bin\mysql.exe" -u root -p"SecureRootPassword123!" < "%TEMP%\setup_db.sql"
+    "%%i\bin\mysql.exe" -u root -p"%ROOT_PASSWORD%" < "%TEMP%\setup_db.sql"
     if %ERRORLEVEL% EQU 0 (
         echo ✅ WordPress database created
         set DB_CREATED=true
@@ -68,5 +74,11 @@ echo.
 echo Database: wordpress
 echo Username: wordpress  
 echo Password: WordPressPassword123!
-echo Root Password: SecureRootPassword123!
+echo.
+echo ⚠️  IMPORTANT: SAVE THIS ROOT PASSWORD SAFELY! ⚠️
+echo Root Password: %ROOT_PASSWORD%
+echo.
+echo 🔒 This password was randomly generated for security.
+echo 📝 Save it in a secure password manager immediately!
+echo 🚨 You will need this password for database administration.
 echo =====================================================
