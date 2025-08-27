@@ -332,5 +332,171 @@ Extra Info
 
 [Jellyfin Media Bar](https://github.com/IAmParadox27/jellyfin-plugin-media-bar)
 
+### In Player Episode Preview
+
+Description: This plugin adds an episode list to the video player, which allows you to preview every episode of the TV show without having to leave the player.
+
+This modification has support for the following clients:
+```
+    Jellyfin Web Client
+    Jellyfin Media Player (JMP) Desktop Client
+```
+Features:
+
+```
+    List all episodes of a season
+    Switch between seasons
+    Shows episode title, description, thumbnail and playback progress
+    Shows episode details like community ranking
+    Mark episodes as played or favourite
+    Start a new episode
+    Should work with custom themes
+```
+
+Installation
+
+1. Add this plugin repository to your server: 
+
+```css
+https://raw.githubusercontent.com/Namo2/InPlayerEpisodePreview/master/manifest.json
+```
+
+Extra Info
+
+[In Player Episode Preview](https://github.com/Namo2/InPlayerEpisodePreview)
+
+### Auto Collections
+
+Description: The Auto Collections plugin offers two modes for creating collections: Simple Collections and Advanced Collections.
+
+Features:
+
+```
+This fork extends the original functionality with:
+
+    Two Collection Modes:
+        Simple Collections: Quick setup with single-criterion filtering
+        Advanced Collections: Complex filtering with boolean logic expressions
+
+    Multiple Matching Methods: Match content by Title, Studio, Genre, Actor, Director, Tags, and more
+
+    Media Type Filtering: Filter collections to include only movies, only TV shows, or both
+
+    Advanced Expression Support: Create complex collections using boolean expressions (AND, OR, NOT)
+
+    Enhanced Filtering Options:
+        Filter by content metadata (title, genre, studio, actor, director, tags)
+        Filter by ratings (parental ratings, community ratings, critics ratings)
+        Filter by production locations/countries
+        Filter by audio language and subtitle language
+
+    Boolean Logic: Combine multiple criteria with AND, OR, NOT operators and parentheses grouping
+
+    Import/Export: Easily backup and restore your collection configurations as JSON
+
+    Case Sensitivity Control: Choose whether matches should be case-sensitive or not
+
+    Scheduled Synchronization: Collections automatically update on a schedule
+
+```
+
+Installation
+
+```
+    In Jellyfin, go to Dashboard -> Plugins -> Catalog -> Gear Icon (upper left) add and a repository.
+    Set the Repository name to @KeksBombe (Auto Collections)
+    Set the Repository URL to https://raw.githubusercontent.com/KeksBombe/jellyfin-plugin-auto-collections/refs/heads/main/manifest.json
+    Click "Save"
+    Go to Catalog and search for Auto Collections
+    Click on it and install
+    Restart Jellyfin
+```
+
+```css
+https://raw.githubusercontent.com/KeksBombe/jellyfin-plugin-auto-collections/refs/heads/main/manifest.json
+```
+
+Extra Info
+
+[Auto Collections Github](https://github.com/KeksBombe/jellyfin-plugin-auto-collections)
+
+### Jellyfin Enhanced
+
+Description: The ultimate enhancement for your Jellyfin experience. This plugin (previously script) combines the powerful features of Jellyfin Enhanced and [Jellyfin Elsewhere](https://github.com/n00bcodr/Jellyfin-Elsewhere/) into one easy-to-install package.
+
+
+<img src="https://github.com/n00bcodr/Jellyfin-Enhanced/blob/main/images/panel_jellyfish.gif" alt="Panel with Jellyfish Theme" width="90%" align="center"/>
+
+Features:
+
+### ⌨️ Keyboard Shortcuts
+
+| Key | Action | Context |
+| :--- | :--- | :--- |
+| **`?`** | Show/hide the settings & hotkey panel | Global |
+| **`/`** | Focus the search bar | Global |
+| **`Shift`** + **`H`** | Go to the Jellyfin Home Page | Global |
+| **`D`** | Go to the Dashboard | Global |
+| **`Q`** | Go to Quick Connect | Global |
+| **`R`** | Play a random item from your library | Global |
+| **Hold `Shift`** + **`B`** | Clear all saved bookmarks (3-second hold) | Global |
+| :--- | :--- | :--- |
+| **`A`** | Cycle through aspect ratios (Auto → Cover → Fill) | Player |
+| **`I`** | Show playback info (stats overlay) | Player |
+| **`S`** | Show the subtitle selection menu | Player |
+| **`C`** | Cycle through available subtitle tracks | Player |
+| **`V`** | Cycle through available audio tracks | Player |
+| **`B`** | Bookmark the current playback time | Player |
+| **`Shift`** + **`B`** | Go to the saved bookmark for the current item | Player |
+| **`0`**-**`9`** | Jump to 0% - 90% of the video duration | Player |
+| **`=`** / **`+`** | Increase playback speed | Player |
+| **`-`** / **`_`** | Decrease playback speed | Player |
+| **`R`** | Reset playback speed to normal (1.0x) | Player |
+
+### 📝 Subtitle Settings
+- **6 Style Presets**: Clean White, Classic Black Box, Netflix Style, Cinema Yellow, Soft Gray, High Contrast.
+- **5 Font Sizes**: Tiny, Small, Normal, Large, Extra Large.
+- **5 Font Families**: Default, Noto Sans, Sans Serif, Typewriter, Roboto.
+- **Persistent Settings**: All choices are automatically saved and persist for the session.
+
+### ⏯️ Smart Auto-Pause/Resume
+- **Configurable Auto-Pause**: Automatically pause video when switching tabs.
+- **Optional Auto-Resume**: Choose whether to resume playback upon returning to the tab.
+
+### 🎲 Random Item Selection
+- **Random Button**: Adds a "Random" button to the header for one-click access to a random item.
+- **Configurable Item Types**: Choose to include Movies, Shows, or both.
+- **Hotkey Support**: Press `R` (when not in the player) to instantly go to a random item.
+- **Only show unwatched**: Option to only show unwatched items in the randomized result
+
+### ↪️ Auto Skip Intro/Outro
+- Options to automatically skip intro and outro for uninterrupted binge watching! (Dependent on Skip Intro Plugin!)
+
+### 👁️ Remove from continue watching
+- An option to remove items from the continue watching row!
+
+### 🔍 Streaming Provider Information with multiple region search
+- See where else your movies and shows are available to stream, right on the item details page.
+- Configure your preferred default region and streaming services from the plugin settings and search more regions and services from the item details page!
+
+### **And more...**
+- File sizes - Display filesizes for each movie or episode in the item details page \
+    ... and many more to come!
+
+Installation
+
+[Instructions](https://github.com/n00bcodr/Jellyfin-Enhanced/blob/main/README.md#-installation)
+
+```css
+https://raw.githubusercontent.com/n00bcodr/jellyfin-enhanced/main/manifest.json
+```
+
+
+Extra Info
+
+[Jellyfin Enhanced Github](https://github.com/n00bcodr/Jellyfin-Enhanced/)
+
+
 <BuyMeACoffeeButton />
+
 
