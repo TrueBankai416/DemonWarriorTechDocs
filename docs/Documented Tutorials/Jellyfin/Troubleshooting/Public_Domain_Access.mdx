@@ -229,7 +229,7 @@ If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
 **Symptoms**: "Bad Gateway" or "Service Unavailable"
 **Solutions**:
 - Verify Jellyfin is running: Open Services.msc and check "Jellyfin" service status
-- Verify local connection works: `private_ip:8096`
+- Verify local connection via **Powershell**: `Test-NetConnection -ComputerName 192.168.1.100 -Port 8096` (Change `192.168.1.100` to your Private IP)
 - Verify Caddy upstream configuration points to correct Jellyfin address
 
 ---
