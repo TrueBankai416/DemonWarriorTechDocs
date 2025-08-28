@@ -104,48 +104,74 @@ Before beginning the installation, ensure your system meets all requirements:
 
 #### Ubuntu/Debian Installation
 
+
+Update package repositories
+
 ```bash
-# Update package repositories
 sudo apt update
+```
 
-# Install Samba server and client tools
+Install Samba server and client tools
+
+```bash
 sudo apt install samba samba-common-bin smbclient cifs-utils
+```
 
-# Install additional utilities
+Install additional utilities
+
+```bash
 sudo apt install samba-vfs-modules winbind
+```
 
-# Verify installation
+Verify installation
+
+```bash
 samba --version
 smbd --version
 ```
 
 #### CentOS/RHEL/Fedora Installation
 
+Install Samba packages
+
 ```bash
-# Install Samba packages
 sudo dnf install samba samba-common samba-client cifs-utils
+```
 
-# Install additional tools
+Install additional tools
+
+```bash
 sudo dnf install samba-winbind samba-vfs-glusterfs
+```
 
-# Enable and start services
+Enable and start services
+
+```bash
 sudo systemctl enable smb nmb winbind
-sudo systemctl start smb nmb winbind
+```
 
-# Verify installation
+```bash
+sudo systemctl start smb nmb winbind
+```
+Verify installation
+
+```bash
 samba --version
 ```
 
 #### Configure Firewall
 
+Ubuntu/Debian - UFW
+
 ```bash
-# Ubuntu/Debian - UFW
 sudo ufw allow samba
 sudo ufw allow 445/tcp
 sudo ufw allow 139/tcp
 sudo ufw allow 137:138/udp
+```
+CentOS/RHEL - firewalld
 
-# CentOS/RHEL - firewalld
+```bash
 sudo firewall-cmd --permanent --add-service=samba
 sudo firewall-cmd --permanent --add-port=445/tcp
 sudo firewall-cmd --permanent --add-port=139/tcp
@@ -157,33 +183,44 @@ sudo firewall-cmd --reload
 
 #### Enable SMB Features
 
+Enable SMB features (Windows 10/11)
+
 ```powershell
-# Enable SMB features (Windows 10/11)
 Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol-Client -All
 Enable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol-Server -All
+```
 
-# For Windows Server
+For Windows Server
+
+```powershell
 Install-WindowsFeature -Name FS-SMB1 -IncludeManagementTools
 Install-WindowsFeature -Name FS-FileServer -IncludeManagementTools
+```
 
 # Verify SMB configuration
+```powershell
 Get-SmbServerConfiguration
 Get-SmbClientConfiguration
 ```
 
 #### Configure SMB Security
 
+Enable SMB encryption
+
 ```powershell
-# Enable SMB encryption
 Set-SmbServerConfiguration -EncryptData $true -Force
-
-# Enable SMB signing
+```
+Enable SMB signing
+```powershell
 Set-SmbServerConfiguration -RequireSecuritySignature $true -Force
+```
 
-# Disable SMB1 for security (recommended)
+Disable SMB1 for security (recommended)
+```powershell
 Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
-
-# Configure authentication
+```
+Configure authentication
+```powershell
 Set-SmbServerConfiguration -EnableAuthenticateUserSharing $true -Force
 ```
 
@@ -193,11 +230,12 @@ Set-SmbServerConfiguration -EnableAuthenticateUserSharing $true -Force
 
 #### Create Samba Configuration
 
+Backup original configuration
 ```bash
-# Backup original configuration
 sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.backup
-
-# Create new configuration
+```
+Create new configuration
+```
 sudo tee /etc/samba/smb.conf > /dev/null << 'EOF'
 [global]
     # Server identification
@@ -241,8 +279,9 @@ sudo tee /etc/samba/smb.conf > /dev/null << 'EOF'
     printing = bsd
     printcap name = /dev/null
     disable spoolss = yes
-
-# Public share example
+```
+Public share example
+```
 [public]
     comment = Public Files
     path = /srv/samba/public
@@ -254,8 +293,9 @@ sudo tee /etc/samba/smb.conf > /dev/null << 'EOF'
     directory mask = 0775
     force user = nobody
     force group = nogroup
-
-# Private share example
+```
+Private share example
+```
 [private]
     comment = Private Files
     path = /srv/samba/private
@@ -267,8 +307,10 @@ sudo tee /etc/samba/smb.conf > /dev/null << 'EOF'
     create mask = 0660
     directory mask = 0770
     force group = sambausers
+```
 
-# Home directories
+Home directories
+```
 [homes]
     comment = Home Directories
     browseable = no
@@ -281,35 +323,41 @@ EOF
 
 #### Create Share Directories
 
+Create share directories
 ```bash
-# Create share directories
 sudo mkdir -p /srv/samba/public
 sudo mkdir -p /srv/samba/private
-
-# Set permissions
+```
+Set permissions
+```bash
 sudo chmod 775 /srv/samba/public
 sudo chmod 770 /srv/samba/private
+```
 
-# Set ownership
+Set ownership
+```bash
 sudo chown nobody:nogroup /srv/samba/public
 sudo chown root:sambausers /srv/samba/private
-
-# Create sambausers group
+```
+Create sambausers group
+```bash
 sudo groupadd sambausers
 ```
 
 #### Create Samba Users
 
+Create system user
 ```bash
-# Create system user
 sudo useradd -M -s /sbin/nologin sambauser
 sudo usermod -aG sambausers sambauser
-
-# Set Samba password
+```
+Set Samba password
+```bash
 sudo smbpasswd -a sambauser
 sudo smbpasswd -e sambauser
-
-# List Samba users
+```
+List Samba users
+```bash
 sudo pdbedit -L -v
 ```
 
@@ -317,20 +365,23 @@ sudo pdbedit -L -v
 
 #### PowerShell Method (Advanced)
 
+Create share directory
 ```powershell
-# Create share directory
 $SharePath = "C:\Shares\CompanyData"
 New-Item -ItemType Directory -Path $SharePath -Force
-
-# Create SMB share
+```
+Create SMB share
+```powershell
 New-SmbShare -Name "CompanyData" -Path $SharePath -Description "Company Data Share"
-
-# Configure share permissions
+```
+Configure share permissions
+```powershell
 Grant-SmbShareAccess -Name "CompanyData" -AccountName "Everyone" -AccessRight Read -Force
 Grant-SmbShareAccess -Name "CompanyData" -AccountName "Domain Users" -AccessRight Change -Force
 Grant-SmbShareAccess -Name "CompanyData" -AccountName "Administrators" -AccessRight Full -Force
-
-# Set NTFS permissions
+```
+Set NTFS permissions
+```powershell
 $Acl = Get-Acl $SharePath
 $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Domain Users","Modify","ContainerInherit,ObjectInherit","None","Allow")
 $Acl.SetAccessRule($AccessRule)
@@ -1255,4 +1306,6 @@ Copy the settings from your Samba test to your external storage it should read.
   </TabItem>
 </Tabs>
 
+
 <BuyMeACoffeeButton />
+
