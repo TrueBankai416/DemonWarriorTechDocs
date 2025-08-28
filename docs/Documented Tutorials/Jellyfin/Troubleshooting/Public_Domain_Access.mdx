@@ -89,35 +89,9 @@ Get-NetFirewallRule | Where-Object {$_.DisplayName -like "*Jellyfin*"}
   </TabItem>
 </Tabs>
 
-#### Linux Firewall Configuration
+#### Additional Firewall Notes
 
-<Tabs>
-  <TabItem value="ufw" label="UFW (Ubuntu/Debian)" default>
-
-```bash
-# Allow HTTP and HTTPS traffic
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-
-# Check status
-sudo ufw status
-```
-
-  </TabItem>
-  <TabItem value="firewalld" label="Firewalld (CentOS/RHEL)">
-
-```bash
-# Allow HTTP and HTTPS traffic
-sudo firewall-cmd --permanent --add-port=80/tcp
-sudo firewall-cmd --permanent --add-port=443/tcp
-sudo firewall-cmd --reload
-
-# Check status
-sudo firewall-cmd --list-ports
-```
-
-  </TabItem>
-</Tabs>
+If you're using third-party firewall software (Norton, McAfee, etc.), ensure they also allow ports 80 and 443 for inbound connections.
 
 **After making firewall changes, retest ports at [portchecker.io](https://portchecker.io/) before continuing.**
 
@@ -129,9 +103,6 @@ Once ports are confirmed open, verify that your domain resolves to the correct p
 
 ### Check DNS Resolution
 
-<Tabs>
-  <TabItem value="windows" label="Windows" default>
-
 Open **Command Prompt** or **PowerShell** and run:
 
 ```cmd
@@ -139,20 +110,6 @@ nslookup jellyfin.yourdomain.com
 ```
 
 Replace `jellyfin.yourdomain.com` with your actual domain.
-
-  </TabItem>
-  <TabItem value="linux" label="Linux/macOS">
-
-Open **Terminal** and run:
-
-```bash
-nslookup jellyfin.yourdomain.com
-# or
-dig jellyfin.yourdomain.com
-```
-
-  </TabItem>
-</Tabs>
 
 ### Expected Results
 
@@ -248,9 +205,9 @@ content-length: 12345
 
 If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
 
-**Alternative CLI Check**: You can also verify Caddy is responding using curl:
-```bash
-curl -I https://jellyfin.yourdomain.com
+**Alternative CLI Check**: You can also verify Caddy is responding using PowerShell:
+```powershell
+Invoke-WebRequest -Uri https://jellyfin.yourdomain.com -Method Head
 # Look for "Server: Caddy" in the response headers
 ```
 
@@ -259,22 +216,22 @@ curl -I https://jellyfin.yourdomain.com
 #### Issue: Connection Timeout
 **Symptoms**: No response, request hangs
 **Solutions**:
-- Verify Caddy is running: `sudo systemctl status caddy` (Linux) or check Services.msc (Windows)
-- Check Caddy configuration syntax: `caddy validate --adapter caddyfile --config /etc/caddy/Caddyfile`
-- Restart Caddy: `sudo systemctl restart caddy` (Linux) or restart service (Windows)
+- Verify Caddy is running: Open Services.msc and check "Caddy" service status
+- Check Caddy configuration syntax: `caddy validate --adapter caddyfile --config C:\caddy\Caddyfile`
+- Restart Caddy: Restart the "Caddy" service in Services.msc or run `Restart-Service Caddy` in PowerShell
 
 #### Issue: SSL/TLS Certificate Errors
 **Symptoms**: "Your connection is not private" warnings
 **Solutions**:
-- Check Caddy logs: `sudo journalctl -u caddy -f`
+- Check Caddy logs: Open Event Viewer → Windows Logs → Application, filter by "Caddy"
 - Verify domain ownership for Let's Encrypt
 - Ensure port 80 is accessible (required for certificate validation)
 
 #### Issue: 502/503 Backend Errors
 **Symptoms**: "Bad Gateway" or "Service Unavailable"
 **Solutions**:
-- Verify Jellyfin is running: `sudo systemctl status jellyfin` (Linux) or check Services.msc (Windows)
-- Check Jellyfin is listening on correct port: `netstat -tlnp | grep 8096` (Linux) or `netstat -an | findstr 8096` (Windows)
+- Verify Jellyfin is running: Open Services.msc and check "Jellyfin" service status
+- Check Jellyfin is listening on correct port: `netstat -an | findstr 8096`
 - Verify Caddy upstream configuration points to correct Jellyfin address
 
 ---
@@ -323,7 +280,7 @@ If you see incorrect redirects (especially double domain names), check Jellyfin'
 
 1. **Clear the Base URL field** (leave it empty unless serving under a subpath)
 2. **Click "Save"**
-3. **Restart Jellyfin**: `sudo systemctl restart jellyfin` (Linux) or restart service (Windows)
+3. **Restart Jellyfin**: Restart the "Jellyfin" service in Services.msc or run `Restart-Service Jellyfin` in PowerShell
 4. **Test access** via your domain again
 
 ### Verify Caddy Configuration
@@ -374,31 +331,25 @@ Once all previous steps pass, perform final verification to ensure everything wo
 
 Check logs for any remaining issues:
 
-<Tabs>
-  <TabItem value="caddy" label="Caddy Logs" default>
+**Check Caddy Logs**:
+```powershell
+# View Caddy logs in Event Viewer
+eventvwr.msc
+# Navigate to Windows Logs → Application → Filter by "Caddy"
 
-```bash
-# View Caddy logs
-sudo journalctl -u caddy -f
-
-# Look for errors or warnings
-sudo journalctl -u caddy --since "1 hour ago" | grep -i error
+# Or check Caddy log files if configured
+Get-Content "C:\caddy\logs\caddy.log" -Tail 50 -Wait
 ```
 
-  </TabItem>
-  <TabItem value="jellyfin" label="Jellyfin Logs">
+**Check Jellyfin Logs**:
+```powershell
+# View Jellyfin logs in Event Viewer
+eventvwr.msc
+# Navigate to Windows Logs → Application → Filter by "Jellyfin"
 
-```bash
-# View Jellyfin logs
-sudo journalctl -u jellyfin -f
-
-# Check Jellyfin log files (location varies by installation method)
-# Common locations: /var/log/jellyfin/, ~/.local/share/jellyfin/logs/, or check systemd logs above
-find /var/log -name "*jellyfin*" 2>/dev/null || echo "Use journalctl -u jellyfin for systemd logs"
+# Or check Jellyfin log files
+Get-Content "$env:PROGRAMDATA\Jellyfin\Server\logs\jellyfin*.log" -Tail 50
 ```
-
-  </TabItem>
-</Tabs>
 
 ### Performance Verification
 
@@ -419,8 +370,8 @@ find /var/log -name "*jellyfin*" 2>/dev/null || echo "Use journalctl -u jellyfin
 - Caddy configuration issues
 
 **Solutions**:
-- Monitor server resources: `htop`, `iotop`
-- Check network speed: `speedtest-cli`
+- Monitor server resources: Task Manager → Performance tab
+- Check network speed: Use online speed test or `Test-NetConnection` in PowerShell
 - Optimize Caddy configuration with caching
 
 #### Issue: Mobile App Connection Problems
