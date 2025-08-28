@@ -1,0 +1,397 @@
+---
+title: Jellyfin Public Domain Access Troubleshooting
+description: Step-by-step troubleshooting guide for resolving Jellyfin access issues via public domain, including port checking, DNS resolution, and redirect debugging
+sidebar_position: 1
+toc_min_heading_level: 2
+toc_max_heading_level: 4
+tags: [jellyfin, troubleshooting, domain, caddy, networking, dns, ports, redirects]
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
+
+## Overview
+
+This guide provides a systematic approach to troubleshooting Jellyfin access issues when connecting via a public domain. Follow each step in order - if a step passes, move to the next one. If a step fails, resolve that issue completely before continuing to the next step.
+
+### Common Symptoms
+
+- Cannot access Jellyfin via your public domain (e.g., `jellyfin.yourdomain.com`)
+- Connection timeouts or "site can't be reached" errors
+- Unexpected redirects or redirect loops
+- SSL/TLS certificate errors
+- Jellyfin loads but shows incorrect URLs or paths
+
+### Prerequisites
+
+Before starting this troubleshooting guide, ensure you have:
+- A registered domain name
+- Jellyfin server running locally
+- Caddy reverse proxy configured
+- Basic understanding of your network setup
+
+## Step 1: Verify Port Accessibility
+
+The first step is to ensure your ports **443** (HTTPS) and **80** (HTTP) are accessible from the internet.
+
+### Check Port Status
+
+1. **Go to [portchecker.io](https://portchecker.io/)**
+2. **Enter your public IP address** (find it at [whatismyipaddress.com](https://whatismyipaddress.com/))
+3. **Test port 443** - Enter `443` and click "Check Port"
+4. **Test port 80** - Enter `80` and click "Check Port"
+
+### Expected Results
+
+✅ **PASS**: Both ports show as **"Open"** or **"Accessible"**
+❌ **FAIL**: One or both ports show as **"Closed"** or **"Filtered"**
+
+### If Ports Are Closed - Fix Before Continuing
+
+If either port is closed, you need to resolve this before proceeding:
+
+#### Router Port Forwarding
+
+1. **Access your router's admin panel** (usually `192.168.1.1` or `192.168.0.1`)
+2. **Navigate to Port Forwarding settings** (may be under "Advanced" or "NAT")
+3. **Create port forwarding rules**:
+   - **Port 80**: Forward to your server's local IP (e.g., `192.168.1.100:80`)
+   - **Port 443**: Forward to your server's local IP (e.g., `192.168.1.100:443`)
+4. **Save settings and restart router**
+
+#### Windows Firewall Configuration
+
+<Tabs>
+  <TabItem value="gui" label="GUI Method" default>
+
+1. **Open Control Panel** → **System and Security** → **Windows Defender Firewall**
+2. **Click "Advanced settings"**
+3. **Select "Inbound Rules"** → **Click "New Rule"**
+4. **Select "Port"** → **Next**
+5. **Select "TCP"** → **Specific local ports**: `80, 443`
+6. **Select "Allow the connection"** → **Next**
+7. **Apply to all profiles** → **Next**
+8. **Name the rule** (e.g., "Jellyfin Caddy Ports") → **Finish**
+
+  </TabItem>
+  <TabItem value="powershell" label="PowerShell Method">
+
+```powershell
+# Run PowerShell as Administrator
+New-NetFirewallRule -DisplayName "Jellyfin HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+New-NetFirewallRule -DisplayName "Jellyfin HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
+
+# Verify rules were created
+Get-NetFirewallRule | Where-Object {$_.DisplayName -like "*Jellyfin*"}
+```
+
+  </TabItem>
+</Tabs>
+
+#### Additional Firewall Notes
+
+If you're using third-party firewall software (Norton, McAfee, etc.), ensure they also allow ports 80 and 443 for inbound connections.
+
+**After making firewall changes, retest ports at [portchecker.io](https://portchecker.io/) before continuing.**
+
+---
+
+## Step 2: Verify DNS Resolution
+
+Once ports are confirmed open, verify that your domain resolves to the correct public IP address.
+
+### Check DNS Resolution
+
+Open **PowerShell** and run:
+
+```cmd
+Resolve-DnsName jellyfin.yourdomain.com -Server "1.1.1.1"
+```
+
+Replace `jellyfin.yourdomain.com` with your actual domain.
+
+### Expected Results
+
+✅ **PASS**: The command returns your **public IP address**
+❌ **FAIL**: Returns wrong IP, no IP, or "can't find" error
+
+### Example of Correct Output
+
+```
+Name                                         Type   TTL   Section    IPAddress
+----                                         ----   ---   -------    ---------
+jellyfin.domain.com                           A      300   Answer     86.48.9.113  # This should match your public IP
+```
+
+### If DNS Resolution Fails - Fix Before Continuing
+
+#### Check Domain DNS Settings
+
+1. **Log into your domain registrar** (GoDaddy, Namecheap, Cloudflare, etc.)
+2. **Navigate to DNS settings** for your domain
+3. **Verify CNAME record exists**:
+   - **Name**: `jellyfin`
+   - **Destination**: `@`
+   - **Type**: `CNAME`
+   - **Value**: Your public IP address
+   - **TTL**: `300` or `Auto`
+
+#### Common DNS Issues
+
+- **Wrong IP Address**: Update A record with correct public IP
+- **Missing A Record**: Create new A record pointing to your public IP
+- **TTL Too High**: Lower TTL to 300 seconds for faster propagation
+- **DNS Propagation**: Wait 24-48 hours for global DNS propagation
+
+#### Test DNS Propagation
+
+Use [whatsmydns.net](https://www.whatsmydns.net/) to check DNS propagation globally:
+1. Enter your domain (`jellyfin.yourdomain.com`)
+2. Select "CNAME" record type
+3. Verify it shows your public IP in multiple locations
+
+**Wait for DNS to fully propagate before continuing to the next step.**
+
+---
+
+## Step 3: Test Browser Connectivity and Analyze Network Traffic
+
+With ports open and DNS resolving correctly, test browser connectivity and analyze network traffic for issues.
+
+### Open Browser Developer Tools
+
+1. **Open your browser** (Chrome, Firefox, Edge)
+2. **Press F12** to open Developer Tools
+3. **Go to the "Network" tab**
+4. **Ensure "Preserve log" is checked**
+5. **Clear any existing entries**
+
+### Navigate to Your Domain
+
+1. **Enter your Jellyfin URL**: `https://jellyfin.yourdomain.com`
+2. **Press Enter** and watch the Network tab
+
+### Analyze Network Traffic
+
+Look for the following in the Network tab:
+
+#### ✅ **PASS Indicators**
+
+- **Status 200**: Successful response from Jellyfin
+- **Response Headers** show `server: Caddy` (confirms traffic reaching Caddy)
+- **No redirect loops** (no excessive 301/302 responses)
+- **Jellyfin loads correctly**
+
+#### ❌ **FAIL Indicators**
+
+- **Connection timeout**: No response at all
+- **SSL/TLS errors**: Certificate issues
+- **Status 502/503**: Backend connection issues
+- **Redirect loops**: Multiple 301/302 responses
+- **Wrong redirects**: Redirecting to incorrect URLs
+
+### Check Response Headers
+
+Click on the main request in the Network tab and look at **Response Headers**:
+
+```
+server: Caddy
+content-type: text/html
+content-length: 12345
+```
+
+If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
+
+**Alternative CLI Check**: You can also verify Caddy is responding using PowerShell:
+```powershell
+(Invoke-WebRequest -Uri https://jellyfin.yourdomain.com -Method Head).Headers.Server
+# Should return "Caddy" if working correctly
+```
+
+### Common Network Issues and Solutions
+
+#### Issue: Connection Timeout
+**Symptoms**: No response, request hangs
+**Solutions**:
+- Verify Caddy is running: Open Services.msc and check "Caddy" service status
+- Check Caddy configuration syntax: `caddy validate --adapter caddyfile --config C:\caddy\Caddyfile`
+- Restart Caddy: Restart the "Caddy" service in Services.msc or run `Restart-Service Caddy` in PowerShell
+
+#### Issue: SSL/TLS Certificate Errors
+**Symptoms**: "Your connection is not private" warnings
+**Solutions**:
+- Check Caddy logs: Open Event Viewer → Windows Logs → Application, filter by "Caddy"
+- Verify domain ownership for Let's Encrypt
+- Ensure port 80 is accessible (required for certificate validation)
+
+#### Issue: 502/503 Backend Errors
+**Symptoms**: "Bad Gateway" or "Service Unavailable"
+**Solutions**:
+- Verify Jellyfin is running: Open Services.msc and check "Jellyfin" service status
+- Verify local connection via **Powershell**: `Test-NetConnection -ComputerName 192.168.1.100 -Port 8096` (Change `192.168.1.100` to your Private IP)
+- Verify Caddy upstream configuration points to correct Jellyfin address
+
+---
+
+## Step 4: Check for Redirect Issues
+
+If you're experiencing redirect loops or incorrect redirects, this step will help identify and resolve them.
+
+### Identify Redirect Problems
+
+Look for these patterns in the Network tab:
+
+#### ❌ **Problematic Redirects**
+
+- `jellyfin.yourdomain.com` → `jellyfin.yourdomain.com/jellyfin.yourdomain.com/web`
+- Multiple 301/302 responses in a loop
+- Redirects to internal IP addresses
+- Redirects to wrong ports
+
+#### ✅ **Normal Redirects**
+
+- `jellyfin.yourdomain.com` → `jellyfin.yourdomain.com/web` (single redirect)
+- HTTP to HTTPS redirect (expected)
+
+### Check Jellyfin Base URL Setting
+
+If you see incorrect redirects (especially double domain names), check Jellyfin's Base URL setting:
+
+1. **Access Jellyfin directly** via local IP: `http://192.168.1.100:8096`
+2. **Log in as administrator**
+3. **Go to Dashboard** → **Networking**
+4. **Check "Base URL" field**
+
+#### ✅ **Correct Base URL Settings**
+
+- **Leave empty** for most setups (recommended)
+- **Set to subpath** only if serving under a subdirectory (e.g., `/jellyfin`)
+
+#### ❌ **Incorrect Base URL Settings**
+
+- Set to full domain: `https://jellyfin.yourdomain.com`
+- Set to subdirectory that doesn't match Caddy config
+- Contains double slashes or malformed paths
+
+### Fix Base URL Configuration
+
+1. **Clear the Base URL field** (leave it empty unless serving under a subpath)
+2. **Click "Save"**
+3. **Restart Jellyfin**: Restart the "Jellyfin" service in Services.msc or run `Restart-Service Jellyfin` in PowerShell
+4. **Test access** via your domain again
+
+### Verify Caddy Configuration
+
+Check your Caddy configuration for proper reverse proxy setup:
+
+```caddyfile
+jellyfin.yourdomain.com {
+    reverse_proxy localhost:8096
+}
+```
+
+**Common Caddy Configuration Issues**:
+- Missing or incorrect upstream address
+- Conflicting site blocks
+- Incorrect header forwarding
+
+### Test After Changes
+
+1. **Clear browser cache** (Ctrl+Shift+Delete)
+2. **Open new incognito/private window**
+3. **Navigate to your domain again**
+4. **Check Network tab** for clean redirect pattern
+
+---
+
+## Step 5: Final Verification and Testing
+
+Once all previous steps pass, perform final verification to ensure everything works correctly.
+
+### Complete Functionality Test
+
+1. **Access Jellyfin** via your domain: `https://jellyfin.yourdomain.com`
+2. **Log in** with your credentials
+3. **Navigate through the interface**:
+   - Browse libraries
+   - Play a media file
+   - Check settings pages
+4. **Verify all URLs** remain on your domain (no internal IPs showing)
+
+### Test from External Network
+
+1. **Use mobile data** or ask someone on a different network to test
+2. **Verify access works** from outside your local network
+3. **Test both HTTP and HTTPS** (HTTP should redirect to HTTPS)
+
+### Performance Verification
+
+1. **Test streaming performance** - Play a high-quality video
+2. **Check response times** - Pages should load quickly
+3. **Verify SSL certificate** - Should show valid certificate in browser
+
+---
+
+## Additional Troubleshooting
+
+### Common Advanced Issues
+
+#### Issue: Slow Loading or Timeouts
+**Possible Causes**:
+- Insufficient server resources
+- Network bandwidth limitations
+- Caddy configuration issues
+
+**Solutions**:
+- Monitor server resources: Task Manager → Performance tab
+- Check network speed: Use online speed test or `Test-NetConnection` in PowerShell
+- Optimize Caddy configuration with caching
+
+#### Issue: Mobile App Connection Problems
+**Symptoms**: Web works but mobile apps don't connect
+**Solutions**:
+- Ensure mobile apps use full domain URL
+- Check if apps support custom ports
+- Verify SSL certificate is valid for mobile clients
+
+#### Issue: Intermittent Connection Issues
+**Symptoms**: Sometimes works, sometimes doesn't
+**Solutions**:
+- Check for dynamic IP changes
+- Monitor DNS propagation
+- Verify router stability and port forwarding persistence
+
+### Getting Help
+
+If you've followed all steps and still have issues:
+
+1. **Document your setup**:
+   - Domain name and DNS provider
+   - Server OS and Jellyfin version
+   - Caddy version and configuration
+   - Network topology
+
+2. **Gather logs**:
+   - Caddy logs with errors
+   - Jellyfin logs with errors
+   - Browser network tab screenshots
+
+3. **Seek community help**:
+   - [Discord](https://discord.gg/P49AxjpHez)
+
+---
+
+<BuyMeACoffeeButton />
+
+## Summary
+
+This troubleshooting guide follows a systematic approach:
+
+1. **✅ Port Accessibility** - Ensure ports 80 and 443 are open
+2. **✅ DNS Resolution** - Verify domain resolves to correct IP
+3. **✅ Network Analysis** - Check browser connectivity and traffic
+4. **✅ Redirect Debugging** - Fix Base URL and redirect issues
+5. **✅ Final Verification** - Complete functionality testing
+
+By following each step in order and resolving issues before proceeding, you should be able to successfully access Jellyfin via your public domain. Remember to test from both internal and external networks to ensure everything works correctly.
