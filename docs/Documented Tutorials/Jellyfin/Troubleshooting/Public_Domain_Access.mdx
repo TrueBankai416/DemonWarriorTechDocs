@@ -103,10 +103,10 @@ Once ports are confirmed open, verify that your domain resolves to the correct p
 
 ### Check DNS Resolution
 
-Open **Command Prompt** or **PowerShell** and run:
+Open **PowerShell** and run:
 
 ```cmd
-nslookup jellyfin.yourdomain.com
+Resolve-DnsName jellyfin.yourdomain.com -Server "1.1.1.1"
 ```
 
 Replace `jellyfin.yourdomain.com` with your actual domain.
@@ -119,12 +119,9 @@ Replace `jellyfin.yourdomain.com` with your actual domain.
 ### Example of Correct Output
 
 ```
-Server:  dns.google
-Address:  8.8.8.8
-
-Non-authoritative answer:
-Name:    jellyfin.yourdomain.com
-Address:  203.0.113.45  # This should match your public IP
+Name                                         Type   TTL   Section    IPAddress
+----                                         ----   ---   -------    ---------
+jellyfin.domain.com                           A      300   Answer     86.48.9.113  # This should match your public IP
 ```
 
 ### If DNS Resolution Fails - Fix Before Continuing
@@ -133,9 +130,10 @@ Address:  203.0.113.45  # This should match your public IP
 
 1. **Log into your domain registrar** (GoDaddy, Namecheap, Cloudflare, etc.)
 2. **Navigate to DNS settings** for your domain
-3. **Verify A record exists**:
-   - **Name**: `jellyfin` (or `@` for root domain)
-   - **Type**: `A`
+3. **Verify CNAME record exists**:
+   - **Name**: `jellyfin`
+   - **Destination**: `@`
+   - **Type**: `CNAME`
    - **Value**: Your public IP address
    - **TTL**: `300` or `Auto`
 
@@ -150,7 +148,7 @@ Address:  203.0.113.45  # This should match your public IP
 
 Use [whatsmydns.net](https://www.whatsmydns.net/) to check DNS propagation globally:
 1. Enter your domain (`jellyfin.yourdomain.com`)
-2. Select "A" record type
+2. Select "CNAME" record type
 3. Verify it shows your public IP in multiple locations
 
 **Wait for DNS to fully propagate before continuing to the next step.**
@@ -231,7 +229,7 @@ If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
 **Symptoms**: "Bad Gateway" or "Service Unavailable"
 **Solutions**:
 - Verify Jellyfin is running: Open Services.msc and check "Jellyfin" service status
-- Check Jellyfin is listening on correct port: `netstat -an | findstr 8096`
+- Verify local connection works: `private_ip:8096`
 - Verify Caddy upstream configuration points to correct Jellyfin address
 
 ---
@@ -327,30 +325,6 @@ Once all previous steps pass, perform final verification to ensure everything wo
 2. **Verify access works** from outside your local network
 3. **Test both HTTP and HTTPS** (HTTP should redirect to HTTPS)
 
-### Monitor Logs for Issues
-
-Check logs for any remaining issues:
-
-**Check Caddy Logs**:
-```powershell
-# View Caddy logs in Event Viewer
-eventvwr.msc
-# Navigate to Windows Logs → Application → Filter by "Caddy"
-
-# Or check Caddy log files if configured
-Get-Content "C:\caddy\logs\caddy.log" -Tail 50 -Wait
-```
-
-**Check Jellyfin Logs**:
-```powershell
-# View Jellyfin logs in Event Viewer
-eventvwr.msc
-# Navigate to Windows Logs → Application → Filter by "Jellyfin"
-
-# Or check Jellyfin log files (get the most recent log)
-Get-ChildItem "$env:PROGRAMDATA\Jellyfin\Server\log\*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Get-Content -Tail 50
-```
-
 ### Performance Verification
 
 1. **Test streaming performance** - Play a high-quality video
@@ -404,9 +378,7 @@ If you've followed all steps and still have issues:
    - Browser network tab screenshots
 
 3. **Seek community help**:
-   - [Jellyfin Community Forum](https://forum.jellyfin.org/)
-   - [Caddy Community Forum](https://caddy.community/)
-   - Reddit communities: r/jellyfin, r/selfhosted
+   - [Discord](https://discord.gg/P49AxjpHez)
 
 ---
 
