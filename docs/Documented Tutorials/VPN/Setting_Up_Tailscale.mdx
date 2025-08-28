@@ -132,77 +132,85 @@ Before beginning the installation, ensure your system meets all requirements:
 
 #### Download and Install
 
+Download Tailscale for Windows
 ```powershell
-# Download Tailscale for Windows
 $url = "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe"
 $output = "$env:TEMP\tailscale-setup.exe"
 Invoke-WebRequest -Uri $url -OutFile $output
+```
+Run installer (requires administrator privileges)
 
-# Run installer (requires administrator privileges)
+```powershell
 Start-Process -FilePath $output -ArgumentList "/S" -Wait -Verb RunAs
-
-# Verify installation
+```
+Verify installation
+```powershell
 tailscale version
 ```
 
 #### Service Configuration
 
+Check service status
 ```powershell
-# Check service status
 Get-Service Tailscale
-
-# Start Tailscale service if not running
+```
+Start Tailscale service if not running
+```powershell
 Start-Service Tailscale
-
-# Set service to start automatically
+```
+Set service to start automatically
+```powershell
 Set-Service Tailscale -StartupType Automatic
 ```
 
 #### Initial Device Setup
 
+Start Tailscale and authenticate
 ```powershell
-# Start Tailscale and authenticate
 tailscale up
-
+```
 # Follow the authentication URL provided
 # Complete authentication in web browser
 # Device will appear in Tailscale admin console
-```
 
 #### Verify Connection
 
+Check Tailscale status
 ```powershell
-# Check Tailscale status
 tailscale status
-
-# List connected devices
+```
+List connected devices
+```powershell
 tailscale status --peers
-
-# Test connectivity to another device
+```
+Test connectivity to another device
+```powershell
 ping [device-tailscale-ip]
 ```
 
 #### Configure Device Name
 
+Set a custom device name
 ```powershell
-# Set a custom device name
 tailscale up --hostname=my-windows-pc
-
-# Update device tags (for ACL organization)
+```
+Update device tags (for ACL organization)
+```powershell
 tailscale up --advertise-tags=tag:windows,tag:client
 ```
 
 #### Basic Network Configuration
 
-```powershell
 # Enable MagicDNS for automatic hostname resolution
 # This is configured in the admin console:
 # Settings → DNS → Enable MagicDNS
 
-# Set custom DNS servers (optional)
+Set custom DNS servers (optional)
+```powershell
 tailscale up --accept-dns=false
-
-# Or use specific DNS servers
+```
+Or use specific DNS servers
+```powershell
 tailscale up --accept-dns --dns=1.1.1.1,8.8.8.8
 ```
 
@@ -213,103 +221,115 @@ tailscale up --accept-dns --dns=1.1.1.1,8.8.8.8
 
 ##### Ubuntu/Debian Installation
 
+Add Tailscale's package signing key and repository
 ```bash
-# Add Tailscale's package signing key and repository
 curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
 curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.list | sudo tee /etc/apt/sources.list.d/tailscale.list
-
-# Update package list and install Tailscale
+```
+Update package list and install Tailscale
+```bash
 sudo apt update
 sudo apt install tailscale
-
-# Verify installation
+```
+Verify installation
+```bash
 tailscale version
 ```
 
 ##### CentOS/RHEL/Fedora Installation
 
+Add Tailscale repository
 ```bash
-# Add Tailscale repository
 sudo dnf config-manager --add-repo https://pkgs.tailscale.com/stable/rhel/8/tailscale.repo
+```bash
 
-# Install Tailscale
+Install Tailscale
+```bash
 sudo dnf install tailscale
-
-# Enable and start the service
+```
+Enable and start the service
+```bash
 sudo systemctl enable --now tailscaled
-
-# Verify installation
+```
+Verify installation
+```bash
 tailscale version
 ```
 
 ##### Arch Linux Installation
 
+Install from AUR
 ```bash
-# Install from AUR
 yay -S tailscale
-
-# Or using pacman (if available in official repos)
+```
+Or using pacman (if available in official repos)
+```bash
 sudo pacman -S tailscale
-
-# Enable and start the service
+```
+Enable and start the service
+```bash
 sudo systemctl enable --now tailscaled
 ```
 
 #### Service Configuration
 
+Enable and start the service (if not already done)
 ```bash
-# Enable and start the service (if not already done)
 sudo systemctl enable --now tailscaled
-
-# Check service status
+```
+Check service status
+```bash
 sudo systemctl status tailscaled
 ```
 
 #### Initial Device Setup
 
+Start Tailscale and authenticate
 ```bash
-# Start Tailscale and authenticate
 sudo tailscale up
-
-# Follow the authentication URL provided
-# Complete authentication in web browser
-# Device will appear in Tailscale admin console
 ```
+Follow the authentication URL provided
+Complete authentication in web browser
+Device will appear in Tailscale admin console
 
 #### Verify Connection
 
+Check Tailscale status
 ```bash
-# Check Tailscale status
 tailscale status
-
-# List connected devices
+```
+List connected devices
+```bash
 tailscale status --peers
-
-# Test connectivity to another device
+```
+Test connectivity to another device
+```bash
 ping [device-tailscale-ip]
 ```
 
 #### Configure Device Name
 
+Set a custom device name
 ```bash
-# Set a custom device name
 sudo tailscale up --hostname=my-linux-server
-
-# Update device tags (for ACL organization)
+```
+Update device tags (for ACL organization)
+```bash
 sudo tailscale up --advertise-tags=tag:linux,tag:server
 ```
 
 #### Basic Network Configuration
 
+ Enable MagicDNS for automatic hostname resolution
+ This is configured in the admin console:
+ Settings → DNS → Enable MagicDNS
+
+Set custom DNS servers (optional)
 ```bash
-# Enable MagicDNS for automatic hostname resolution
-# This is configured in the admin console:
-# Settings → DNS → Enable MagicDNS
-
-# Set custom DNS servers (optional)
 sudo tailscale up --accept-dns=false
-
-# Or use specific DNS servers
+```
+ Or use specific DNS servers
+```bash
 sudo tailscale up --accept-dns --dns=1.1.1.1,8.8.8.8
 ```
 
@@ -324,51 +344,61 @@ sudo tailscale up --accept-dns --dns=1.1.1.1,8.8.8.8
 
 An exit node routes internet traffic through a specific Tailscale device:
 
+Enable IP forwarding on the exit node
 ```bash
-# Enable IP forwarding on the exit node
 echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
+```
 
-# Advertise as exit node
+Advertise as exit node
+```bash
 sudo tailscale up --advertise-exit-node
-
-# Verify exit node status
+```
+Verify exit node status
+```bash
 tailscale status
 ```
 
 #### Configure Firewall for Exit Node
 
+Ubuntu/Debian - Configure UFW
 ```bash
-# Ubuntu/Debian - Configure UFW
 sudo ufw allow in on tailscale0
 sudo ufw allow out on tailscale0
 sudo ufw enable
+```
 
-# CentOS/RHEL - Configure firewalld
+CentOS/RHEL - Configure firewalld
+```bash
 sudo firewall-cmd --permanent --add-interface=tailscale0 --zone=trusted
 sudo firewall-cmd --permanent --add-masquerade
 sudo firewall-cmd --reload
-
-# Enable NAT masquerading
+```
+Enable NAT masquerading
+```bash
 sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 sudo iptables -A FORWARD -i tailscale0 -j ACCEPT
 sudo iptables -A FORWARD -o tailscale0 -j ACCEPT
-
-# Make iptables rules persistent
+```
+Make iptables rules persistent
+```bash
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
 ```
 
 #### Use Exit Node from Client
 
+List available exit nodes
 ```bash
-# List available exit nodes
 tailscale exit-node list
+```
 
-# Use specific exit node
+Use specific exit node
+```bash
 tailscale up --exit-node=[exit-node-ip]
-
-# Stop using exit node
+```
+Stop using exit node
+```bash
 tailscale up --exit-node=
 ```
 
@@ -378,33 +408,39 @@ tailscale up --exit-node=
 
 Subnet routing allows access to entire networks through a gateway device:
 
+Enable IP forwarding
 ```bash
-# Enable IP forwarding
 echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
-
-# Advertise subnet routes
+```
+Advertise subnet routes
+```bash
 sudo tailscale up --advertise-routes=192.168.1.0/24,10.0.0.0/8
-
-# For multiple subnets
+```
+For multiple subnets
+```bash
 sudo tailscale up --advertise-routes=192.168.1.0/24,192.168.2.0/24,10.0.0.0/16
-
-# Accept routes from other subnet routers
+```
+Accept routes from other subnet routers
+```bash
 sudo tailscale up --accept-routes
 ```
 
 #### Configure Subnet Router Firewall
 
+Allow forwarding between interfaces
 ```bash
-# Allow forwarding between interfaces
 sudo iptables -A FORWARD -i tailscale0 -j ACCEPT
 sudo iptables -A FORWARD -o tailscale0 -j ACCEPT
+```
 
-# Allow access to local subnet
+Allow access to local subnet
+```bash
 sudo iptables -A FORWARD -i tailscale0 -o eth0 -j ACCEPT
 sudo iptables -A FORWARD -i eth0 -o tailscale0 -j ACCEPT
-
-# Save iptables rules
+```
+Save iptables rules
+```bash
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
 ```
 
@@ -503,36 +539,35 @@ sudo iptables-save | sudo tee /etc/iptables/rules.v4
 
 #### Device Authentication
 
+Enable device authorization requirement
+Configure in admin console: Settings → General → Device authorization
+
+Set key expiry policies
+Configure in admin console: Settings → Keys → Key expiry
+
+Require reauth for sensitive operations
 ```bash
-# Enable device authorization requirement
-# Configure in admin console: Settings → General → Device authorization
-
-# Set key expiry policies
-# Configure in admin console: Settings → Keys → Key expiry
-
-# Require reauth for sensitive operations
 sudo tailscale up --force-reauth
 ```
 
 #### Network Segmentation
 
+Use tags for network segmentation
 ```bash
-# Use tags for network segmentation
 sudo tailscale up --advertise-tags=tag:production,tag:database
-
-# Apply strict ACLs based on tags
-# Configure in admin console: Access Controls
 ```
+Apply strict ACLs based on tags
+Configure in admin console: Access Controls
 
 #### Audit and Monitoring
 
+Enable audit logging
+Configure in admin console: Settings → Audit logs
+
+Monitor device connections
 ```bash
-# Enable audit logging
-# Configure in admin console: Settings → Audit logs
-
-# Monitor device connections
 tailscale status --json | jq '.Peer[] | {Name: .HostName, LastSeen: .LastSeen, Online: .Online}'
-
+```
 # Check for unauthorized devices
 tailscale status --peers
 ```
@@ -592,59 +627,66 @@ tailscale status --peers
 
 #### Health Monitoring
 
+Create health check script
 ```bash
-# Create health check script
 cat > /usr/local/bin/tailscale-health.sh << 'EOF'
 #!/bin/bash
-
-# Check Tailscale service status
+```
+Check Tailscale service status
+```bash
 if ! systemctl is-active --quiet tailscaled; then
     echo "ERROR: Tailscale service is not running"
     exit 1
 fi
-
-# Check connectivity to coordination server
+```
+Check connectivity to coordination server
+```bash
 if ! tailscale ping --timeout=5s 100.64.0.1 >/dev/null 2>&1; then
     echo "WARNING: Cannot reach Tailscale coordination server"
 fi
-
-# Check peer connectivity
+```
+Check peer connectivity
+```bash
 PEERS=$(tailscale status --json | jq -r '.Peer[] | select(.Online == true) | .TailscaleIPs[0]')
 for peer in $PEERS; do
     if ! ping -c 1 -W 5 "$peer" >/dev/null 2>&1; then
         echo "WARNING: Cannot reach peer $peer"
     fi
 done
-
 echo "Tailscale health check passed"
 EOF
 
+```bash
 chmod +x /usr/local/bin/tailscale-health.sh
 ```
 
 #### Performance Monitoring
 
+Monitor Tailscale interface statistics
 ```bash
-# Monitor Tailscale interface statistics
 watch -n 5 'ip -s link show tailscale0'
-
-# Monitor connection quality
+```
+Monitor connection quality
+```bash
 tailscale ping [peer-ip] --verbose
-
-# Check DERP server latency
+```
+Check DERP server latency
+```bash
 tailscale netcheck
 ```
 
 #### Log Analysis
 
+View Tailscale logs
 ```bash
-# View Tailscale logs
 sudo journalctl -u tailscaled -f
-
-# Filter for connection events
+```
+Filter for connection events
+```bash
 sudo journalctl -u tailscaled | grep -E "(connected|disconnected|auth)"
-
-# Monitor ACL violations
+```
+Monitor ACL violations
+```bash
 sudo journalctl -u tailscaled | grep -i "denied"
 ```
 
@@ -652,39 +694,41 @@ sudo journalctl -u tailscaled | grep -i "denied"
 
 #### Regular Updates
 
+Update Tailscale on Ubuntu/Debian
 ```bash
-# Update Tailscale on Ubuntu/Debian
 sudo apt update && sudo apt upgrade tailscale
-
-# Update on CentOS/RHEL/Fedora
+```
+Update on CentOS/RHEL/Fedora
+```bash
 sudo dnf update tailscale
-
-# Restart service after update
+```
+Restart service after update
+```bash
 sudo systemctl restart tailscaled
 ```
 
 #### Key Management
 
+Check key expiry
 ```bash
-# Check key expiry
 tailscale status --json | jq '.Self.KeyExpiry'
-
-# Renew authentication key
-sudo tailscale up --force-reauth
-
-# Generate new auth keys in admin console
-# Settings → Keys → Generate auth key
 ```
+Renew authentication key
+```bash
+sudo tailscale up --force-reauth
+```
+Generate new auth keys in admin console
+Settings → Keys → Generate auth key
 
 #### Backup Configuration
 
+Backup Tailscale configuration
 ```bash
-# Backup Tailscale configuration
 sudo cp -r /var/lib/tailscale /backup/tailscale-$(date +%Y%m%d)
-
-# Export ACL configuration
-# Admin console: Access Controls → Export
 ```
+Export ACL configuration
+Admin console: Access Controls → Export
+
 
 ## Troubleshooting
 
@@ -699,34 +743,40 @@ sudo cp -r /var/lib/tailscale /backup/tailscale-$(date +%Y%m%d)
 
 **Diagnostic Steps:**
 
+Check Tailscale service status
 ```bash
-# Check Tailscale service status
 sudo systemctl status tailscaled
-
-# Verify authentication
+```
+Verify authentication
+```bash
 tailscale status
-
-# Test network connectivity
+```
+Test network connectivity
+```bash
 tailscale netcheck
-
-# Check firewall rules
+```
+Check firewall rules
+```bash
 sudo iptables -L -n | grep tailscale
 ```
 
 **Solutions:**
 
+Restart Tailscale service
 ```bash
-# Restart Tailscale service
 sudo systemctl restart tailscaled
-
-# Re-authenticate device
+```
+Re-authenticate device
+```bash
 sudo tailscale up --force-reauth
-
-# Check and fix firewall rules
+```
+Check and fix firewall rules
+```bash
 sudo ufw allow in on tailscale0
 sudo ufw allow out on tailscale0
-
-# Reset network configuration
+```
+Reset network configuration
+```bash
 sudo tailscale down
 sudo tailscale up
 ```
@@ -740,30 +790,33 @@ sudo tailscale up
 
 **Diagnostic Steps:**
 
+Check advertised routes
 ```bash
-# Check advertised routes
 tailscale status --json | jq '.Self.PrimaryRoutes'
-
-# Verify IP forwarding
+```
+Verify IP forwarding
+```bash
 cat /proc/sys/net/ipv4/ip_forward
-
-# Check routing table
+```
+Check routing table
+```bash
 ip route show | grep tailscale
 ```
 
 **Solutions:**
 
+Enable IP forwarding
 ```bash
-# Enable IP forwarding
 echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
-
-# Re-advertise routes
-sudo tailscale up --advertise-routes=192.168.1.0/24 --accept-routes
-
-# Enable routes in admin console
-# Navigate to Machines → [Device] → Edit route settings
 ```
+Re-advertise routes
+```bash
+sudo tailscale up --advertise-routes=192.168.1.0/24 --accept-routes
+```
+Enable routes in admin console
+Navigate to Machines → [Device] → Edit route settings
+
 
 #### Issue 3: Exit Node Performance Issues
 
@@ -774,33 +827,38 @@ sudo tailscale up --advertise-routes=192.168.1.0/24 --accept-routes
 
 **Diagnostic Steps:**
 
+Test direct connection speed
 ```bash
-# Test direct connection speed
 speedtest-cli
+```
 
-# Test through exit node
+Test through exit node
+```bash
 tailscale up --exit-node=[exit-node-ip]
 speedtest-cli
-
-# Check exit node resources
+```
+Check exit node resources
+```bash
 top
 iotop
 ```
 
 **Solutions:**
 
+Optimize exit node performance
+Increase network buffers
 ```bash
-# Optimize exit node performance
-# Increase network buffers
 echo 'net.core.rmem_max = 134217728' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 echo 'net.core.wmem_max = 134217728' | sudo tee -a /etc/sysctl.d/99-tailscale.conf
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
-
-# Use different exit node
+```
+Use different exit node
+```bash
 tailscale exit-node list
 tailscale up --exit-node=[better-exit-node-ip]
-
-# Disable exit node if not needed
+```
+Disable exit node if not needed
+```bash
 tailscale up --exit-node=
 ```
 
@@ -808,30 +866,36 @@ tailscale up --exit-node=
 
 #### Network Diagnostics
 
+Comprehensive network check
 ```bash
-# Comprehensive network check
 tailscale netcheck --verbose
-
-# Test specific peer connectivity
+```
+Test specific peer connectivity
+```bash
 tailscale ping [peer-ip] --verbose --timeout=10s
-
-# Check DERP server connectivity
+```
+Check DERP server connectivity
+```bash
 curl -v https://derp.tailscale.com/
-
-# Analyze packet flow
+```
+Analyze packet flow
+```bash
 sudo tcpdump -i tailscale0 -n
 ```
 
 #### Log Analysis
 
+
+Enable debug logging
 ```bash
-# Enable debug logging
 sudo tailscale up --debug
-
-# Analyze connection logs
+```
+Analyze connection logs
+```bash
 sudo journalctl -u tailscaled --since="1 hour ago" | grep -E "(DERP|peer|conn)"
-
-# Check for authentication issues
+```
+Check for authentication issues
+```bash
 sudo journalctl -u tailscaled | grep -i auth
 ```
 
@@ -841,8 +905,8 @@ sudo journalctl -u tailscaled | grep -i auth
 
 #### Infrastructure as Code
 
+Ansible playbook for Tailscale deployment
 ```yaml
-# Ansible playbook for Tailscale deployment
 ---
 - name: Deploy Tailscale
   hosts: all
@@ -869,8 +933,8 @@ sudo journalctl -u tailscaled | grep -i auth
 
 #### Monitoring Integration
 
+Prometheus monitoring configuration
 ```yaml
-# Prometheus monitoring configuration
 - job_name: 'tailscale'
   static_configs:
     - targets: ['localhost:9090']
@@ -880,20 +944,24 @@ sudo journalctl -u tailscaled | grep -i auth
 
 #### Backup and Disaster Recovery
 
+Automated backup script
 ```bash
-# Automated backup script
 #!/bin/bash
 BACKUP_DIR="/backup/tailscale"
 DATE=$(date +%Y%m%d_%H%M%S)
-
-# Backup Tailscale state
+```
+Backup Tailscale state
+```bash
 sudo cp -r /var/lib/tailscale "$BACKUP_DIR/state_$DATE"
-
-# Export ACL configuration
+```
+Export ACL configuration
+```bash
 curl -H "Authorization: Bearer $TAILSCALE_API_KEY" \
      https://api.tailscale.com/api/v2/tailnet/$TAILNET/acl > "$BACKUP_DIR/acl_$DATE.json"
+```
 
-# Cleanup old backups
+Cleanup old backups
+```bash
 find "$BACKUP_DIR" -name "state_*" -mtime +30 -delete
 find "$BACKUP_DIR" -name "acl_*" -mtime +30 -delete
 ```
