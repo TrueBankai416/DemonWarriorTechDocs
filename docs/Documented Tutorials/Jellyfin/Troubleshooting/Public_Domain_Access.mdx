@@ -37,7 +37,7 @@ The first step is to ensure your ports **443** (HTTPS) and **80** (HTTP) are acc
 
 ### Check Port Status
 
-1. **Go to [portchecker.co](https://portchecker.co/)**
+1. **Go to [portchecker.io](https://portchecker.io/)**
 2. **Enter your public IP address** (find it at [whatismyipaddress.com](https://whatismyipaddress.com/))
 3. **Test port 443** - Enter `443` and click "Check Port"
 4. **Test port 80** - Enter `80` and click "Check Port"
@@ -119,7 +119,7 @@ sudo firewall-cmd --list-ports
   </TabItem>
 </Tabs>
 
-**After making firewall changes, retest ports at [portchecker.co](https://portchecker.co/) before continuing.**
+**After making firewall changes, retest ports at [portchecker.io](https://portchecker.io/) before continuing.**
 
 ---
 
@@ -243,7 +243,7 @@ Click on the main request in the Network tab and look at **Response Headers**:
 ```
 server: Caddy
 content-type: text/html
-x-forwarded-for: your-ip
+content-length: 12345
 ```
 
 If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
@@ -253,9 +253,9 @@ If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
 #### Issue: Connection Timeout
 **Symptoms**: No response, request hangs
 **Solutions**:
-- Verify Caddy is running: `sudo systemctl status caddy`
+- Verify Caddy is running: `sudo systemctl status caddy` (Linux) or check Services.msc (Windows)
 - Check Caddy configuration syntax: `caddy validate --config /etc/caddy/Caddyfile`
-- Restart Caddy: `sudo systemctl restart caddy`
+- Restart Caddy: `sudo systemctl restart caddy` (Linux) or restart service (Windows)
 
 #### Issue: SSL/TLS Certificate Errors
 **Symptoms**: "Your connection is not private" warnings
@@ -267,8 +267,8 @@ If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
 #### Issue: 502/503 Backend Errors
 **Symptoms**: "Bad Gateway" or "Service Unavailable"
 **Solutions**:
-- Verify Jellyfin is running: `sudo systemctl status jellyfin`
-- Check Jellyfin is listening on correct port: `netstat -tlnp | grep 8096`
+- Verify Jellyfin is running: `sudo systemctl status jellyfin` (Linux) or check Services.msc (Windows)
+- Check Jellyfin is listening on correct port: `netstat -tlnp | grep 8096` (Linux) or `netstat -an | findstr 8096` (Windows)
 - Verify Caddy upstream configuration points to correct Jellyfin address
 
 ---
@@ -304,8 +304,8 @@ If you see incorrect redirects (especially double domain names), check Jellyfin'
 
 #### ✅ **Correct Base URL Settings**
 
-- **Leave empty** for most setups
-- **OR** set to `/` if required
+- **Leave empty** for most setups (recommended)
+- **Set to subpath** only if serving under a subdirectory (e.g., `/jellyfin`)
 
 #### ❌ **Incorrect Base URL Settings**
 
@@ -315,9 +315,9 @@ If you see incorrect redirects (especially double domain names), check Jellyfin'
 
 ### Fix Base URL Configuration
 
-1. **Clear the Base URL field** (leave it empty)
+1. **Clear the Base URL field** (leave it empty unless serving under a subpath)
 2. **Click "Save"**
-3. **Restart Jellyfin**: `sudo systemctl restart jellyfin`
+3. **Restart Jellyfin**: `sudo systemctl restart jellyfin` (Linux) or restart service (Windows)
 4. **Test access** via your domain again
 
 ### Verify Caddy Configuration
