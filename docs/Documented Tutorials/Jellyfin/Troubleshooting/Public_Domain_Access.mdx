@@ -207,8 +207,8 @@ If you see `server: Caddy`, traffic is reaching your reverse proxy correctly.
 
 **Alternative CLI Check**: You can also verify Caddy is responding using PowerShell:
 ```powershell
-Invoke-WebRequest -Uri https://jellyfin.yourdomain.com -Method Head
-# Look for "Server: Caddy" in the response headers
+(Invoke-WebRequest -Uri https://jellyfin.yourdomain.com -Method Head).Headers.Server
+# Should return "Caddy" if working correctly
 ```
 
 ### Common Network Issues and Solutions
@@ -347,8 +347,8 @@ Get-Content "C:\caddy\logs\caddy.log" -Tail 50 -Wait
 eventvwr.msc
 # Navigate to Windows Logs → Application → Filter by "Jellyfin"
 
-# Or check Jellyfin log files
-Get-Content "$env:PROGRAMDATA\Jellyfin\Server\logs\jellyfin*.log" -Tail 50
+# Or check Jellyfin log files (get the most recent log)
+Get-ChildItem "$env:PROGRAMDATA\Jellyfin\Server\log\*.log" | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Get-Content -Tail 50
 ```
 
 ### Performance Verification
