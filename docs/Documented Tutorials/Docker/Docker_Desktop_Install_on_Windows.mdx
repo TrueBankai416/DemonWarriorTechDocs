@@ -175,7 +175,7 @@ Get-WindowsOptionalFeature -Online | Where-Object {$_.FeatureName -like "*Hyper*
 
 #### Method 3: Using DISM (Command Line)
 
-```cmd
+```bash
 # Run Command Prompt as Administrator
 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
 dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
@@ -658,7 +658,7 @@ Start-Sleep -Seconds 5
 1. **Docker Desktop Settings** → **Resources** → **File Sharing**
 
 2. **Add development directories**:
-   ```
+   ```bash
    C:\Users\YourUsername\Documents\Projects
    C:\Development
    C:\Source
@@ -1144,3 +1144,4 @@ You have successfully installed and configured Docker Desktop on Windows with:
 Your Docker Desktop environment is now ready for professional development and production workloads.
 
 <BuyMeACoffeeButton />
+
