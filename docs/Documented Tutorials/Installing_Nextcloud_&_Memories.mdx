@@ -128,7 +128,7 @@ Verify Docker is running
 
 ```docker
 docker --version
-docker-compose --version
+docker compose --version
 ```
 
 Test Docker functionality
@@ -443,13 +443,13 @@ docker compose exec app php occ status
 Verify database connection
 
 ```docker
-docker-compose exec db mysql -u nextcloud -p nextcloud -e "SHOW TABLES;"
+docker compose exec db mysql -u nextcloud -p nextcloud -e "SHOW TABLES;"
 ```
 
 Test Redis connection
 
 ```docker
-docker-compose exec redis redis-cli -a RedisPassword123! ping
+docker compose exec redis redis-cli -a RedisPassword123! ping
 ```
 
 ## Nextcloud Configuration
@@ -1118,3 +1118,4 @@ Your Nextcloud & Memories installation is now ready for professional photo and v
 
 
 <BuyMeACoffeeButton />
+
