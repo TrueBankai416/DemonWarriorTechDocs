@@ -730,17 +730,17 @@ sudo reboot
 
 ```bash
 # Validate docker-compose.yml
-docker-compose config
+docker compose config
 
 # Check service status
-docker-compose ps
+docker compose ps
 
 # View service logs
-docker-compose logs <service_name>
-docker-compose logs -f
+docker compose logs <service_name>
+docker compose logs -f
 
 # Check service dependencies
-docker-compose top
+docker compose top
 ```
 
 #### Solutions
@@ -759,14 +759,14 @@ services:
       retries: 3
 
 # Use environment files
-docker-compose --env-file .env up
+docker compose --env-file .env up
 
 # Override configurations
-docker-compose -f docker-compose.yml -f docker-compose.override.yml up
+docker compose -f docker-compose.yml -f docker-compose.override.yml up
 
 # Debug networking issues
-docker-compose exec web ping db
-docker-compose exec web nslookup db
+docker compose exec web ping db
+docker compose exec web nslookup db
 ```
 
 ### Issue 13: Registry and Image Issues
