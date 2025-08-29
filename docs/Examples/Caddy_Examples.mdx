@@ -20,7 +20,7 @@ import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
 **Jellyfin:**
 
-```
+```caddyfile
 sub.domain.com {
     reverse_proxy 127.0.0.1:8096
     tls {
@@ -34,7 +34,7 @@ Caddyfile
 
 **NextCloud:**
 
-```
+```caddyfile
 files.domain.com {
     header Strict-Transport-Security "max-age=15552000; includeSubDomains; preload"
     redir /.well-known/carddav /remote.php/dav 301
@@ -54,7 +54,7 @@ Caddyfile
 
 **JFA-Go:**
 
-```
+```caddyfile
 jellyfin.domain.com {
     reverse_proxy /Users/ForgotPassword 192.168.0.111:8096 {
         header_up X-Forwarded-For 192.168.0.111
@@ -86,7 +86,7 @@ Caddyfile
 
 **Jellyfin:**
 
-```
+```caddyfile
 subdomain.duckdns.org {
     reverse_proxy 127.0.0.1:8096
 }
@@ -97,7 +97,7 @@ Caddyfile
 
 **NextCloud:**
 
-```
+```caddyfile
 subdomain.duckdns.org {
     header Strict-Transport-Security "max-age=15552000; includeSubDomains; preload"
     redir /.well-known/carddav /remote.php/dav 301
@@ -114,7 +114,7 @@ Caddyfile
 
 **JFA-Go:**
 
-```
+```caddyfile
 jellyfin.ducksdns.org {
     reverse_proxy /Users/ForgotPassword 192.168.0.111:8096 {
         header_up X-Forwarded-For 192.168.0.111
@@ -134,7 +134,7 @@ Caddyfile
 
 **Wordpress:**
 
-```
+```caddyfile
 sub.yourdomain.com {
     root C:\directory\wheres-your-wordpress-root-is\yourdomain
     php_fastcgi 127.0.0.1:9000
@@ -153,7 +153,7 @@ Caddyfile
 
 **Cloudflare:**
 
-```
+```caddyfile
 sub.domain.com {
     reverse_proxy 127.0.0.1:8096
     tls {
@@ -170,7 +170,7 @@ sub2.domain.com {
 
 **DuckDNS:**
 
-```
+```caddyfile
 subdomain.duckdns.org {
     reverse_proxy 127.0.0.1:8096
 }
@@ -183,3 +183,6 @@ subdomain2.duckdns.org {
 </Tabs>
 
 <BuyMeACoffeeButton />
+
+
+

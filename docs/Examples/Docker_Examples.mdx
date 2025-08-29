@@ -15,7 +15,7 @@ import BuyMeACoffeeButton from '@site/src/components/BuyMeACoffeeButton';
 
 ### Nextcloud Example
 
-```
+```yaml
 name: nextcloud
 
 services:
@@ -106,7 +106,7 @@ services:
 
 #### Dockerfile
 
-```
+```dockerfile
 # Use the Nextcloud production image as the base
 FROM nextcloud:production
 
@@ -244,7 +244,7 @@ HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=3 \
 
 #### cron.sh
 
-```
+```bash
 #!/bin/sh
 set -eu
 
@@ -253,7 +253,7 @@ exec busybox crond -f -L /dev/stdout
 
 #### nextcloud.ini
 
-```
+```ini
 memory_limit = 10G
 upload_max_filesize= 10G
 post_max_size = 10G
@@ -263,7 +263,7 @@ max_input_time = 3600
   
 #### .collabora.env
 
-```css
+```editorconfig
 username=admin #Change to Any Username You Choose
 password=PASSWORD #Change to Any Password you Choose
 domain=nextcloud\\.domain\\.com #Change this to your subdomain.\\domain\\.com example memories\\.demonwarriortech\\.com
@@ -271,7 +271,7 @@ domain=nextcloud\\.domain\\.com #Change this to your subdomain.\\domain\\.com ex
 
 #### supervisord.conf
 
-```
+```systemd
 [supervisord]
 nodaemon=true
 logfile=/var/log/supervisord/supervisord.log
@@ -301,7 +301,7 @@ command=/cron.sh
 
 #### docker-compose.yml
 
-  ```
+  ```yaml
 services:
   jellyfin:
     image: jellyfin/jellyfin:latest
@@ -354,7 +354,7 @@ services:
 
 ### Jellyseerr Example
 
-```
+```yaml
 services:
     jellyseerr:
        image: fallenbagel/jellyseerr:latest
@@ -371,7 +371,7 @@ services:
   
 ### Jellystat Example
 
-```
+```yaml
 services:
   jellystat-db:
     image: postgres
@@ -405,7 +405,7 @@ networks:
 
 ### Cloudflare DDNS Example
 
-```
+```yaml
 services:
   cloudflare-ddns:
     image: favonia/cloudflare-ddns:latest
@@ -449,7 +449,7 @@ services:
 
 ### Kitchen Owl
 
-```
+```yaml
 services:
   front:
     image: tombursch/kitchenowl-web:latest
@@ -480,16 +480,11 @@ volumes:
 
 networks:
   default:
-```
-  
-
-
-  
-    
+```    
 
 #### docker-Compose.yml
 
-```
+```yaml
 services:
 
   caddy:
@@ -524,7 +519,7 @@ volumes:
 
 #### Dockerfile
 
-```
+```dockerfile
 FROM caddy:2.8.4-builder AS builder
 
 RUN xcaddy build \
@@ -538,30 +533,23 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 #### Commands to run for Docker
 
-```
+```bash
 docker compose -f docker-compose.yml build
 ```
 
-```
+```bash
 docker network create caddy-network
 ```
 
-```
+```bash
 docker compose -f docker-compose.yml up -d
 ```
 
-
-      
-    
-
-  
-    
-    
 ### Immich Example
 
 #### docker-compose.yml
 
-```
+```yaml
 #
 # WARNING: Make sure to use the docker-compose.yml of the current release:
 #
@@ -633,7 +621,7 @@ volumes:
 **Requirements Below** Change only the **UPLOAD_LOCATION** & **EXTERNAL_PATH**
 :::
 
-```
+```editorconfig
 # You can find documentation for all the supported env variables at https://immich.app/docs/install/environment-variables
 
 # The location where your uploaded files are stored
@@ -659,7 +647,7 @@ REDIS_HOSTNAME=immich_redis
 
 #### hwaccel.ml.yml
 
-```
+```yaml
 version: "3.8"
 
 # Configurations for hardware-accelerated machine learning
@@ -708,7 +696,7 @@ services:
 ```
 #### hwaccel.transcoding.yml
 
-```
+```yaml
 version: "3.8"
 
 # Configurations for hardware-accelerated transcoding
@@ -780,7 +768,7 @@ services:
 **Requirements Below** Change only the **UPLOAD_LOCATION** & **EXTERNAL_PATH**
 :::
 
-```
+```editorconfig
 # You can find documentation for all the supported env variables at https://immich.app/docs/install/environment-variables
 
 # The location where your uploaded files are stored
@@ -806,7 +794,7 @@ REDIS_HOSTNAME=immich_redis
 ```
 #### docker-compose.yml
 
-```
+```yaml
 #
 # WARNING: Make sure to use the docker-compose.yml of the current release:
 #
@@ -874,7 +862,7 @@ volumes:
 
 #### hwaccel.yml
 
-```
+```yaml
 version: "3.8"
 
 # Configurations for hardware-accelerated machine learning
@@ -925,7 +913,7 @@ services:
 
 #### hwaccel.transcoding.yml
 
-```
+```yaml
 version: "3.8"
 
 # Configurations for hardware-accelerated transcoding
@@ -984,17 +972,11 @@ services:
       - LD_LIBRARY_PATH=/usr/lib/wsl/lib
       - LIBVA_DRIVER_NAME=d3d12
 
-```
-
-      
-    
-    
-  
-    
+```  
     
 ### PhotoPrism Examples for Locally Hosting with software hwa
 
-```
+```yaml
 services:
   photoprism:
     ## Use photoprism/photoprism:preview for testing preview builds:
@@ -1112,14 +1094,11 @@ volumes:
 #networks:
 #  caddy-network:
 #    external: true
-```
-      
-      
+```   
 
 ### PhotoPrism Reverse Proxy with NVIDIA HWA
 
-
-```
+```yaml
 services:
   photoprism:
     ## Use photoprism/photoprism:preview for testing preview builds:
@@ -1238,13 +1217,11 @@ volumes:
 #networks:
 #  caddy-network:
 #    external: true
-```
-    
-    
+```  
 
 ### PhotoPrism Reverse Proxy with INTEL HWA
 
-```
+```yaml
 services:
   photoprism:
     ## Use photoprism/photoprism:preview for testing preview builds:
@@ -1364,10 +1341,5 @@ volumes:
 #  caddy-network:
 #    external: true
 ```
-    
-    
-  
-
-
 
 <BuyMeACoffeeButton />
