@@ -178,7 +178,6 @@ const config = {
           'bash',
           'apacheconf',
           'docker',
-          'caddyfile',
         ],
       },
     }),
