@@ -108,13 +108,13 @@ How to Install Wordpress + Caddy Natively on Windows
 3. Extract php-7.xx insides to another directory
 4. Extract NSSM.exe from 
 
-    ```css
+    ```bash
     \nssm-2.24\win64
     ``` 
     
     to 
 
-    ```css
+    ```bash
     C:\Tools\NSSM
     ```
 
@@ -135,12 +135,12 @@ Add it to the enviroment variable paths
 
 4. Add a New Path and type 
 
-```css
+```bash
 C:\Tools\php
 ```
 5. Add another new path this time for NSSM 
 
-```css
+```bash
 C:\Tools\NSSM
 ```
 
@@ -153,7 +153,7 @@ Uncomment These Settings
 IE. Removing # from before each line
 You can Search in Your Text Editor by Clicking CTRL+ F
 
-```
+```ini
 *PHP.ini Settings*
 
     Navigate to the “increase memory_limit” line in the file and change the value from 128M to 512MB.
@@ -184,21 +184,21 @@ extension=pdo_sqlite
 1. Open up an Administrative Powershell.
 2. type inside that powershell 
 
-```css
+```bash
 NSSM install PHP
 ```
 
 3. Add to Path 
    
    3.1 
-   ```css
+   ```bash
    C:\Tools\php\php-cgi.exe
    ```
    
    Add to Startup Dirctory
     
     3.2 
-    ```css
+    ```bash
     C:\Tools\php
     ```
    
@@ -206,14 +206,14 @@ NSSM install PHP
     
     3.3 
 
-    ```css
+    ```bash
     -b 127.0.0.1:9000
     ```
 
 4. Click Save
 5. Start the Service
 
-   ```css
+   ```bash
    nssm Start php
    ```
 
@@ -236,7 +236,7 @@ NSSM install PHP
 3. TYPE THE PASSWORD YOU CREATED in your installation
 4.THEN Edit To Your liking
 
-```css
+```sql
 CREATE DATABASE wordpress;
 use wordpress;
 CREATE USER 'user'@'localhost' IDENTIFIED BY 'pass12345678?';
@@ -246,13 +246,13 @@ flush privileges;
 
 5. **If you cant remember your password for your MYSQL User* Use this command**
 
-```css
+```sql
 DROP USER 'devilsdesigns'@'localhost';
 ```
 
 **Then re-enter this below**
 
-```
+```sql
 use wordpress;
 CREATE USER 'user'@'localhost' IDENTIFIED BY 'pass12345678?';
 GRANT ALL ON *.* TO 'user'@'localhost';
@@ -271,7 +271,7 @@ flush privileges;
 **Running Caddy inside the Caddy.exe Directory**
 
 1. 
-```css
+```bash
 cd C:\Caddy\Directory
 ```
 
@@ -279,7 +279,7 @@ cd C:\Caddy\Directory
 
 2. Running Caddy Manually
 3. 
-```css
+```bash
 ./caddy run --config Caddy
 ```
 
@@ -290,7 +290,3 @@ cd C:\Caddy\Directory
 
 
 <BuyMeACoffeeButton />
-
-
-
-
