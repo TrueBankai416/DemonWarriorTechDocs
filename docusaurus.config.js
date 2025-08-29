@@ -179,6 +179,7 @@ const config = {
           'apacheconf',
           'docker',
           'sql',
+          'docker',
         ],
       },
     }),
