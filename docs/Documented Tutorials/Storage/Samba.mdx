@@ -235,7 +235,7 @@ Backup original configuration
 sudo cp /etc/samba/smb.conf /etc/samba/smb.conf.backup
 ```
 Create new configuration
-```
+```editorconfig
 sudo tee /etc/samba/smb.conf > /dev/null << 'EOF'
 [global]
     # Server identification
@@ -281,7 +281,7 @@ sudo tee /etc/samba/smb.conf > /dev/null << 'EOF'
     disable spoolss = yes
 ```
 Public share example
-```
+```editorconfig
 [public]
     comment = Public Files
     path = /srv/samba/public
@@ -310,7 +310,7 @@ Private share example
 ```
 
 Home directories
-```
+```editorconfig
 [homes]
     comment = Home Directories
     browseable = no
@@ -1308,4 +1308,5 @@ Copy the settings from your Samba test to your external storage it should read.
 
 
 <BuyMeACoffeeButton />
+
 
