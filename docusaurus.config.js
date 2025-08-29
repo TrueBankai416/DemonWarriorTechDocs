@@ -180,6 +180,7 @@ const config = {
           'docker',
           'sql',
           'docker',
+          'php',
         ],
       },
     }),
