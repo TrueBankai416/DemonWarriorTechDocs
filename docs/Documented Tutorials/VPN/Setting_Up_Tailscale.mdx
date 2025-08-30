@@ -144,7 +144,7 @@ Run installer (requires administrator privileges)
 Start-Process -FilePath $output -ArgumentList "/S" -Wait -Verb RunAs
 ```
 Verify installation
-```powershell
+```bash
 tailscale version
 ```
 
@@ -166,7 +166,7 @@ Set-Service Tailscale -StartupType Automatic
 #### Initial Device Setup
 
 Start Tailscale and authenticate
-```powershell
+```bash
 tailscale up
 ```
 Follow the authentication URL provided
@@ -176,26 +176,26 @@ Device will appear in Tailscale admin console
 #### Verify Connection
 
 Check Tailscale status
-```powershell
+```bash
 tailscale status
 ```
 List connected devices
-```powershell
+```bash
 tailscale status --peers
 ```
 Test connectivity to another device
-```powershell
+```bash
 ping [device-tailscale-ip]
 ```
 
 #### Configure Device Name
 
 Set a custom device name
-```powershell
+```bash
 tailscale up --hostname=my-windows-pc
 ```
 Update device tags (for ACL organization)
-```powershell
+```bash
 tailscale up --advertise-tags=tag:windows,tag:client
 ```
 
@@ -206,11 +206,11 @@ This is configured in the admin console:
 Settings → DNS → Enable MagicDNS
 
 Set custom DNS servers (optional)
-```powershell
+```bash
 tailscale up --accept-dns=false
 ```
 Or use specific DNS servers
-```powershell
+```bash
 tailscale up --accept-dns --dns=1.1.1.1,8.8.8.8
 ```
 
@@ -569,6 +569,7 @@ Monitor device connections
 tailscale status --json | jq '.Peer[] | {Name: .HostName, LastSeen: .LastSeen, Online: .Online}'
 ```
 # Check for unauthorized devices
+```bash
 tailscale status --peers
 ```
 

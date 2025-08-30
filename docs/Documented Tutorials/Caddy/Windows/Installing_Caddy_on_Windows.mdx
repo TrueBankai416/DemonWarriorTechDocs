@@ -71,12 +71,12 @@ Before beginning the installation, ensure your system meets the following requir
 
 2. **Extract and Install**:
    Move downloaded caddy.exe to Tools directory
-```powershell
+   ```powershell
    Move-Item "Downloads\caddy.exe" "C:\Tools\Caddy\caddy.exe"
-```   
+   ```   
    Add to system PATH
 
-```   $env:PATH += ";C:\Tools\Caddy"
+   ```powershell
    [Environment]::SetEnvironmentVariable("PATH", $env:PATH, [EnvironmentVariableTarget]::Machine)
    ```
 
@@ -94,25 +94,20 @@ Before beginning the installation, ensure your system meets the following requir
 1. **Create Caddyfile**:
    Navigate to Caddy directory
    
-```powershell
+   ```powershell
    cd C:\Tools\Caddy
-```   
+   ```   
    Create basic Caddyfile
-```   
+   ```   
    New-Item -ItemType File -Path "Caddyfile"
- ```
+    ```
 
 2. **Basic Caddyfile Example**:
    ```caddyfile
    # Replace with your domain
-   example.com {
-       respond "Hello, World!"
-   }
-   
-   # Reverse proxy example
-   # app.example.com {
-   #     reverse_proxy localhost:3000
-   # }
+    app.example.com {
+        reverse_proxy localhost:3000
+    }
    ```
 
 ### Step 4: Running Caddy
@@ -137,16 +132,16 @@ For production use, install Caddy as a Windows service:
 
 Install as Windows service
 
-```powershell
+```bash
 caddy run --config C:\Tools\Caddy\Caddyfile --service install
 ```
  Start the service
-```powershell
+```bash
 caddy start --service
 ```
  Check service status
 
-```powershell
+```bash
 caddy status --service
 ```
 
@@ -205,17 +200,17 @@ If you're using Cloudflare for DNS management:
 ### Step 7: Running Cloudflare DDNS
 
 1. **Navigate to directory**:
-   ```powershell
+   ```bash
    cd C:\Tools\CloudflareDDNS
    ```
 
 2. **Run DDNS updater**:
-   ```powershell
+   ```bash
    ./cloudflare-ddns --token your-cloudflare-api-key --domain home.yourdomain.com
    ```
 
 3. **Expected output**:
-   ```
+   ```bash
    time="2023-01-28T17:54:39-06:00" level=info msg="updated record" content=123.123.123.123 name=home.yourdomain.com
    ```
 
@@ -250,38 +245,38 @@ net start caddy
 ```
 
  Stop Caddy service
-```
+```powershell
 net stop caddy
 ```
 Restart Caddy service
 
-```
+```powershell
 net stop caddy && net start caddy
 ```
  Check service status
 
-```
+```powershell
 sc query caddy
 ```
 
 ### Configuration Management
 
 Test configuration before applying
-```powershell
+```bash
 caddy validate --config C:\Tools\Caddy\Caddyfile
 ```
  Format Caddyfile
-```
+```bash
 caddy fmt --overwrite C:\Tools\Caddy\Caddyfile
 ```
   Reload configuration
-```
+```bash
 caddy reload --config C:\Tools\Caddy\Caddyfile
 ```
 
  View current configuration
 
-```
+```bash
 caddy config --config C:\Tools\Caddy\Caddyfile
 ```
 
@@ -298,7 +293,7 @@ Get-EventLog -LogName Application -Source Caddy -Newest 10
 ```
 
 # Check service status
-```
+```powershell
 sc query caddy
 ```
 
@@ -309,23 +304,23 @@ sc query caddy
 
 **Solution:**
 Validate configuration
-```powershell
+```bash
 caddy validate --config C:\Tools\Caddy\Caddyfile
 ```
  Check file permissions
-```
+```powershell
 Get-Acl C:\Tools\Caddy\Caddyfile
 ```
 
 # Test manual execution
 Move to Caddy.exe Folder Directory
 
-```
+```bash
 cd C:\Tools\Caddy
 ```
 
 Run Caddy command inside Caddy folder
-```
+```bash
 ./caddy run --config Caddyfile
 ```
 
@@ -338,19 +333,19 @@ Get-NetFirewallRule -DisplayName "*Caddy*"
 
  Add firewall rules if needed
 
-```
+```powershell
 New-NetFirewallRule -DisplayName "Caddy HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
 New-NetFirewallRule -DisplayName "Caddy HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
 ```
 
 #### Issue 3: Certificate Issues
  Check certificate status
-```powershell
+```bash
 caddy list-certificates
 ```
 
  Clear certificate cache if needed
-```
+```powershell
 Remove-Item -Recurse -Force "$env:APPDATA\Caddy\certificates"
 ```
 
@@ -374,7 +369,7 @@ Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
 ```
  Configure specific rules
 
-```
+```powershell
 New-NetFirewallRule -DisplayName "Caddy HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
 New-NetFirewallRule -DisplayName "Caddy HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Action Allow
 ```

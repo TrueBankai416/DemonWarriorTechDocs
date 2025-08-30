@@ -118,7 +118,7 @@ cd C:\Tools\Nextcloud
 ```
 Create required subdirectories
 
-```
+```bash
 mkdir -p db data config
 ```
 
@@ -128,7 +128,7 @@ Verify Docker is running
 
 ```bash
 docker --version
-docker-compose --version
+docker compose --version
 ```
 
 Test Docker functionality
@@ -137,7 +137,7 @@ Test Docker functionality
 docker run hello-world
 ```
 Check available resources
-```
+```bash
 docker system info
 ```
 
@@ -275,7 +275,7 @@ volumes:
 
 For advanced features like facial recognition, create `Dockerfile`:
 
-```dockerfile
+```bashfile
 FROM nextcloud:28-apache
 
 # Install system dependencies
@@ -418,18 +418,18 @@ docker build -t nextcloud-enhanced:latest .
 
 Start the Nextcloud stack
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 Monitor deployment progress
 
-```
-docker-compose logs -f
+```bash
+docker compose logs -f
 ```
 
 Verify all containers are running
 
-```
-docker-compose ps
+```bash
+docker compose ps
 ```
 
 #### Initial Setup Verification
@@ -437,19 +437,19 @@ docker-compose ps
 Check container health
 
 ```bash
-docker-compose exec app php occ status
+docker compose exec app php occ status
 ```
 
 Verify database connection
 
-```
-docker-compose exec db mysql -u nextcloud -p nextcloud -e "SHOW TABLES;"
+```bash
+docker compose exec db mysql -u nextcloud -p nextcloud -e "SHOW TABLES;"
 ```
 
 Test Redis connection
 
-```
-docker-compose exec redis redis-cli -a RedisPassword123! ping
+```bash
+docker compose exec redis redis-cli -a RedisPassword123! ping
 ```
 
 ## Nextcloud Configuration
@@ -480,18 +480,18 @@ docker-compose exec redis redis-cli -a RedisPassword123! ping
 Check Nextcloud status
 
 ```bash
-docker-compose exec app php occ status
+docker compose exec app php occ status
 ```
 Verify database tables
 
-```
-docker-compose exec app php occ db:convert-filecache-bigint
+```bash
+docker compose exec app php occ db:convert-filecache-bigint
 ```
 
 Run initial maintenance
 
-```
-docker-compose exec app php occ maintenance:update:htaccess
+```bash
+docker compose exec app php occ maintenance:update:htaccess
 ```
 
 ### Step 5: Install and Configure Memories App
@@ -519,16 +519,16 @@ docker-compose exec app php occ maintenance:update:htaccess
 Install apps via command line (alternative method)
 
 ```bash
-docker-compose exec app php occ app:install memories
-docker-compose exec app php occ app:install recognize
-docker-compose exec app php occ app:install preview_generator
+docker compose exec app php occ app:install memories
+docker compose exec app php occ app:install recognize
+docker compose exec app php occ app:install preview_generator
 ```
 
 Enable the apps
-```
-docker-compose exec app php occ app:enable memories
-docker-compose exec app php occ app:enable recognize
-docker-compose exec app php occ app:enable preview_generator
+```bash
+docker compose exec app php occ app:enable memories
+docker compose exec app php occ app:enable recognize
+docker compose exec app php occ app:enable preview_generator
 ```
 
 ### Step 6: Configure Hardware Acceleration
@@ -571,13 +571,13 @@ go-vod:
 Recreate containers with new configuration
 
 ```bash
-docker-compose up -d --force-recreate --remove-orphans
+docker compose up -d --force-recreate --remove-orphans
 ```
 
 Verify Go-VOD is running
 
-```
-docker-compose logs go-vod
+```bash
+docker compose logs go-vod
 ```
 
 #### Configure Memories for Hardware Acceleration
@@ -603,7 +603,7 @@ docker-compose logs go-vod
 Check Go-VOD logs for GPU usage
 
 ```bash
-docker-compose logs go-vod | grep -i "cuda\|nvenc\|vaapi"
+docker compose logs go-vod | grep -i "cuda\|nvenc\|vaapi"
 ```
 
 Test video transcoding
@@ -627,8 +627,8 @@ To: image: nextcloud-enhanced:latest
 
 Recreate with custom image
 
-```
-docker-compose up -d --force-recreate
+```bash
+docker compose up -d --force-recreate
 ```
 
 #### Configure Recognition Settings
@@ -657,13 +657,13 @@ docker-compose up -d --force-recreate
 Run initial face recognition scan
 
 ```bash
-docker-compose exec app php occ recognize:classify
+docker compose exec app php occ recognize:classify
 ```
 
 Monitor recognition progress
 
-```
-docker-compose exec app php occ recognize:status
+```bash
+docker compose exec app php occ recognize:status
 ```
 
 ### Step 8: Performance Optimization
@@ -673,15 +673,15 @@ docker-compose exec app php occ recognize:status
 Configure preview generation for better performance
 
 ```bash
-docker-compose exec app php occ config:app:set preview max_x --value 2048
-docker-compose exec app php occ config:app:set preview max_y --value 2048
-docker-compose exec app php occ config:app:set preview jpeg_quality --value 60
+docker compose exec app php occ config:app:set preview max_x --value 2048
+docker compose exec app php occ config:app:set preview max_y --value 2048
+docker compose exec app php occ config:app:set preview jpeg_quality --value 60
 ```
 
 Generate previews for existing files
 
-```
-docker-compose exec app php occ preview:generate-all
+```bash
+docker compose exec app php occ preview:generate-all
 ```
 
 #### Optimize Database
@@ -689,13 +689,13 @@ docker-compose exec app php occ preview:generate-all
 Add database indices for better performance
 
 ```bash
-docker-compose exec app php occ db:add-missing-indices
+docker compose exec app php occ db:add-missing-indices
 ```
 
 Convert to big int for large installations
 
-```
-docker-compose exec app php occ db:convert-filecache-bigint
+```bash
+docker compose exec app php occ db:convert-filecache-bigint
 ```
 
 #### Configure Caching
@@ -703,12 +703,12 @@ docker-compose exec app php occ db:convert-filecache-bigint
 Configure Redis caching
 
 ```bash
-docker-compose exec app php occ config:system:set redis host --value="redis"
-docker-compose exec app php occ config:system:set redis port --value=6379 --type=integer
-docker-compose exec app php occ config:system:set redis password --value="RedisPassword123!"
-docker-compose exec app php occ config:system:set memcache.local --value="\\OC\\Memcache\\APCu"
-docker-compose exec app php occ config:system:set memcache.distributed --value="\\OC\\Memcache\\Redis"
-docker-compose exec app php occ config:system:set memcache.locking --value="\\OC\\Memcache\\Redis"
+docker compose exec app php occ config:system:set redis host --value="redis"
+docker compose exec app php occ config:system:set redis port --value=6379 --type=integer
+docker compose exec app php occ config:system:set redis password --value="RedisPassword123!"
+docker compose exec app php occ config:system:set memcache.local --value="\\OC\\Memcache\\APCu"
+docker compose exec app php occ config:system:set memcache.distributed --value="\\OC\\Memcache\\Redis"
+docker compose exec app php occ config:system:set memcache.locking --value="\\OC\\Memcache\\Redis"
 ```
 
 ## Security Configuration
@@ -720,9 +720,9 @@ docker-compose exec app php occ config:system:set memcache.locking --value="\\OC
 Add trusted domains for external access
 
 ```bash
-docker-compose exec app php occ config:system:set trusted_domains 0 --value="localhost"
-docker-compose exec app php occ config:system:set trusted_domains 1 --value="yourdomain.com"
-docker-compose exec app php occ config:system:set trusted_domains 2 --value="www.yourdomain.com"
+docker compose exec app php occ config:system:set trusted_domains 0 --value="localhost"
+docker compose exec app php occ config:system:set trusted_domains 1 --value="yourdomain.com"
+docker compose exec app php occ config:system:set trusted_domains 2 --value="www.yourdomain.com"
 ```
 
 #### Configure Reverse Proxy Support
@@ -730,15 +730,15 @@ docker-compose exec app php occ config:system:set trusted_domains 2 --value="www
 Configure trusted proxies
 
 ```bash
-docker-compose exec app php occ config:system:set trusted_proxies 0 --value="127.0.0.1"
-docker-compose exec app php occ config:system:set trusted_proxies 1 --value="172.18.0.0/16"
+docker compose exec app php occ config:system:set trusted_proxies 0 --value="127.0.0.1"
+docker compose exec app php occ config:system:set trusted_proxies 1 --value="172.18.0.0/16"
 ```
 
 Configure forwarded headers
 
-```
-docker-compose exec app php occ config:system:set forwarded_for_headers 0 --value="HTTP_X_FORWARDED_FOR"
-docker-compose exec app php occ config:system:set forwarded_for_headers 1 --value="HTTP_X_FORWARDED_HOST"
+```bash
+docker compose exec app php occ config:system:set forwarded_for_headers 0 --value="HTTP_X_FORWARDED_FOR"
+docker compose exec app php occ config:system:set forwarded_for_headers 1 --value="HTTP_X_FORWARDED_HOST"
 ```
 
 #### Enable Security Features
@@ -746,20 +746,20 @@ docker-compose exec app php occ config:system:set forwarded_for_headers 1 --valu
 Force HTTPS (for production)
 
 ```bash
-docker-compose exec app php occ config:system:set overwriteprotocol --value="https"
+docker compose exec app php occ config:system:set overwriteprotocol --value="https"
 ```
 
 Enable two-factor authentication
 
-```
-docker-compose exec app php occ app:install twofactor_totp
-docker-compose exec app php occ app:enable twofactor_totp
+```bash
+docker compose exec app php occ app:install twofactor_totp
+docker compose exec app php occ app:enable twofactor_totp
 ```
 
 Configure security headers
 
-```
-docker-compose exec app php occ config:system:set overwrite.cli.url --value="https://yourdomain.com"
+```bash
+docker compose exec app php occ config:system:set overwrite.cli.url --value="https://yourdomain.com"
 ```
 
 ### Step 10: Backup Configuration
@@ -781,10 +781,10 @@ BACKUP_NAME="nextcloud_backup_$DATE"
 mkdir -p "$BACKUP_DIR"
 
 # Stop Nextcloud (optional, for consistency)
-docker-compose exec app php occ maintenance:mode --on
+docker compose exec app php occ maintenance:mode --on
 
 # Backup database
-docker-compose exec db mysqldump -u nextcloud -pNextcloudPassword123! nextcloud > "$BACKUP_DIR/${BACKUP_NAME}_database.sql"
+docker compose exec db mysqldump -u nextcloud -pNextcloudPassword123! nextcloud > "$BACKUP_DIR/${BACKUP_NAME}_database.sql"
 
 # Backup Nextcloud data
 tar -czf "$BACKUP_DIR/${BACKUP_NAME}_data.tar.gz" -C ./data .
@@ -793,7 +793,7 @@ tar -czf "$BACKUP_DIR/${BACKUP_NAME}_data.tar.gz" -C ./data .
 tar -czf "$BACKUP_DIR/${BACKUP_NAME}_config.tar.gz" -C ./config .
 
 # Resume Nextcloud
-docker-compose exec app php occ maintenance:mode --off
+docker compose exec app php occ maintenance:mode --off
 
 # Cleanup old backups (keep last 7 days)
 find "$BACKUP_DIR" -name "nextcloud_backup_*" -mtime +7 -delete
@@ -810,7 +810,7 @@ chmod +x backup-nextcloud.sh
 ```
 Add to crontab for daily backups at 2 AM
 
-```
+```bash
 crontab -e
 ```
 
@@ -831,36 +831,36 @@ cat > health-check.sh << 'EOF'
 
 Check container health
 
-```
-docker-compose ps
+```bash
+docker compose ps
 ```
 
 Check Nextcloud status
 
-```
-docker-compose exec app php occ status
+```bash
+docker compose exec app php occ status
 ```
 
 Check disk usage
 
-```
+```bash
 df -h
 ```
 
 Check memory usage
 
-```
+```bash
 free -h
 ```
 
 Check Go-VOD transcoding
 
-```
-docker-compose logs --tail=10 go-vod
+```bash
+docker compose logs --tail=10 go-vod
 EOF
 ```
 
-```
+```bash
 chmod +x health-check.sh
 ```
 
@@ -869,25 +869,25 @@ chmod +x health-check.sh
 Monitor Nextcloud logs
 
 ```bash
-docker-compose logs -f app
+docker compose logs -f app
 ```
 
 Monitor database logs
 
-```
-docker-compose logs -f db
+```bash
+docker compose logs -f db
 ```
 
 Monitor Go-VOD transcoding logs
 
-```
-docker-compose logs -f go-vod
+```bash
+docker compose logs -f go-vod
 ```
 
 Check system logs
 
-```
-docker-compose exec app tail -f /var/www/html/data/nextcloud.log
+```bash
+docker compose exec app tail -f /var/www/html/data/nextcloud.log
 ```
 
 ### Step 12: Maintenance Tasks
@@ -897,26 +897,26 @@ docker-compose exec app tail -f /var/www/html/data/nextcloud.log
 Update file cache
 
 ```bash
-docker-compose exec app php occ files:scan --all
+docker compose exec app php occ files:scan --all
 ```
 
 Clean up old versions and trash
 
-```
-docker-compose exec app php occ versions:cleanup
-docker-compose exec app php occ trashbin:cleanup --all-users
+```bash
+docker compose exec app php occ versions:cleanup
+docker compose exec app php occ trashbin:cleanup --all-users
 ```
 
 Update preview cache
 
-```
-docker-compose exec app php occ preview:pre-generate
+```bash
+docker compose exec app php occ preview:pre-generate
 ```
 
 Optimize database
 
-```
-docker-compose exec app php occ db:add-missing-indices
+```bash
+docker compose exec app php occ db:add-missing-indices
 ```
 
 #### Update Procedures
@@ -924,20 +924,20 @@ docker-compose exec app php occ db:add-missing-indices
 Update Nextcloud (backup first!)
 
 ```bash
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 ```
 
 Run upgrade process
 
-```
-docker-compose exec app php occ upgrade
+```bash
+docker compose exec app php occ upgrade
 ```
 
 Update apps
 
-```
-docker-compose exec app php occ app:update --all
+```bash
+docker compose exec app php occ app:update --all
 ```
 
 ## Troubleshooting
@@ -962,17 +962,17 @@ lspci | grep VGA  # For all GPUs
 
 Verify Docker GPU support
 
-```
+```bash
 docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
 ```
 Check Go-VOD logs
 
-```
-docker-compose logs go-vod
+```bash
+docker compose logs go-vod
 ```
 Restart Go-VOD service
-```
-docker-compose restart go-vod
+```bash
+docker compose restart go-vod
 ```
 
 #### Issue 2: Facial Recognition Not Working
@@ -987,19 +987,19 @@ docker-compose restart go-vod
 Check recognition status
 
 ```bash
-docker-compose exec app php occ recognize:status
+docker compose exec app php occ recognize:status
 ```
 
 Reinstall recognition models
 
-```
-docker-compose exec app php occ recognize:download-models
+```bash
+docker compose exec app php occ recognize:download-models
 ```
 
 Run manual classification
 
-```
-docker-compose exec app php occ recognize:classify --force
+```bash
+docker compose exec app php occ recognize:classify --force
 ```
 
 #### Issue 3: Performance Issues
@@ -1014,18 +1014,18 @@ docker stats
 
 Monitor database performance
 
-```
-docker-compose exec db mysql -u nextcloud -p -e "SHOW PROCESSLIST;"
+```bash
+docker compose exec db mysql -u nextcloud -p -e "SHOW PROCESSLIST;"
 ```
 Check Redis performance
 
-```
-docker-compose exec redis redis-cli info stats
+```bash
+docker compose exec redis redis-cli info stats
 ```
 
 Analyze slow queries
-```
-docker-compose exec app php occ log:file --lines=100 | grep -i slow
+```bash
+docker compose exec app php occ log:file --lines=100 | grep -i slow
 ```
 
 **Optimization Solutions:**
@@ -1033,20 +1033,20 @@ docker-compose exec app php occ log:file --lines=100 | grep -i slow
 Increase PHP memory limit
 
 ```bash
-docker-compose exec app php -d memory_limit=4G occ files:scan --all
+docker compose exec app php -d memory_limit=4G occ files:scan --all
 ```
 
 Optimize database
 
-```
-docker-compose exec app php occ db:add-missing-primary-keys
-docker-compose exec app php occ db:convert-filecache-bigint
+```bash
+docker compose exec app php occ db:add-missing-primary-keys
+docker compose exec app php occ db:convert-filecache-bigint
 ```
 
 Clear caches
 
-```
-docker-compose exec app php occ maintenance:repair --include-expensive
+```bash
+docker compose exec app php occ maintenance:repair --include-expensive
 ```
 
 ## Production Deployment
@@ -1082,7 +1082,7 @@ docker-compose exec app php occ maintenance:repair --include-expensive
 Scale for production
 
 ```bash
-docker-compose up -d --scale app=2
+docker compose up -d --scale app=2
 ```
 
 Configure load balancing
@@ -1118,4 +1118,6 @@ Your Nextcloud & Memories installation is now ready for professional photo and v
 
 
 <BuyMeACoffeeButton />
+
+
 
