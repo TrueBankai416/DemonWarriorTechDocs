@@ -197,25 +197,26 @@ If you're using Cloudflare for DNS management:
 
 #### Download and Setup DDNS Scripts
 
-1. **Create CloudFlare DDNS directory**:
+1. **Enter the CloudFlare DDNS directory**:
    ```cmd
-   mkdir C:\Tools\CloudFlareDDNS
    cd C:\Tools\CloudFlareDDNS
    ```
 
 2. **Download the automated scripts using CMD**:
    ```cmd
-   curl -o cloudflare-ddns-automated.bat https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/Cloudflare/cloudflare-ddns-automated.bat
-   curl -o log-cleanup.bat https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/Cloudflare/log-cleanup.bat
+   curl -o cloudflare-ddns-automated.bat https://raw.githubusercontent.com/DevilsDesigns/DemonWarriorTechDocs/main/scripts/Cloudflare/cloudflare-ddns-automated.bat
+   curl -o log-cleanup.bat https://raw.githubusercontent.com/DevilsDesigns/DemonWarriorTechDocs/main/scripts/Cloudflare/log-cleanup.bat
    ```
 
 #### Configure the DDNS Script
 
 3. **Open `cloudflare-ddns-automated.bat`** in a text editor and change these lines:
-   ```batch
+   ```powershell
    REM Configuration - Edit these values
+//hightlight-start
    set CF_TOKEN=your-cloudflare-api-token
    set CF_ZONE=yourdomain.com
+//highlight-end
    REM Note: CF_ZONE should be your root domain (e.g., demonwarriortech.com)
 
    REM Dry-run mode - set to "true" to see what would be updated without making changes
