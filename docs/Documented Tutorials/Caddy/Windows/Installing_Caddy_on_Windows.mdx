@@ -211,12 +211,12 @@ If you're using Cloudflare for DNS management:
 #### Configure the DDNS Script
 
 3. **Open `cloudflare-ddns-automated.bat`** in a text editor and change these lines:
-   ```powershell
+   ```powershell showLineNumbers
    REM Configuration - Edit these values
-//hightlight-start
+   // hightlight-start
    set CF_TOKEN=your-cloudflare-api-token
    set CF_ZONE=yourdomain.com
-//highlight-end
+   // highlight-end
    REM Note: CF_ZONE should be your root domain (e.g., demonwarriortech.com)
 
    REM Dry-run mode - set to "true" to see what would be updated without making changes
