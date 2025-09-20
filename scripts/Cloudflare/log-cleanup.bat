@@ -24,10 +24,8 @@ REM Clean up old .old log files (keep only the most recent ones)
 echo [%date% %time%] Cleaning up old log files...
 
 REM Count .old files
-set /a OLD_COUNT=0
-for %%F in ("%LOG_DIR%\cloudflare-ddns.log.old*") do (
-    set /a OLD_COUNT+=1
-)
+for /f %%C in ('dir /b "%LOG_DIR%\cloudflare-ddns.log.old*" 2^>nul ^| find /c /v ""') do set OLD_COUNT=%%C
+if not defined OLD_COUNT set OLD_COUNT=0
 
 if %OLD_COUNT% gtr %MAX_LOG_FILES% (
     echo [%date% %time%] Found %OLD_COUNT% old log files, keeping only %MAX_LOG_FILES% most recent

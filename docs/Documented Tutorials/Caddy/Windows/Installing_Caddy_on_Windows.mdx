@@ -151,25 +151,21 @@ If you're using Cloudflare for DNS management:
 
 ### Step 5: Setting up A Name Record
 
-1. **Download Cloudflare DDNS**: [CloudFlare DDNS](https://github.com/wyattjoh/cloudflare-ddns/releases)
+1. **Open Cloudflare Dashboard**: https://dash.cloudflare.com/
 
-2. **Extract to directory**: `C:\Tools\CloudflareDDNS`
-
-3. **Open Cloudflare Dashboard**: https://dash.cloudflare.com/
-
-4. **Click DNS** on the sidebar:
+2. **Click DNS** on the sidebar:
 
 ![image](https://user-images.githubusercontent.com/35183970/215296063-666a2625-e377-4b03-878f-4856695da230.png)
 
-5. **Click Add a Record**:
+3. **Click Add a Record**:
 
 ![image](https://user-images.githubusercontent.com/35183970/215296074-272ba4a3-759c-4c66-9ec4-6f367b1d3f3d.png)
 
-6. **Get your external IP** from https://ipchicken.com/:
+4. **Get your external IP** from https://ipchicken.com/:
 
 ![image](https://i.imgur.com/55Zec8p.png)
 
-7. **Click Save**
+5. **Click Save**
 
 ### Step 6: Getting an API Key
 
@@ -244,19 +240,19 @@ If you're using Cloudflare for DNS management:
 
 6. **Check the log file** at `./logs/cloudflare-ddns.log` for entries like:
    ```log
-   ---------------------------------------- 
+   ======================================== 
    [2025-09-20 18:26:11] Starting CloudFlare DDNS update... 
    [2025-09-20 18:26:11] Detecting current public IP... 
    [2025-09-20 18:26:12] DEBUG: Primary IP service failed, trying fallback... 
    [2025-09-20 18:26:12] DEBUG: curl services failed, trying PowerShell fallback... 
-   [2025-09-20 18:26:13] Current public IP: 185.203.219.107 
+   [2025-09-20 18:26:13] Current public IP: 203.0.113.42 
    [2025-09-20 18:26:13] Getting CloudFlare Zone ID for demonwarriortech.com... 
    [2025-09-20 18:26:15] DEBUG: Zone ID: a437cf***********497 
    [2025-09-20 18:26:15] Discovering all A records in zone... 
    [2025-09-20 18:26:17] Analyzing A records for updates... 
-   [2025-09-20 18:26:18] DEBUG: Found A record: adguard.demonwarriortech.com -> 251.790.215.7 (Proxied: True)
-   [2025-09-20 18:26:18] INFO: Record needs update: adguard.demonwarriortech.com (251.790.215.7 -> 185.203.219.107)
-   [2025-09-20 18:26:18] DEBUG: Found A record: jellyfin.demonwarriortech.com -> 251.790.215.7 (Proxied: False)
+   [2025-09-20 18:26:18] DEBUG: Found A record: adguard.demonwarriortech.com -> 198.51.100.10 (Proxied: True)
+   [2025-09-20 18:26:18] INFO: Record needs update: adguard.demonwarriortech.com (198.51.100.10 -> 203.0.113.42)
+   [2025-09-20 18:26:18] DEBUG: Found A record: jellyfin.demonwarriortech.com -> 198.51.100.10 (Proxied: False)
    ```
 
 7. **Verify the results**:

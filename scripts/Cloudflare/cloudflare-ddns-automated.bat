@@ -34,9 +34,7 @@ REM Check if running as administrator
 net session >nul 2>&1
 if %errorLevel% neq 0 (
     call :log "ERROR: This script must be run as Administrator"
-    echo.
-    echo Please right-click and select "Run as administrator"
-    pause
+    call :log "Please right-click and select 'Run as administrator'"
     exit /b 1
 )
 
@@ -46,13 +44,11 @@ call :log "Starting CloudFlare DDNS update..."
 REM Validate configuration
 if "%CF_TOKEN%"=="your-cloudflare-api-token" (
     call :log "ERROR: Please configure your CloudFlare API token"
-    pause
     exit /b 1
 )
 
 if "%CF_ZONE%"=="yourdomain.com" (
     call :log "ERROR: Please configure your domain name"
-    pause
     exit /b 1
 )
 
@@ -78,7 +74,6 @@ if %errorLevel% neq 0 (
         if %errorLevel% neq 0 (
             call :log "ERROR: Failed to detect public IP address"
             if exist temp_ip.txt del temp_ip.txt
-            pause
             exit /b 1
         )
     )
@@ -91,7 +86,6 @@ REM Validate IP format
 echo %CURRENT_IP% | findstr /R "^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$" >nul
 if %errorLevel% neq 0 (
     call :log "ERROR: Invalid IP address detected: %CURRENT_IP%"
-    pause
     exit /b 1
 )
 
@@ -112,7 +106,6 @@ if "%ZONE_ID%"=="ERROR" (
     call :log "ERROR: Failed to get Zone ID for %CF_ZONE%"
     call :log "Please check your API token and domain name"
     del zone_response.json zone_id.txt
-    pause
     exit /b 1
 )
 
@@ -208,6 +201,7 @@ REM Cleanup old logs if they get too large
 for %%F in ("%LOG_FILE%") do (
     if %%~zF gtr %MAX_LOG_SIZE% (
         call :log "Log file size exceeded %MAX_LOG_SIZE% bytes, rotating..."
+        if exist "%LOG_FILE%.old" del /f /q "%LOG_FILE%.old"
         move "%LOG_FILE%" "%LOG_FILE%.old"
     )
 )
