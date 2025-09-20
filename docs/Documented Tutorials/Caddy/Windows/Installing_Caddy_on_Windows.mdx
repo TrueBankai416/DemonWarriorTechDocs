@@ -199,40 +199,145 @@ If you're using Cloudflare for DNS management:
 
 ### Step 7: Running Cloudflare DDNS
 
-1. **Navigate to directory**:
-   ```bash
-   cd C:\Tools\CloudflareDDNS
+#### Download and Setup DDNS Scripts
+
+1. **Create CloudFlare DDNS directory**:
+   ```cmd
+   mkdir C:\Tools\CloudFlareDDNS
+   cd C:\Tools\CloudFlareDDNS
    ```
 
-2. **Run DDNS updater**:
-   ```bash
-   ./cloudflare-ddns --token your-cloudflare-api-key --domain home.yourdomain.com
+2. **Download the automated scripts using CMD**:
+   ```cmd
+   curl -o cloudflare-ddns-automated.bat https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/Cloudflare/cloudflare-ddns-automated.bat
+   curl -o log-cleanup.bat https://raw.githubusercontent.com/TrueBankai416/DemonWarriorTechDocs/main/scripts/Cloudflare/log-cleanup.bat
    ```
 
-3. **Expected output**:
-   ```bash
-   time="2023-01-28T17:54:39-06:00" level=info msg="updated record" content=123.123.123.123 name=home.yourdomain.com
-   ```
+#### Configure the DDNS Script
 
-### Step 8: Auto-startup CloudflareDDNS
-
-1. **Open Run dialog**:
-
-![image](https://user-images.githubusercontent.com/35183970/215296525-850af871-bae2-427d-b641-f4e73f564c89.png)
-
-2. **Type `shell:startup`** and press Enter
-
-3. **Create batch file**:
-
-![image](https://user-images.githubusercontent.com/35183970/215296594-5d2ac03c-570f-49a3-9993-3ba829d2744f.png)
-
-4. **Add content to CloudFlareDDNS.bat**:
+3. **Open `cloudflare-ddns-automated.bat`** in a text editor and change these lines:
    ```batch
-   C:\Tools\CloudFlareDDNS\cloudflare-ddns --token your-cloudflare-api-token --domain home.yourdomain.com
-   pause
+   REM Configuration - Edit these values
+   set CF_TOKEN=your-cloudflare-api-token
+   set CF_ZONE=yourdomain.com
+   REM Note: CF_ZONE should be your root domain (e.g., demonwarriortech.com)
+
+   REM Dry-run mode - set to "true" to see what would be updated without making changes
+   set DRY_RUN=true
    ```
 
-5. **Save and run**
+   :::info
+   **Note:** `DRY_RUN` is enabled by default for safety reasons. This allows you to test the configuration without making actual DNS changes.
+   :::
+
+4. **Replace the configuration values**:
+   - `CF_TOKEN`: Your CloudFlare API token from Step 6
+   - `CF_ZONE`: Your root domain (e.g., `demonwarriortech.com`)
+   - Keep `DRY_RUN=true` for initial testing
+
+#### Test the Configuration
+
+5. **Run the script as Administrator**:
+   - Right-click on `cloudflare-ddns-automated.bat`
+   - Select **"Run as administrator"**
+   - Accept any Windows Firewall prompts
+
+6. **Check the log file** at `./logs/cloudflare-ddns.log` for entries like:
+   ```log
+   ---------------------------------------- 
+   [2025-09-20 18:26:11] Starting CloudFlare DDNS update... 
+   [2025-09-20 18:26:11] Detecting current public IP... 
+   [2025-09-20 18:26:12] DEBUG: Primary IP service failed, trying fallback... 
+   [2025-09-20 18:26:12] DEBUG: curl services failed, trying PowerShell fallback... 
+   [2025-09-20 18:26:13] Current public IP: 185.203.219.107 
+   [2025-09-20 18:26:13] Getting CloudFlare Zone ID for demonwarriortech.com... 
+   [2025-09-20 18:26:15] DEBUG: Zone ID: a437cf***********497 
+   [2025-09-20 18:26:15] Discovering all A records in zone... 
+   [2025-09-20 18:26:17] Analyzing A records for updates... 
+   [2025-09-20 18:26:18] DEBUG: Found A record: adguard.demonwarriortech.com -> 251.790.215.7 (Proxied: True)
+   [2025-09-20 18:26:18] INFO: Record needs update: adguard.demonwarriortech.com (251.790.215.7 -> 185.203.219.107)
+   [2025-09-20 18:26:18] DEBUG: Found A record: jellyfin.demonwarriortech.com -> 251.790.215.7 (Proxied: False)
+   ```
+
+7. **Verify the results**:
+   - If the new IP matches your current IP, you're ready to proceed
+   - Change `set DRY_RUN=true` to `set DRY_RUN=false` in the script
+   - Run the script again as Administrator to apply the changes
+
+#### Schedule Automatic Updates
+
+8. **Set up Task Scheduler for automatic execution**:
+
+   ##### 📋 **Manual Task Scheduler Setup Instructions**
+
+   ###### **Step 1: Open Task Scheduler**
+   1. Press **Win + R**, type `taskschd.msc`, press Enter
+   2. Or search "Task Scheduler" in Start menu
+
+   ###### **Step 2: Create Basic Task**
+   1. In the right panel, click **"Create Task..."** (not "Create Basic Task")
+   2. **Name:** `CloudFlare DDNS Auto Update`
+   3. **Description:** `Automatically updates CloudFlare DDNS every 5 minutes and at startup`
+
+   ###### **Step 3: General Tab Settings**
+   - ✅ **Run whether user is logged on or not**
+   - ✅ **Run with highest privileges**
+   - **Configure for:** Windows 10/11
+
+   ###### **Step 4: Triggers Tab**
+   Click **"New..."** twice to create 2 triggers:
+
+   **Trigger 1 - At Startup:**
+   - **Begin the task:** At startup
+   - **Delay task for:** 2 minutes
+   - ✅ **Enabled**
+
+   **Trigger 2 - Every 5 Minutes:**
+   - **Begin the task:** On a schedule
+   - **Settings:** One Time, start today at current time
+   - ✅ **Repeat task every:** 5 minutes
+   - **for a duration of:** Indefinitely
+   - ✅ **Enabled**
+
+   ###### **Step 5: Actions Tab**
+   Click **"New..."**:
+   - **Action:** Start a program
+   - **Program/script:** `cmd.exe`
+   - **Add arguments:** `/c "C:\Tools\CloudFlareDDNS\cloudflare-ddns-automated.bat"`
+   - **Start in:** `C:\Tools\CloudFlareDDNS`
+
+   ###### **Step 6: Conditions Tab**
+   - ✅ **Start only if a network connection is available**
+   - ❌ **Start the task only if the computer is on AC power** (uncheck this)
+   - ❌ **Stop if the computer switches to battery power** (uncheck this)
+
+   ###### **Step 7: Settings Tab**
+   - ✅ **Allow task to be run on demand**
+   - ✅ **Run task as soon as possible after a scheduled start is missed**
+   - ✅ **If the running task does not end when requested, force it to stop**
+   - **If the task is already running:** Do not start a new instance
+
+   ###### **Step 8: Finish**
+   1. Click **OK**
+   2. Enter your Windows password when prompted
+   3. Task is now created and will start automatically!
+
+   **Test the task:** Right-click the task → "Run"  
+   **Check logs:** `C:\Tools\CloudFlareDDNS\logs\cloudflare-ddns.log`
+
+   **Your DDNS will now update automatically every 5 minutes!** 🚀
+
+#### Maintenance
+
+9. **Log cleanup** (optional):
+   - Run `log-cleanup.bat` periodically to manage log file sizes
+   - Or set up another scheduled task to run it weekly
+
+10. **Monitor the service**:
+    - Check logs regularly: `C:\Tools\CloudFlareDDNS\logs\cloudflare-ddns.log`
+    - Verify DNS records are updating correctly in CloudFlare dashboard
+    - Test your domain resolution periodically
+
 
 ## Service Management
 
