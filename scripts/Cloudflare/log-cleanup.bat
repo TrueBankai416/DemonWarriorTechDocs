@@ -7,9 +7,9 @@ REM ========================================
 REM This script cleans up old CloudFlare DDNS log files to prevent disk space issues
 
 REM Configuration
-set LOG_DIR=logs
+set BASE_DIR=%~dp0
+set LOG_DIR=%BASE_DIR%logs
 set LOG_FILE=%LOG_DIR%\cloudflare-ddns.log
-set DAYS_TO_KEEP=30
 set MAX_LOG_FILES=10
 
 echo [%date% %time%] Starting log cleanup...
@@ -41,10 +41,10 @@ if %OLD_COUNT% gtr %MAX_LOG_FILES% (
 
 REM Clean up temporary files that might be left behind
 echo [%date% %time%] Cleaning up temporary files...
-del temp_ip.txt 2>nul
-del zone_response.json 2>nul
-del records_response.json 2>nul
-del zone_id.txt 2>nul
+del "%BASE_DIR%temp_ip.txt" 2>nul
+del "%BASE_DIR%zone_response.json" 2>nul
+del "%BASE_DIR%records_response.json" 2>nul
+del "%BASE_DIR%zone_id.txt" 2>nul
 
 REM Check current log file size
 if exist "%LOG_FILE%" (

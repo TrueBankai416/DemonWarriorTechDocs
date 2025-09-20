@@ -16,7 +16,8 @@ REM Dry-run mode - set to "true" to see what would be updated without making cha
 set DRY_RUN=true
 
 REM Advanced Configuration
-set LOG_DIR=logs
+set BASE_DIR=%~dp0
+set LOG_DIR=%BASE_DIR%logs
 set LOG_FILE=%LOG_DIR%\cloudflare-ddns.log
 set MAX_LOG_SIZE=10485760
 set CURL_TIMEOUT=30
@@ -60,27 +61,27 @@ REM Get current public IP
 call :log "Detecting current public IP..."
 
 REM Try primary IP detection service
-curl -s --connect-timeout %CURL_TIMEOUT% "https://ipv4.icanhazip.com" > temp_ip.txt 2>nul
+curl -s --connect-timeout %CURL_TIMEOUT% "https://ipv4.icanhazip.com" > "%BASE_DIR%temp_ip.txt" 2>nul
 if %errorLevel% neq 0 (
     call :log "DEBUG: Primary IP service failed, trying fallback..."
     
     REM Try fallback service
-    curl -s --connect-timeout %CURL_TIMEOUT% "https://api.ipify.org" > temp_ip.txt 2>nul
+    curl -s --connect-timeout %CURL_TIMEOUT% "https://api.ipify.org" > "%BASE_DIR%temp_ip.txt" 2>nul
     if %errorLevel% neq 0 (
         call :log "DEBUG: curl services failed, trying PowerShell fallback..."
         
         REM PowerShell fallback
-        powershell -Command "(Invoke-WebRequest -Uri 'https://ipv4.icanhazip.com' -UseBasicParsing).Content.Trim()" > temp_ip.txt 2>nul
+        powershell -Command "(Invoke-WebRequest -Uri 'https://ipv4.icanhazip.com' -UseBasicParsing).Content.Trim()" > "%BASE_DIR%temp_ip.txt" 2>nul
         if %errorLevel% neq 0 (
             call :log "ERROR: Failed to detect public IP address"
-            if exist temp_ip.txt del temp_ip.txt
+            if exist "%BASE_DIR%temp_ip.txt" del "%BASE_DIR%temp_ip.txt"
             exit /b 1
         )
     )
 )
 
-set /p CURRENT_IP=<temp_ip.txt
-del temp_ip.txt
+set /p CURRENT_IP=<"%BASE_DIR%temp_ip.txt"
+del "%BASE_DIR%temp_ip.txt"
 
 REM Validate IP format
 echo %CURRENT_IP% | findstr /R "^[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*$" >nul
@@ -96,34 +97,34 @@ call :log "Getting CloudFlare Zone ID for %CF_ZONE%..."
 
 curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=%CF_ZONE%" ^
      -H "Authorization: Bearer %CF_TOKEN%" ^
-     -H "Content-Type: application/json" > zone_response.json
+     -H "Content-Type: application/json" > "%BASE_DIR%zone_response.json"
 
 REM Extract Zone ID using PowerShell
-powershell -Command "$json = Get-Content 'zone_response.json' | ConvertFrom-Json; if($json.success -and $json.result.Count -gt 0) { $json.result[0].id } else { 'ERROR' }" > zone_id.txt
-set /p ZONE_ID=<zone_id.txt
+powershell -Command "$json = Get-Content '%BASE_DIR%zone_response.json' | ConvertFrom-Json; if($json.success -and $json.result.Count -gt 0) { $json.result[0].id } else { 'ERROR' }" > "%BASE_DIR%zone_id.txt"
+set /p ZONE_ID=<"%BASE_DIR%zone_id.txt"
 
 if "%ZONE_ID%"=="ERROR" (
     call :log "ERROR: Failed to get Zone ID for %CF_ZONE%"
     call :log "Please check your API token and domain name"
-    del zone_response.json zone_id.txt
+    del "%BASE_DIR%zone_response.json" "%BASE_DIR%zone_id.txt"
     exit /b 1
 )
 
 call :log "DEBUG: Zone ID: %ZONE_ID:~0,8%***********%ZONE_ID:~-3%"
-del zone_response.json zone_id.txt
+del "%BASE_DIR%zone_response.json" "%BASE_DIR%zone_id.txt"
 
 REM Get all A records in the zone
 call :log "Discovering all A records in zone..."
 
-curl -s -X GET "https://api.cloudflare.com/client/v4/zones/%ZONE_ID%/dns_records?type=A" ^
+curl -s -X GET "https://api.cloudflare.com/client/v4/zones/%ZONE_ID%/dns_records?type=A&per_page=100" ^
      -H "Authorization: Bearer %CF_TOKEN%" ^
-     -H "Content-Type: application/json" > records_response.json
+     -H "Content-Type: application/json" > "%BASE_DIR%records_response.json"
 
 call :log "Analyzing A records for updates..."
 
 REM Process records using PowerShell
 powershell -Command "
-$json = Get-Content 'records_response.json' | ConvertFrom-Json
+$json = Get-Content '%BASE_DIR%records_response.json' | ConvertFrom-Json
 $currentIP = '%CURRENT_IP%'
 $dryRun = '%DRY_RUN%' -eq 'true'
 $logFile = '%LOG_FILE%'
@@ -186,7 +187,15 @@ if ($json.success) {
 }
 "
 
-del records_response.json
+REM Check if PowerShell processing succeeded
+set "PS_EXIT=%errorlevel%"
+if not "%PS_EXIT%"=="0" (
+    call :log "ERROR: DNS record processing failed"
+    del "%BASE_DIR%records_response.json"
+    exit /b 1
+)
+
+del "%BASE_DIR%records_response.json"
 
 if "%DRY_RUN%"=="true" (
     call :log "DRY RUN COMPLETED - No changes were made"
