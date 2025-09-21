@@ -309,7 +309,7 @@ and make your services unreachable
 
    **Trigger 1 - At Startup:**
    - **Begin the task:** At startup
-   - **Delay task for:** 2 minutes
+   - **Delay task for:** 1 minute
    - ✅ **Enabled**
 
    **Trigger 2 - Every 5 Minutes:**
@@ -325,8 +325,7 @@ and make your services unreachable
    ##### **Step 5: Actions Tab**
    Click **"New..."**:
    - **Action:** Start a program
-   - **Program/script:** `cmd.exe`
-   - **Add arguments:** `/c "C:\Tools\CloudFlareDDNS\cloudflare-ddns-automated.bat"`
+   - **Program/script:** `C:\Tools\CloudFlareDDNS\cloudflare-ddns-automated.bat`
    - **Start in:** `C:\Tools\CloudFlareDDNS`
 
 ![Task Actions](/img/Cloudflare/DDNS_TaskActions.png)
