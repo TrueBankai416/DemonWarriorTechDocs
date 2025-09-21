@@ -261,31 +261,31 @@ If you're using Cloudflare for DNS management:
    - Change `set DRY_RUN=true` to `set DRY_RUN=false` in the script
    - Run the script again as Administrator to apply the changes
 
-#### Schedule Automatic Updates
+### Step 8: Schedule Automatic Updates
 
 8. **Set up Task Scheduler for automatic execution**:
 
-   ##### 📋 **Manual Task Scheduler Setup Instructions**
+   #### 📋 **Manual Task Scheduler Setup Instructions**
 
-   ###### **Step 1: Open Task Scheduler**
+   ##### **Step 1: Open Task Scheduler**
    1. Press **Win + R**, type `taskschd.msc`, press Enter
    2. Or search "Task Scheduler" in Start menu
 
-   ###### **Step 2: Create Basic Task**
+   ##### **Step 2: Create Basic Task**
    1. In the right panel, click **"Create Task..."** (not "Create Basic Task")
    2. **Name:** `CloudFlare DDNS Auto Update`
    3. **Description:** `Automatically updates CloudFlare DDNS every 5 minutes and at startup`
 
 ![Create Task](/img/Cloudflare/DDNS_CreateTask.png)
 
-   ###### **Step 3: General Tab Settings**
+   ##### **Step 3: General Tab Settings**
    - ✅ **Run whether user is logged on or not**
    - ✅ **Run with highest privileges**
    - **Configure for:** Windows 10/11
 
 ![Task General](/img/Cloudflare/DDNS_TaskGeneral.png)
 
-   ###### **Step 4: Triggers Tab**
+   ##### **Step 4: Triggers Tab**
    Click **"New..."** twice to create 2 triggers:
 
    **Trigger 1 - At Startup:**
@@ -303,7 +303,7 @@ If you're using Cloudflare for DNS management:
 ![Task Trigger 1](/img/Cloudflare/DDNS_TaskTrigger1.png)
 ![Task Trigger 2](/img/Cloudflare/DDNS_TaskTrigger2.png)
 
-   ###### **Step 5: Actions Tab**
+   ##### **Step 5: Actions Tab**
    Click **"New..."**:
    - **Action:** Start a program
    - **Program/script:** `cmd.exe`
@@ -312,14 +312,14 @@ If you're using Cloudflare for DNS management:
 
 ![Task Actions](/img/Cloudflare/DDNS_TaskActions.png)
 
-   ###### **Step 6: Conditions Tab**
+   ##### **Step 6: Conditions Tab**
    - ✅ **Start only if a network connection is available**
    - ❌ **Start the task only if the computer is on AC power** (uncheck this)
    - ❌ **Stop if the computer switches to battery power** (uncheck this)
 
 ![Task Conditions](/img/Cloudflare/DDNS_TaskConditions.png)
 
-   ###### **Step 7: Settings Tab**
+   ##### **Step 7: Settings Tab**
    - ✅ **Allow task to be run on demand**
    - ✅ **Run task as soon as possible after a scheduled start is missed**
    - ✅ **If the running task does not end when requested, force it to stop**
@@ -327,13 +327,15 @@ If you're using Cloudflare for DNS management:
 
 ![Task Settings](/img/Cloudflare/DDNS_TaskSettings.png)
 
-   ###### **Step 8: Finish**
+   ##### **Step 8: Finish**
    1. Click **OK**
    2. Enter your Windows password when prompted
-   3. Task is now created and will start automatically!
+   3. Task is now created!
 
    **Test the task:** Right-click the task → "Run"  
    **Check logs:** `C:\Tools\CloudFlareDDNS\logs\cloudflare-ddns.log`
+
+![Task Run](/img/Cloudflare/DDNS_TaskRun.png)
 
    **Your DDNS will now update automatically every 5 minutes!** 🚀
 
