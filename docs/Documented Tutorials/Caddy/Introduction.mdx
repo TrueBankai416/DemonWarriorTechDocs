@@ -28,7 +28,7 @@ Caddy was built with the philosophy that **HTTPS should be the default**, not an
 ### 🔄 **Reverse Proxy**
 - **Load balancing**: Distribute traffic across multiple backends
 - **Health checks**: Automatic backend health monitoring  
-- **Circuit breaker**: Fail-fast pattern for resilient applications
+- **Resilience features**: Health checks, retries, and failover capabilities
 - **Request/response transformation**: Modify headers, paths, and content
 
 ### 📁 **Static File Serving**
@@ -82,38 +82,31 @@ Caddy follows a **modular architecture** built around the concept of **middlewar
 
 Understanding how traffic flows through your infrastructure to reach Caddy is crucial for proper setup and troubleshooting. The following diagram illustrates the complete path from user to service:
 
-```mermaid
-graph TD
-    A[👤 User] --> B[🌐 CDN<br/>CloudFlare/AWS CloudFront]
-    B --> C[🔍 DNS Resolution<br/>Domain → IP Address]
-    C --> D[🌍 ISP<br/>Internet Service Provider]
-    D --> E[📡 Internet Backbone<br/>Routing & Transit]
-    E --> F[🏠 Home/Office Router<br/>Port Forwarding]
-    F --> G[🔥 Firewall<br/>Security Rules]
-    G --> H[⚡ Caddy Web Server<br/>:80 :443]
-    H --> I[🔄 Load Balancer<br/>Optional]
-    I --> J[🎯 Backend Service<br/>App/Database]
-    
-    subgraph "Your Infrastructure"
-        F
-        G
-        H
-        I
-        J
-    end
-    
-    subgraph "External Services"
-        B
-        C
-        D
-        E
-    end
-    
-    style A fill:#e1f5fe
-    style H fill:#4caf50,color:#fff
-    style J fill:#ff9800,color:#fff
-    style B fill:#2196f3,color:#fff
-    style C fill:#9c27b0,color:#fff
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          TRAFFIC FLOW ARCHITECTURE                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+👤 User Request
+    ↓
+🔍 DNS Resolution (Domain → IP Address)
+    ↓
+🌐 CDN (CloudFlare/AWS CloudFront) [Optional]
+    ↓
+🌍 ISP & Internet Backbone
+    ↓
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           YOUR INFRASTRUCTURE                              │
+│                                                                             │
+│  🏠 Router/Firewall (Port Forwarding: 80, 443)                            │
+│      ↓                                                                      │
+│  ⚡ Caddy Web Server (:80 :443)                                            │
+│      ↓                                                                      │
+│  🔄 Load Balancer [Optional]                                               │
+│      ↓                                                                      │
+│  🎯 Backend Service (App/Database/API)                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Traffic Flow Breakdown
@@ -123,17 +116,17 @@ graph TD
 - Browser initiates DNS lookup and HTTP/HTTPS request
 - Request includes headers, cookies, and payload data
 
-#### 2. **🌐 CDN (Content Delivery Network)**
-- **Purpose**: Caches static content closer to users globally
-- **Popular Services**: Cloudflare, AWS CloudFront, Azure CDN
-- **Benefits**: Reduced latency, DDoS protection, bandwidth savings
-- **Behavior**: Serves cached content or forwards to origin server
-
-#### 3. **🔍 DNS Resolution**
+#### 2. **🔍 DNS Resolution**
 - **Process**: Domain name → IP address translation
 - **Types**: A records (IPv4), AAAA records (IPv6), CNAME (aliases)
 - **Providers**: Cloudflare DNS, Google DNS, Route53
 - **TTL**: Time-to-live determines caching duration
+
+#### 3. **🌐 CDN (Content Delivery Network)** [Optional]
+- **Purpose**: Caches static content closer to users globally
+- **Popular Services**: Cloudflare, AWS CloudFront, Azure CDN
+- **Benefits**: Reduced latency, DDoS protection, bandwidth savings
+- **Behavior**: Serves cached content or forwards to origin server
 
 #### 4. **🌍 ISP & Internet Routing**
 - **ISP Role**: User's internet service provider routes traffic
@@ -201,6 +194,8 @@ Centralize API management with authentication, rate limiting, and request transf
 
 ```caddyfile
 api.example.com {
+    # Note: rate_limit requires the caddy-rate-limit plugin
+    # Download from: https://caddyserver.com/download
     rate_limit {
         zone api_zone
         key {remote_host}
@@ -265,10 +260,11 @@ example.com {
 ```
 
 ### **Rate Limiting**
-Protect your services from abuse and DDoS attacks:
+Protect your services from abuse and DDoS attacks (requires the `caddy-rate-limit` plugin):
 
 ```caddyfile
 example.com {
+    # Requires caddy-rate-limit plugin from https://caddyserver.com/download
     rate_limit {
         zone example_zone
         key {remote_host}
@@ -302,10 +298,10 @@ admin.example.com {
 - **Throughput**: Comparable to Nginx for static content serving
 
 ### **Optimization Features**
-- **HTTP/2 Server Push**: Proactively send resources to clients
 - **Compression**: Automatic gzip/brotli compression
 - **Caching**: Built-in caching mechanisms for static content
 - **Connection Pooling**: Efficient backend connection management
+- **Keep-Alive**: Persistent connections for improved performance
 
 ## Getting Started
 
