@@ -52,7 +52,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/TrueBankai416/DemonWarriorTechDocs/tree/main/',
+            'https://github.com/DevilsDesigns/DemonWarriorTechDocs/tree/main/',
         },
         //       blog: {
         //         showReadingTime: true,
