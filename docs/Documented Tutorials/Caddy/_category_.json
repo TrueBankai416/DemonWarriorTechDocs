@@ -2,7 +2,6 @@
   "label": "Caddy",
   "position": 2,
   "link": {
-    "type": "doc",
-    "id": "caddy-introduction"
+    "type": "generated-index"
   }
 }
