@@ -74,7 +74,7 @@ Caddy follows a **modular architecture** built around the concept of **middlewar
 
 #### **Plugin System**
 - Modular middleware architecture
-- Dynamic plugin loading
+- Build-time plugin selection
 - Standardized plugin interfaces
 - Community plugin ecosystem
 
@@ -102,9 +102,9 @@ Understanding how traffic flows through your infrastructure to reach Caddy is cr
 │      ↓                                                                      │
 │  ⚡ Caddy Web Server (:80 :443)                                            │
 │      ↓                                                                      │
-│  🔄 Load Balancer [Optional]                                               │
+│  🔄 External Load Balancer [Optional - if not using Caddy's built-in LB]  │
 │      ↓                                                                      │
-│  🎯 Backend Service (App/Database/API)                                     │
+│  🎯 Backend Service (Web App/API/Microservice)                            │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -152,15 +152,15 @@ Understanding how traffic flows through your infrastructure to reach Caddy is cr
 - **Request Processing**: Applies middleware, routing, and transformations
 - **Response**: Serves static files or proxies to backend services
 
-#### 8. **🔄 Load Balancer (Optional)**
-- **Purpose**: Distributes traffic across multiple backend instances
-- **Algorithms**: Round-robin, least connections, weighted distribution
-- **Health Checks**: Monitors backend service availability
-- **Failover**: Automatically routes around failed services
+#### 8. **🔄 External Load Balancer (Optional)**
+- **Purpose**: Additional load balancing if not using Caddy's built-in capabilities
+- **Note**: Caddy includes built-in load balancing, health checks, and failover
+- **Use Case**: Complex multi-tier architectures or legacy infrastructure
+- **Alternatives**: Use Caddy's native `reverse_proxy` with multiple upstreams
 
 #### 9. **🎯 Backend Service**
-- **Applications**: Web apps, APIs, databases, microservices
-- **Protocols**: HTTP, gRPC, WebSocket, TCP/UDP
+- **Applications**: Web apps, APIs, microservices
+- **Protocols**: HTTP, gRPC, WebSocket (TCP/UDP requires caddy-l4 plugin)
 - **Processing**: Business logic, data retrieval, response generation
 - **Response**: Returns data through the same path in reverse
 
@@ -184,7 +184,13 @@ Route traffic to backend applications, APIs, or microservices with load balancin
 api.example.com {
     reverse_proxy localhost:3000 localhost:3001 localhost:3002 {
         lb_policy round_robin
-        health_check /health
+        health_checks {
+            active {
+                path /health
+                interval 10s
+                timeout 2s
+            }
+        }
     }
 }
 ```
@@ -194,7 +200,7 @@ Centralize API management with authentication, rate limiting, and request transf
 
 ```caddyfile
 api.example.com {
-    # Note: rate_limit requires the caddy-rate-limit plugin
+    # Note: rate_limit requires github.com/mholt/caddy-ratelimit plugin
     # Download from: https://caddyserver.com/download
     rate_limit {
         zone api_zone
@@ -250,7 +256,6 @@ example.com {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
-        X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
         Content-Security-Policy "default-src 'self'"
     }
@@ -260,11 +265,11 @@ example.com {
 ```
 
 ### **Rate Limiting**
-Protect your services from abuse and DDoS attacks (requires the `caddy-rate-limit` plugin):
+Protect your services from abuse and DDoS attacks (requires the `github.com/mholt/caddy-ratelimit` plugin):
 
 ```caddyfile
 example.com {
-    # Requires caddy-rate-limit plugin from https://caddyserver.com/download
+    # Requires github.com/mholt/caddy-ratelimit plugin from https://caddyserver.com/download
     rate_limit {
         zone example_zone
         key {remote_host}
