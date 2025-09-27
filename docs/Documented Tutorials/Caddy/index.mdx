@@ -124,6 +124,17 @@ The following diagram shows the complete path from a user on the internet to you
 
 Before we explain the traffic flow, you need to understand the different types of IP addresses:
 
+### 📋 **Quick Reference: Which IP Goes Where?**
+
+| **What You're Configuring** | **Which IP to Use** | **Example** |
+|------------------------------|---------------------|-------------|
+| **Router Port Forwarding** | Internal/Private IP | `192.168.1.100` |
+| **DNS A Record** | External/Public IP | `203.0.113.42` |
+| **Caddyfile (Public Site)** | Domain Name | `mywebsite.com` |
+| **Caddyfile (Local Testing)** | localhost | `localhost:8080` |
+
+**💡 Pro Tip**: Set a **static IP reservation** in your router for your server computer. This prevents your internal IP from changing and breaking port forwarding!
+
 #### **🏠 Internal IP Address (Private IP)**
 - **What it is**: The IP address your computer has on your home network
 - **Examples**: `192.168.1.100`, `10.0.0.50`, `172.16.1.25`
@@ -552,10 +563,12 @@ Once you've tested Caddy locally and understand the basics, follow these detaile
 ### **🤔 Still Confused About Networking?**
 
 **Common beginner issues:**
+
 1. **"My website works locally but not from the internet"**
    - Check your port forwarding settings
    - Make sure you're using your domain name, not localhost
    - Verify your DNS records point to your external IP
+   - **Check for CGNAT**: Some ISPs use "Carrier-Grade NAT" which blocks port forwarding. Call your ISP if port forwarding doesn't work.
 
 2. **"I get certificate errors"**
    - Make sure your domain points to your server
@@ -566,6 +579,11 @@ Once you've tested Caddy locally and understand the basics, follow these detaile
    - Check if another program is using ports 80 or 443
    - Make sure you're running as administrator (Windows) or with sudo (Linux)
    - Verify your Caddyfile syntax
+
+4. **"Port forwarding stopped working"**
+   - Your computer's internal IP probably changed
+   - Set up **DHCP reservation** in your router to keep the same internal IP
+   - Update port forwarding rules with the new internal IP if needed
 
 ### **🆘 Need Help?**
 - **Discord**: Join the Caddy community for real-time help
