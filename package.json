@@ -1,6 +1,6 @@
 {
   "name": "demonwarriortech",
-  "version": "3.8.1",
+  "version": "3.9.2",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
@@ -55,6 +55,6 @@
     ]
   },
   "engines": {
-    "node": ">=18.0"
+    "node": ">=24.11.1"
   }
 }
