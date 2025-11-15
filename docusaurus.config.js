@@ -101,7 +101,7 @@ const config = {
             label: 'Tutorial',
           },
           {
-            to: 'https://docs.demonwarriortech.com/Video%20Tutorials/Videos',
+            to: '/Video%20Tutorials/Videos',
             label: 'Videos Tutorials',
             position: 'left',
           },
