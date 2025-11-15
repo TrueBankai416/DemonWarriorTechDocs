@@ -101,7 +101,7 @@ const config = {
             label: 'Tutorial',
           },
           {
-            to: '/Video%20Tutorials/Videos',
+            to: '/category/Video Tutorials/Videos',
             label: 'Videos Tutorials',
             position: 'left',
           },
@@ -132,11 +132,11 @@ const config = {
               },
               {
                 label: 'Arr Self-Hosting',
-                to: 'https://docs.demonwarriortech.com/Arr%20Self-Hosting/Arr%20Self-Hosted',
+                to: '/category/arr-self-hosting',
               },
               {
                 label: 'Videos',
-                to: 'https://docs.demonwarriortech.com/Video%20Tutorials/Videos',
+                to: '/category/Video Tutorials/Videos',
               },
             ],
           },
@@ -179,7 +179,6 @@ const config = {
           'apacheconf',
           'docker',
           'sql',
-          'docker',
           'php',
         ],
       },
