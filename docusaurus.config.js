@@ -101,7 +101,7 @@ const config = {
             label: 'Tutorial',
           },
           {
-            to: '/category/Video Tutorials/Videos',
+            to: '/category/video-tutorials',
             label: 'Videos Tutorials',
             position: 'left',
           },
@@ -136,7 +136,7 @@ const config = {
               },
               {
                 label: 'Videos',
-                to: '/category/Video Tutorials/Videos',
+                to: '/category/video-tutorials',
               },
             ],
           },
