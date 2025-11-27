@@ -118,8 +118,9 @@ adb shell pm path com.android.webview
 ```
 ### Frameo Troubleshooting
 
-IF YOU HAVE ```mount: Operation not permitted``` OR ```CANNOT EDIT FILE READ ONLY ERROR```
-LIKE BELOW
+If you have ```mount: Operation not permitted``` OR ```CANNOT EDIT FILE READ ONLY ERROR```
+Like below
+
 ![frameo-error-1-read-only](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/immichframe-error-1.png?raw=true)
 
 or
@@ -129,6 +130,7 @@ root@BGS-102K-T:/ # mount -o rw,remount /system && cp /system/app/webview/webvie
 cp /system/app/webview/webview.apk /system/app/webview/webview.apk.bak <
 mount: Operation not permitted
 ```
+
 You will need some extra steps that involve rooting it because your system comes pre-locked from factory.
 
 After some investigation, this suggested that the device is using verified boot (dm-verity), which stopped attempts to overwrite the apk.
@@ -141,25 +143,24 @@ The way that I solved this was through a Magisk overlay.
 adb install discreet-launcher.apk
 ```
 
-1.1 If it didnt install or open automatically then you need to run an adb command
+   1.1 If it didnt install or open automatically then you need to run an adb command
 
- 1. Open the launcher manager. This will allow us to run an app directly using this any app on this system
+   1.2 Open the launcher manager. This will allow us to run an app directly using this any app on this system
 
 ```
 adb shell am start -a android.intent.action.MAIN
 ```
 
- 2. Select the discreet-launcher from the list
+   1.3. Select the discreet-launcher from the list
 
-
-2. Install [Magisk](https://github.com/topjohnwu/Magisk/releases/). Once installed, run the app, then choose Install, Direct Install. After you reboot, it should report it is installed in the app, along with some complaints that it needs "additional setup". Don't worry about those.
+3. Install [Magisk](https://github.com/topjohnwu/Magisk/releases/). Once installed, run the app, then choose Install, Direct Install. After you reboot, it should report it is installed in the app, along with some complaints that it needs "additional setup". Don't worry about those.
 
 
 ```
 adb install -r Magisk.apk
 ```
 
-3. Then create a Magisk overlay to copy the updated webview APK to the right place.  Run these commands after running `adb shell`
+4. Then create a Magisk overlay to copy the updated webview APK to the right place.  Run these commands after running `adb shell`
 
 ```
 su
@@ -187,11 +188,13 @@ chmod 0755 "$MOD" "$MOD/system" "$MOD/system/app" "$MOD/system/app/webview"
 reboot
 ```
 
-4. Once rebooted load up immichframe and check to see if it has the latest webview by pasting this inside the url for immichframe app
+5. Once rebooted load up immichframe and check to see if it has the latest webview by pasting this inside the url for immichframe app
 
 ```https://www.whatismybrowser.com/```
 
+:::Warning
 **IF IT SAYS ANYTHING ELSE BESIDE WebView 106 on Andorid Marhsmellow then you may have to redo the steps above.**
+:::
 
 If its wrong it will show this
 ![Webview-Wrong-Version](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/webview-wrong.jpg?raw=true)
