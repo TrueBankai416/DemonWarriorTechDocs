@@ -120,7 +120,7 @@ adb shell pm path com.android.webview
 
 IF YOU HAVE ```mount: Operation not permitted``` OR ```CANNOT EDIT FILE READ ONLY ERROR```
 LIKE BELOW
-![frameo-error-1-read-only](static/img/immich/immichframe-error-1.png)
+![frameo-error-1-read-only](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/immichframe-error-1.png?raw=true)
 
 or
 
@@ -194,7 +194,7 @@ reboot
 **IF IT SAYS ANYTHING ELSE BESIDE WebView 106 on Andorid Marhsmellow then you may have to redo the steps above.**
 
 If its wrong it will show this
-(Webview-Wrong-Version)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/webview-wrong.jpg]
+![Webview-Wrong-Version](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/webview-wrong.jpg?raw=true)
 
 #### Immichframe wont load server after Webview106 is running
 
@@ -223,7 +223,7 @@ adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main -d 
 
 4. if it shows red and cross through https:// that means your CA Certs are not updated and you need to proceed to the next steps.
 
-(CA Error)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/immichframe-ca-error.jpg]
+![CA Error](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/immichframe-ca-error.jpg?raw=true)
 
 5. Insert your micro sd card into your pc and format if it hasnt already been
 6. We need to download the ISRG ROOT X1 PEM from (here)[https://letsencrypt.org/certs/isrgrootx1.pem]
@@ -238,21 +238,21 @@ adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main -d 
       ```
 11. Go to the Settings app and go into the Security page.
 
-(Android 6.0.1 Securities)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/ca-security-setting.png]
+![Android 6.0.1 Securities](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/ca-security-setting.png?raw=true)
 
 12. Scroll down to the “Credential Storage” section and select the “Install from SD card” option. It works even if you don’t have an SD card, as all Android versions past a certain point emulate an external storage.
-(Selecting SD-Card)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/ca-install-sd-card.png]
+![Selecting SD-Card](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/ca-install-sd-card.png?raw=true)
 
 13. Select the isrgrootx1.pem file in the file picker that shows up.
 
-(Select isrgrootx1.pem)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/selecting-sd-card-isrgrootx1.png]
+![Select isrgrootx1.pem](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/selecting-sd-card-isrgrootx1.png?raw=true)
 
 14. It will ask you to name the certificate. The name you give it does not matter or need to match, but we’ll write “ISRG Root X1” for correctness sake. For “Credential Use” the default “VPN and apps” works fine.
 
-(Settings for CA Cert)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/naming-ca-install.png]
+![Settings for CA Cert](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/naming-ca-install.png?raw=true)
 
 15. If you haven’t set up a lock screen PIN yet it will prompt you to add one.
-(Set a PIN)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/set-a-pin.png]
+![Set a PIN](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/set-a-pin.png?raw=true)
 
 :::WARNING 
 Once that is done it should have been installed. Once a custom root certificate is installed, Android will send a warning notification on each boot telling you that the network may be monitored.
