@@ -74,6 +74,11 @@ NOTE:
 Follow instructions below to update WebView to 106. This has been tested and working on Android 6.01 10.1" Frameo devices:  
 - Download WebView 106 to PC:
   [Lineage OS WebView 106-0-5249-126-12][webview-update]
+
+:::warning
+MAKE SURE YOU RENAME WEBVIEW-XXX-XXX.apk to webview.apk before proceeding
+:::
+
 - Push new apk to sdcard
   ```shell
   adb push /path/to/your/new/webview.apk /sdcard/
@@ -113,9 +118,155 @@ adb shell pm path com.android.webview
 ```
 ### Frameo Troubleshooting
 
-IF YOU HAVE PERMISSIONS DENIED OR CANNOT EDIT FILE READ ONLY ERROR
+IF YOU HAVE ```mount: Operation not permitted``` OR ```CANNOT EDIT FILE READ ONLY ERROR```
 LIKE BELOW
+![frameo-error-1-read-only](https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/immichframe-error-1.png)
+
+or
+
+```
+root@BGS-102K-T:/ # mount -o rw,remount /system && cp /system/app/webview/webview.apk /system/app/webview/webview.apk.bak
+cp /system/app/webview/webview.apk /system/app/webview/webview.apk.bak <
+mount: Operation not permitted
+```
+You will need some extra steps that involve rooting it because your system comes pre-locked from factory.
+
+After some investigation, this suggested that the device is using verified boot (dm-verity), which stopped attempts to overwrite the apk.
+
+The way that I solved this was through a Magisk overlay. 
+
+1. Install [Discreet Launcher](https://github.com/falzonv/discreet-launcher/releases). This is a very small, simple launcher which works for Android 6. You need a launcher to be able to access Magisk. When installed, you'll see a prompt to use it after reboot. Swipe up from the bottom to see all apps
+
+```
+adb install discreet-launcher.apk
+```
+
+1.1 If it didnt install or open automatically then you need to run an adb command
+
+ 1. Open the launcher manager. This will allow us to run an app directly using this any app on this system
+
+```
+adb shell am start -a android.intent.action.MAIN
+```
+
+ 2. Select the discreet-launcher from the list
 
 
+2. Install [Magisk](https://github.com/topjohnwu/Magisk/releases/). Once installed, run the app, then choose Install, Direct Install. After you reboot, it should report it is installed in the app, along with some complaints that it needs "additional setup". Don't worry about those.
 
 
+```
+adb install -r Magisk.apk
+```
+
+3. Then create a Magisk overlay to copy the updated webview APK to the right place.  Run these commands after running `adb shell`
+
+```
+su
+APK=/sdcard/webview.apk
+MOD=/data/adb/modules/replace_stock_webview
+
+rm -rf "$MOD"
+mkdir -p "$MOD/system/app/webview"
+# Hide the entire original dir (including oat) so ART recompiles
+touch "$MOD/system/app/webview/.replace"
+cp "$APK" "$MOD/system/app/webview/webview.apk"
+
+cat > "$MOD/module.prop" <<'EOF'
+id=replace_stock_webview
+name=Replace stock WebView (systemless)
+version=1.0
+versionCode=1
+author=Dasos
+description=Replaces /system/app/webview via Magisk overlay (.replace hides old files)
+EOF
+
+chmod 0644 "$MOD/module.prop" "$MOD/system/app/webview/webview.apk"
+chmod 0755 "$MOD" "$MOD/system" "$MOD/system/app" "$MOD/system/app/webview"
+
+reboot
+```
+
+4. Once rebooted load up immichframe and check to see if it has the latest webview by pasting this inside the url for immichframe app
+
+```https://www.whatismybrowser.com/```
+
+**IF IT SAYS ANYTHING ELSE BESIDE WebView 106 on Andorid Marhsmellow then you may have to redo the steps above.**
+
+If its wrong it will show this
+(Webview-Wrong-Version)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/webview-wrong.jpg]
+
+#### Immichframe wont load server after Webview106 is running
+
+:::NOTE
+This is caused by outdated CA Certs to fix this you will need a micro sd card as writing the cert to the device wont work. There is no other option that I could figure out.
+:::
+
+1. We need to check that we do indeed have this error by installing chrome first.
+Downlaod Chrome on the PC
+
+(Chrome for Android 6.0.1)[https://www.apkmirror.com/apk/google-inc/chrome/chrome-106-0-5249-126-release/google-chrome-fast-secure-106-0-5249-126-5-android-apk-download/]
+
+2. Now install chrome on frameo device
+2.1 Rename the download the chrome.apk
+2.2 now find the directory for the chrome.apk and replace ```J:\Downloads\Frameo\chrome.apk``` with your location of where you downloaded chrome.apk too.
+2.3 now install it by running
+
+```
+adb install J:\Downloads\Frameo\chrome.apk \sdcard\
+```
+3. Now start chrome
+
+```
+adb shell am start -n com.android.chrome/com.google.android.apps.chrome.Main -d "https://demo.immichframe.dev"
+```
+
+4. if it shows red and cross through https:// that means your CA Certs are not updated and you need to proceed to the next steps.
+
+(CA Error)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/immichframe-ca-error.jpg]
+
+5. Insert your micro sd card into your pc and format if it hasnt already been
+6. We need to download the ISRG ROOT X1 PEM from (here)[https://letsencrypt.org/certs/isrgrootx1.pem]
+7. rename this to isrgrootx1.pem if its not already name this
+8. Copy and paste the file to the micro sd card thats in your computer
+9. Insert the SD card into the frameo device
+10. Open the tablet settings by running this command in adb
+
+    - Access Android Settings:
+      ```bash 
+      adb shell am start -a android.settings.SETTINGS
+      ```
+11. Go to the Settings app and go into the Security page.
+
+(Android 6.0.1 Securities)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/ca-security-setting.png]
+
+12. Scroll down to the “Credential Storage” section and select the “Install from SD card” option. It works even if you don’t have an SD card, as all Android versions past a certain point emulate an external storage.
+(Selecting SD-Card)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/ca-install-sd-card.png]
+
+13. Select the isrgrootx1.pem file in the file picker that shows up.
+
+(Select isrgrootx1.pem)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/selecting-sd-card-isrgrootx1.png]
+
+14. It will ask you to name the certificate. The name you give it does not matter or need to match, but we’ll write “ISRG Root X1” for correctness sake. For “Credential Use” the default “VPN and apps” works fine.
+
+(Settings for CA Cert)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/naming-ca-install.png]
+
+15. If you haven’t set up a lock screen PIN yet it will prompt you to add one.
+(Set a PIN)[https://github.com/DevilsDesigns/DemonWarriorTechDocs/blob/main/static/img/immich/set-a-pin.png]
+
+:::WARNING 
+Once that is done it should have been installed. Once a custom root certificate is installed, Android will send a warning notification on each boot telling you that the network may be monitored.
+This is because a custom untrusted root certificate being installed without your knowledge could make an attacker able to perform MITM attacks on encrypted connections without causing certificate errors, as the certificate is trusted on the device. But Let’s Encrypt is a trusted certificate authority and if you downloaded the root certificate over a trusted connection you can simply ignore the notification, and swipe it away.
+:::
+
+16. Now our immmichframe should load our immichframe server. To test lets try demo in immichframe
+
+```adb shell am start com.immichframe.immichframe/.MainActivity```
+
+17. Swipe up to load immichframe settings
+18. Add the demo server first to see if it loads
+
+```https://demo.immichframe.dev```
+
+19. Then click ok and scroll down to the bottom and click close if it works you should see the demo.
+20. Do the same steps 16 and 17 and put your custom server success.
