@@ -118,6 +118,10 @@ adb shell pm path com.android.webview
 ```
 ### Frameo Troubleshooting
 
+:::info
+A Big Thanks to user [DasOS](https://gist.github.com/dasos) for figuring this out in the post [here](https://gist.github.com/dasos/782fd3448d46c8e90894fa0a9d8896b0). Without him this would not have been possible.
+:::
+
 If you have ```mount: Operation not permitted``` OR ```CANNOT EDIT FILE READ ONLY ERROR```
 Like below
 
@@ -152,6 +156,11 @@ adb shell am start -a android.intent.action.MAIN
 ```
 
    1.3. Select the discreet-launcher from the list
+
+:::warning
+NOTE: Once you reboot you may need to renable magisk and re-root the device again. To do this open the launcher with adb shell am start -a android.intent.action.MAIN and select discrete-launcher. Then swipe up and select magisk from the apps screen. Re-run the rooting processs ---> direct install and reboot and you should be able to re-edit files again.
+
+:::
 
 3. Install [Magisk](https://github.com/topjohnwu/Magisk/releases/). Once installed, run the app, then choose Install, Direct Install. After you reboot, it should report it is installed in the app, along with some complaints that it needs "additional setup". Don't worry about those.
 
